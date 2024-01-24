@@ -1,0 +1,91 @@
+#!/bin/sh
+set -e
+
+# Get the KNOT_USER if not set then set it to knot
+KNOT_USER=${KNOT_USER:-knot}
+
+echo "Creating user ${KNOT_USER}.."
+echo "${KNOT_USER} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${KNOT_USER}
+chmod 0440 /etc/sudoers.d/${KNOT_USER}
+
+# If the home directory exists then create the user without a home otherwise create with home
+if [ -d "/home/${KNOT_USER}" ]; then
+  useradd ${KNOT_USER} \
+    --uid 1000 \
+    --user-group \
+    --no-create-home \
+    --shell /bin/bash
+else
+  useradd ${KNOT_USER} \
+    --uid 1000 \
+    --user-group \
+    --create-home \
+    --shell /bin/bash
+
+  mkdir -p /home/${KNOT_USER}/.ssh && chmod 0700 /home/${KNOT_USER}/.ssh && chown -R ${KNOT_USER}:${KNOT_USER} /home/${KNOT_USER}/.ssh
+fi
+
+# Checck home is owned by the user; else fix
+if [ $(stat -c '%U:%G' /home/${KNOT_USER}) != "${KNOT_USER}:${KNOT_USER}" ]; then
+  echo "Changing file ownership.."
+  chown ${KNOT_USER}:${KNOT_USER} -R /home/${KNOT_USER}
+fi
+
+export HOME=/home/${KNOT_USER}
+cd /home/${KNOT_USER}
+
+# If KNOT_SSH is defined then start SSH Server
+if [ "${KNOT_SSH_PORT:-}" ]; then
+	# Start SSH Server
+  echo "Starting SSH Server.."
+	/usr/sbin/sshd
+fi
+
+# If KNOT_CODE_SERVER_PORT is defined then start code-server
+if [ "${KNOT_CODE_SERVER_PORT:-}" ]; then
+	# Start code-server
+  echo "Starting code-server.."
+	gosu ${KNOT_USER} /opt/code-server/bin/code-server --disable-telemetry --auth none --bind-addr 127.0.0.1:${KNOT_CODE_SERVER_PORT} >/tmp/code-server.log 2>&1 &
+fi
+
+# If KNOT_SERVER is defined
+if [ "${KNOT_SERVER:-}" ]; then
+
+	# Get the host architecture, arm64 or amd64
+	ARCH=$(uname -m)
+  case "$ARCH" in
+		'x86_64') url="knot_linux_amd64";;
+		'aarch64') url="knot_linux_arm64";;
+		*) echo >&2 "error: unsupported architecture: '$ARCH'"; exit 1 ;;
+	esac
+
+  echo "Fetching agent binary for $ARCH"
+
+	# Download the application from the server
+  curl -sL ${KNOT_SERVER}/download/$url.zip | funzip > /usr/local/bin/knot
+	chmod +x /usr/local/bin/knot
+
+  # If the folder /etc/knot-startup.d/ exists then run all scripts in it
+  if [ -d /etc/knot-startup.d/ ]; then
+    for f in /etc/knot-startup.d/*; do
+      echo "Running startup script $f"
+      bash $f
+    done
+  fi
+
+  # If the folder /home/${KNOT_USER}/.knot-startup.d/ exists then run all scripts in it
+  if [ -d /home/${KNOT_USER}/.knot-startup.d/ ]; then
+    for f in /home/${KNOT_USER}/.knot-startup.d/*; do
+      echo "Running startup script $f"
+      gosu ${KNOT_USER} bash $f
+    done
+  fi
+
+	# Start the agent
+	echo "Starting agent..."
+	exec gosu ${KNOT_USER} "$@"
+else
+  # Run cmd
+  echo "Running command.."
+  exec gosu ${KNOT_USER} "$@"
+fi
