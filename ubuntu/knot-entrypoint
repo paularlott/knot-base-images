@@ -62,7 +62,7 @@ if [ "${KNOT_SERVER:-}" ]; then
   echo "Fetching agent binary for $ARCH"
 
 	# Download the application from the server
-  curl -sL ${KNOT_SERVER}/download/$url.zip | funzip > /usr/local/bin/knot
+  curl -sLk ${KNOT_SERVER}/download/$url.zip | funzip > /usr/local/bin/knot
 	chmod +x /usr/local/bin/knot
 
   # If the folder /etc/knot-startup.d/ exists then run all scripts in it
