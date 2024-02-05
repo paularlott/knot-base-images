@@ -4,6 +4,12 @@ set -e
 # Get the KNOT_USER if not set then set it to knot
 KNOT_USER=${KNOT_USER:-knot}
 
+# If KNOT_VNC_PWD is defined then use it; else use a uuid
+if [ -z "${KNOT_VNC_PASSWORD}" ]; then
+  KNOT_VNC_PASSWORD=$(uuidgen)
+  export KNOT_VNC_PASSWORD
+fi
+
 echo "Creating user ${KNOT_USER}.."
 echo "${KNOT_USER} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${KNOT_USER}
 chmod 0440 /etc/sudoers.d/${KNOT_USER}
@@ -25,7 +31,9 @@ else
   mkdir -p /home/${KNOT_USER}/.ssh && chmod 0700 /home/${KNOT_USER}/.ssh && chown -R ${KNOT_USER}:${KNOT_USER} /home/${KNOT_USER}/.ssh
 fi
 
-# Checck home is owned by the user; else fix
+usermod -aG ssl-cert $KNOT_USER
+
+# Check home is owned by the user; else fix
 if [ $(stat -c '%U:%G' /home/${KNOT_USER}) != "${KNOT_USER}:${KNOT_USER}" ]; then
   echo "Changing file ownership.."
   chown ${KNOT_USER}:${KNOT_USER} -R /home/${KNOT_USER}
@@ -48,6 +56,25 @@ if [ "${KNOT_CODE_SERVER_PORT:-}" ]; then
 	gosu ${KNOT_USER} /opt/code-server/bin/code-server --disable-telemetry --auth none --bind-addr 127.0.0.1:${KNOT_CODE_SERVER_PORT} >/tmp/code-server.log 2>&1 &
 fi
 
+# Make KNOT_USER available in called scripts
+export KNOT_USER
+
+# If the folder /etc/knot-startup.d/ exists then run all scripts in it
+if [ -d /etc/knot-startup.d/ ]; then
+  for f in /etc/knot-startup.d/*; do
+    echo "Running startup script $f"
+    bash $f
+  done
+fi
+
+# If the folder /home/${KNOT_USER}/.knot-startup.d/ exists then run all scripts in it
+if [ -d /home/${KNOT_USER}/.knot-startup.d/ ]; then
+  for f in /home/${KNOT_USER}/.knot-startup.d/*; do
+    echo "Running startup script $f"
+    gosu ${KNOT_USER} bash $f
+  done
+fi
+
 # If KNOT_SERVER is defined
 if [ "${KNOT_SERVER:-}" ]; then
 
@@ -64,22 +91,6 @@ if [ "${KNOT_SERVER:-}" ]; then
 	# Download the application from the server
   curl -sLk ${KNOT_SERVER}/download/$url.zip | funzip > /usr/local/bin/knot
 	chmod +x /usr/local/bin/knot
-
-  # If the folder /etc/knot-startup.d/ exists then run all scripts in it
-  if [ -d /etc/knot-startup.d/ ]; then
-    for f in /etc/knot-startup.d/*; do
-      echo "Running startup script $f"
-      bash $f
-    done
-  fi
-
-  # If the folder /home/${KNOT_USER}/.knot-startup.d/ exists then run all scripts in it
-  if [ -d /home/${KNOT_USER}/.knot-startup.d/ ]; then
-    for f in /home/${KNOT_USER}/.knot-startup.d/*; do
-      echo "Running startup script $f"
-      gosu ${KNOT_USER} bash $f
-    done
-  fi
 
 	# Start the agent
 	echo "Starting agent..."

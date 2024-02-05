@@ -1,0 +1,22 @@
+#!/bin/sh
+set -e
+
+dbus-daemon --system
+
+# If KNOT_USER doesn't have a .themes folder then create and add the default theme
+if [ ! -d /home/${KNOT_USER}/.themes ]; then
+  mkdir -p /home/${KNOT_USER}/.themes
+  cd /home/${KNOT_USER}/.themes; tar -xf /usr/share/assets/Nordic-darker.tar.xz
+  chown -R ${KNOT_USER}:${KNOT_USER} /home/${KNOT_USER}/.themes
+
+  # Copy default xfce configs
+  mkdir -p /home/${KNOT_USER}/.config/xfce4/xfconf/xfce-perchannel-xml/
+  cp /usr/share/assets/xfce-perchannel-xml/* /home/${KNOT_USER}/.config/xfce4/xfconf/xfce-perchannel-xml/
+  chown -R ${KNOT_USER}:${KNOT_USER} /home/${KNOT_USER}/.config/
+fi
+
+# Set the username and password for vncserver
+echo -e "${KNOT_VNC_PASSWORD}\n${KNOT_VNC_PASSWORD}\n" | gosu ${KNOT_USER} vncpasswd -u knot -w -r
+
+# Start the vncserver with the xfce desktop
+gosu ${KNOT_USER} vncserver :1 -websocketPort 5680 -interface 0.0.0.0 -select-de xfce
