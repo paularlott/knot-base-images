@@ -16,7 +16,7 @@ if [ ! -d /home/${KNOT_USER}/.themes ]; then
 fi
 
 # Set the username and password for vncserver
-echo -e "${KNOT_VNC_PASSWORD}\n${KNOT_VNC_PASSWORD}\n" | gosu ${KNOT_USER} vncpasswd -u knot -w -r
+echo -e "${KNOT_SERVICE_PASSWORD}\n${KNOT_SERVICE_PASSWORD}\n" | gosu ${KNOT_USER} vncpasswd -u knot -w -r
 
 # Start the vncserver with the xfce desktop
-gosu ${KNOT_USER} vncserver :1 -websocketPort 5680 -interface 0.0.0.0 -select-de xfce
+cd /home/${KNOT_USER}; gosu ${KNOT_USER} vncserver :1 -websocketPort ${KNOT_VNC_HTTP_PORT-5680} -interface 0.0.0.0 -select-de xfce
