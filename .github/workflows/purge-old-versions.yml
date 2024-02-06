@@ -12,7 +12,6 @@ jobs:
         with:
           package-name: 'paularlott/knot-base-debian'
           package-type: 'container'
-          num-old-versions-to-delete: 1000
           min-versions-to-keep: 2
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Remove old ubuntu base versions
@@ -20,7 +19,6 @@ jobs:
         with:
           package-name: 'knot-base-ubuntu'
           package-type: 'container'
-          num-old-versions-to-delete: 1000
           min-versions-to-keep: 2
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Remove old debian desktop base versions
@@ -28,6 +26,5 @@ jobs:
         with:
           package-name: 'knot-base-debian-dekstop'
           package-type: 'container'
-          num-old-versions-to-delete: 1000
           min-versions-to-keep: 2
           token: ${{ secrets.GITHUB_TOKEN }}
