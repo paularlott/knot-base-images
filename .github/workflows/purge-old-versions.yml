@@ -1,0 +1,30 @@
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  house-keeping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remove old debian base versions
+        uses: actions/delete-package-versions@v4.1.1
+        with:
+          package-name: 'knot-base-debian'
+          package-type: 'container'
+          min-versions-to-keep: 2
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Remove old ubuntu base versions
+        uses: actions/delete-package-versions@v4.1.1
+        with:
+          package-name: 'knot-base-ubuntu'
+          package-type: 'container'
+          min-versions-to-keep: 2
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Remove old debian desktop base versions
+        uses: actions/delete-package-versions@v4.1.1
+        with:
+          package-name: 'knot-base-debian-dekstop'
+          package-type: 'container'
+          min-versions-to-keep: 2
+          token: ${{ secrets.GITHUB_TOKEN }}
