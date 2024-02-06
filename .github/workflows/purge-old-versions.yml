@@ -10,7 +10,7 @@ jobs:
       - name: Remove old debian base versions
         uses: actions/delete-package-versions@v5.0.0
         with:
-          package-name: 'knot-base-debian'
+          package-name: 'ghcr.io/paularlott/knot-base-debian'
           package-type: 'container'
           min-versions-to-keep: 2
           token: ${{ secrets.GITHUB_TOKEN }}
