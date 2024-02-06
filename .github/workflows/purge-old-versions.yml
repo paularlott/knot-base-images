@@ -22,7 +22,7 @@ jobs:
           min-versions-to-keep: 2
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Remove old debian desktop base versions
-        uses: actions/delete-package-versions@v4.1.1
+        uses: actions/delete-package-versions@v5
         with:
           package-name: 'knot-base-debian-dekstop'
           package-type: 'container'
