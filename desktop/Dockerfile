@@ -2,8 +2,7 @@ ARG DOCKER_HUB
 ARG IMAGE_VERSION
 ARG IMAGE_BASE
 
-#FROM ${DOCKER_HUB}library/ubuntu:${IMAGE_VERSION}
-FROM ghcr.io/paularlott/knot-base-${IMAGE_BASE}:${IMAGE_VERSION}
+FROM paularlott/knot-base-${IMAGE_BASE}:${IMAGE_VERSION}
 
 LABEL org.opencontainers.image.source=https://github.com/paularlott/knot-base-images
 LABEL org.opencontainers.image.description="Base container"

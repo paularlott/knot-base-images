@@ -12,7 +12,7 @@ all: knot-base-debian knot-base-ubuntu
 knot-base-debian:
 	docker buildx build \
 		--platform linux/amd64,linux/arm64 \
-		--tag ghcr.io/paularlott/knot-base-debian:12 \
+		--tag paularlott/knot-base-debian:12 \
 		--build-arg IMAGE_BASE=debian \
 		--build-arg IMAGE_VERSION=12 \
 		--build-arg DOCKER_HUB=$(DOCKER_HUB) \
@@ -25,7 +25,7 @@ knot-base-debian:
 knot-base-ubuntu:
 	docker buildx build \
 		--platform linux/amd64,linux/arm64 \
-		--tag ghcr.io/paularlott/knot-base-ubuntu:22.04 \
+		--tag paularlott/knot-base-ubuntu:22.04 \
 		--build-arg IMAGE_BASE=ubuntu \
 		--build-arg IMAGE_VERSION=22.04 \
 		--build-arg DOCKER_HUB=$(DOCKER_HUB) \
@@ -38,7 +38,7 @@ knot-base-ubuntu:
 knot-base-debian-desktop:
 	docker buildx build \
 		--platform linux/amd64,linux/arm64 \
-		--tag ghcr.io/paularlott/knot-base-debian-desktop:12 \
+		--tag paularlott/knot-base-debian-desktop:12 \
 		--build-arg IMAGE_BASE=debian \
 		--build-arg IMAGE_VERSION=12 \
 		--build-arg DOCKER_HUB=$(DOCKER_HUB) \
@@ -51,7 +51,7 @@ knot-base-debian-desktop:
 knot-base-ubuntu-desktop:
 	docker buildx build \
 		--platform linux/arm64 \
-		--tag ghcr.io/paularlott/knot-base-ubuntu-desktop:22.04 \
+		--tag paularlott/knot-base-ubuntu-desktop:22.04 \
 		--build-arg IMAGE_BASE=ubuntu \
 		--build-arg IMAGE_VERSION=22.04 \
 		--build-arg DOCKER_HUB=$(DOCKER_HUB) \
