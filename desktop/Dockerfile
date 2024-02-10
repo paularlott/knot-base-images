@@ -57,8 +57,8 @@ RUN ARCH=$(uname -m); \
   rm /tmp/kasmvncserver.deb; \
   chmod +r /usr/share/assets/* /usr/share/backgrounds/*
 
-# docker run --privileged --rm -it -p 5680:5680 ghcr.io/paularlott/knot-base-ubuntu-desktop:22.04 bash
-# docker run --cap-add SYS_ADMIN --rm -it -p 5680:5680 -e KNOT_SERVICE_PASSWORD=testing ghcr.io/paularlott/knot-base-debian-desktop:12 bash
+# docker run --privileged --rm -it -p 5680:5680 paularlott/knot-base-ubuntu-desktop:22.04 bash
+# docker run --cap-add SYS_ADMIN --rm -it -p 5680:5680 -e KNOT_SERVICE_PASSWORD=testing paularlott/knot-base-debian-desktop:12 bash
 
 # For chrome
 # sudo dbus-daemon --system

@@ -27,7 +27,7 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   && apt-get install -y \
     tzdata procps rsync openssh-server sudo tzdata fish iputils-ping htop iproute2 iftop \
     git vim curl wget unzip locales ssl-cert gettext software-properties-common lsb-release \
-    uuid-runtime \
+    uuid-runtime screen \
   \
   # https://github.com/tianon/gosu/releases
   && ARCH=$(uname -m); \
