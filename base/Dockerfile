@@ -12,12 +12,14 @@ ARG LANGUAGE='en_US:en'
 ARG LC_ALL='en_US.UTF-8'
 ARG APT_CACHE=${APT_CACHE}
 ARG TZ='Etc/UTC'
+ARG TERM='xterm-256color'
 
 ENV DEBIAN_FRONTEND=noninteractive \
   LANG=$LANG \
   LANGUAGE=$LANGUAGE \
   LC_ALL=$LC_ALL \
-  TZ=$TZ
+  TZ=$TZ \
+  TERM=$TERM
 
 RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
     --mount=type=cache,sharing=private,target=/var/lib/apt \
