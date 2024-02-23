@@ -50,13 +50,13 @@ knot-base-debian-desktop:
 ## Build a base ubuntu image and push to github, includes start up scripts, code-server and xfce
 knot-base-ubuntu-desktop:
 	docker buildx build \
-		--platform linux/arm64 \
+		--platform linux/amd64,linux/arm64 \
 		--tag paularlott/knot-base-ubuntu-desktop:22.04 \
 		--build-arg IMAGE_BASE=ubuntu \
 		--build-arg IMAGE_VERSION=22.04 \
 		--build-arg DOCKER_HUB=$(DOCKER_HUB) \
 		--build-arg APT_CACHE=$(APT_CACHE) \
-		--load \
+		--push \
 		./desktop
 
 .PHONY: help

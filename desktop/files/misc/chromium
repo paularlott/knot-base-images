@@ -1,0 +1,2 @@
+#!/bin/sh
+CHROMIUM_FLAGS='--disable-gpu' flatpak run org.chromium.Chromium "$@"

@@ -44,7 +44,8 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   && echo "LC_ALL=en_US.UTF-8" >> /etc/environment \
   && echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
   && echo "LANG=en_US.UTF-8" > /etc/locale.conf \
-  && locale-gen en_US.UTF-8
+  && locale-gen en_US.UTF-8 \
+  && if [ -n "$APT_CACHE" ]; then rm -f /etc/apt/apt.conf.d/00proxy; fi
 
 # Copy files
 COPY knot-entrypoint /usr/local/bin/
