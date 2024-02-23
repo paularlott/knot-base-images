@@ -91,12 +91,18 @@ if [ "${KNOT_SERVER:-}" ]; then
 	# Download the application from the server
   curl -sLk ${KNOT_SERVER}/download/$url.zip | funzip > /usr/local/bin/knot
 	chmod +x /usr/local/bin/knot
+fi
 
-	# Start the agent
-	echo "Starting agent..."
-	exec gosu ${KNOT_USER} "$@"
+if [ -z "$@" ]; then
+  # Check for /usr/local/bin/knot and if present run it
+  if [ -x /usr/local/bin/knot ]; then
+    echo "Running knot agent..."
+    exec gosu ${KNOT_USER} /usr/local/bin/knot agent
+  else
+    echo "Running..."
+    while true; do sleep infinity; done
+  fi
 else
-  # Run cmd
-  echo "Running command.."
+  echo "Running command..."
   exec gosu ${KNOT_USER} "$@"
 fi

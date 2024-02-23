@@ -57,4 +57,4 @@ RUN mkdir -p /opt/code-server \
 VOLUME /home
 
 ENTRYPOINT ["/usr/local/bin/knot-entrypoint"]
-CMD ["/usr/local/bin/knot", "agent"]
+#CMD ["/usr/local/bin/knot", "agent"]
