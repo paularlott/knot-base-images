@@ -2,7 +2,6 @@
 -include .env
 
 TAG_BASE ?= paularlott
-PHP_VERSION ?= 8.2
 DEBIAN_VERSION ?= 12
 UBUNTU_VERSION ?= 22.04
 
@@ -12,7 +11,8 @@ default: all
 ## Build the everything
 all: knot-base-debian knot-base-ubuntu \
 	knot-base-debian-desktop knot-base-ubuntu-desktop \
-	knot-base-debian-php knot-base-ubuntu-php
+	knot-base-debian-php-8.2 knot-base-ubuntu-php-8.2 \
+	knot-base-debian-php-8.3 knot-base-ubuntu-php-8.3
 
 .PHONEY: knot-base-debian
 ## Build a base debian image and push to github, includes start up scripts and code-server
@@ -71,33 +71,33 @@ knot-base-ubuntu-desktop:
 		./desktop
 
 
-.PHONEY: knot-base-debian-php
+.PHONEY: knot-base-debian-php-%
 ## Build a debian image with caddy and PHP
-knot-base-debian-php:
+knot-base-debian-php-%:
 	docker buildx build \
 		--platform linux/amd64,linux/arm64 \
-		--tag $(TAG_BASE)/knot-base-debian-php:$(PHP_VERSION) \
+		--tag $(TAG_BASE)/knot-base-debian-php:$* \
 		--build-arg IMAGE_BASE=debian \
 		--build-arg IMAGE_VERSION=$(DEBIAN_VERSION) \
 		--build-arg DOCKER_HUB=$(DOCKER_HUB) \
 		--build-arg APT_CACHE=$(APT_CACHE) \
 		--build-arg TAG_BASE=$(TAG_BASE) \
-		--build-arg PHP_VERSION=$(PHP_VERSION) \
+		--build-arg PHP_VERSION=$* \
 		--push \
 		./php
 
-.PHONEY: knot-base-ubuntu-php
+.PHONEY: knot-base-ubuntu-php-%
 ## Build an ubuntu image with caddy and PHP
-knot-base-ubuntu-php:
+knot-base-ubuntu-php-%:
 	docker buildx build \
 		--platform linux/amd64,linux/arm64 \
-		--tag $(TAG_BASE)/knot-base-ubuntu-php:$(PHP_VERSION) \
+		--tag $(TAG_BASE)/knot-base-ubuntu-php:$* \
 		--build-arg IMAGE_BASE=ubuntu \
 		--build-arg IMAGE_VERSION=$(UBUNTU_VERSION) \
 		--build-arg DOCKER_HUB=$(DOCKER_HUB) \
 		--build-arg APT_CACHE=$(APT_CACHE) \
 		--build-arg TAG_BASE=$(TAG_BASE) \
-		--build-arg PHP_VERSION=$(PHP_VERSION) \
+		--build-arg PHP_VERSION=$* \
 		--push \
 		./php
 
