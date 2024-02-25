@@ -1,0 +1,25 @@
+#!/bin/sh
+set -e
+
+# Giving permission to crontab file and run cron
+chmod 0644 /etc/cron.d/container-crons
+crontab /etc/cron.d/container-crons
+
+# Start php-fpm
+echo "Starting php-fpm.."
+/usr/sbin/php-fpm -D
+
+# Create public_html directory
+if [ ! -d "/home/${KNOT_USER}/public_html" ]; then
+  echo "Creating public_html directory.."
+  mkdir -p /home/${KNOT_USER}/public_html
+  chown ${KNOT_USER}:${KNOT_USER} /home/${KNOT_USER}/public_html
+fi
+
+# Start Caddy
+echo "Starting Caddy.."
+caddy start --config /etc/caddy/Caddyfile --adapter caddyfile
+
+# Start cron
+echo "Starting cron.."
+cron

@@ -2,7 +2,7 @@
 set -e
 
 # Get the KNOT_USER if not set then set it to knot
-KNOT_USER=${KNOT_USER:-knot}
+export KNOT_USER=${KNOT_USER:-knot}
 
 # If KNOT_SERVICE_PASSWORD is defined then use it; else use a uuid
 if [ -z "${KNOT_SERVICE_PASSWORD}" ]; then

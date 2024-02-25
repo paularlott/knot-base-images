@@ -4,13 +4,10 @@ ARG IMAGE_BASE
 
 FROM ${DOCKER_HUB}library/${IMAGE_BASE}:${IMAGE_VERSION}
 
-LABEL org.opencontainers.image.source=https://github.com/paularlott/knot-base-images
-LABEL org.opencontainers.image.description="Base container"
-
 ARG LANG='en_US.UTF-8'
 ARG LANGUAGE='en_US:en'
 ARG LC_ALL='en_US.UTF-8'
-ARG APT_CACHE=${APT_CACHE}
+ARG APT_CACHE
 ARG TZ='Etc/UTC'
 ARG TERM='xterm-256color'
 
@@ -27,9 +24,10 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   && apt-get update -y \
   && apt-get dist-upgrade -y \
   && apt-get install -y \
-    tzdata procps rsync openssh-server sudo tzdata fish iputils-ping htop iproute2 iftop \
+    tzdata procps rsync openssh-server sudo tzdata fish iputils-ping htop iproute2 iftop rsync \
     git vim curl wget unzip locales ssl-cert gettext software-properties-common lsb-release \
-    uuid-runtime screen \
+    uuid-runtime screen apt-transport-https dnsutils unzip iputils-ping iproute2 procps gnupg2 \
+    cron logrotate mariadb-client jq gettext-base make direnv \
   \
   # https://github.com/tianon/gosu/releases
   && ARCH=$(uname -m); \

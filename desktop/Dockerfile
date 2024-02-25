@@ -1,17 +1,15 @@
 ARG DOCKER_HUB
 ARG IMAGE_VERSION
 ARG IMAGE_BASE
+ARG TAG_BASE
 
-FROM paularlott/knot-base-${IMAGE_BASE}:${IMAGE_VERSION}
-
-LABEL org.opencontainers.image.source=https://github.com/paularlott/knot-base-images
-LABEL org.opencontainers.image.description="Base container"
+FROM ${TAG_BASE}/knot-base-${IMAGE_BASE}:${IMAGE_VERSION}
 
 ENV DEBIAN_FRONTEND=noninteractive \
   # This allows epiphany to run in the container
   WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS=1
 
-ARG APT_CACHE=${APT_CACHE}
+ARG APT_CACHE
 
 RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
     --mount=type=cache,sharing=private,target=/var/lib/apt \

@@ -1,0 +1,14 @@
+#!/bin/sh
+set -e
+
+# Enable xdebug
+echo "Enabling xdebug.."
+sudo phpenmod xdebug
+
+# Stop php-fpm if running
+echo "Stopping php-fpm.."
+sudo killall -9 php-fpm
+
+# Start php-fpm
+echo "Starting php-fpm.."
+sudo KNOT_USER=${KNOT_USER} /usr/sbin/php-fpm -D

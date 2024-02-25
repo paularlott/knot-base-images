@@ -1,0 +1,24 @@
+# Default Caddyfile
+# https://caddyserver.com/docs/caddyfile
+
+{
+  admin 127.0.0.1:2019
+  storage file_system {
+	  root /caddy-data
+  }
+  auto_https off
+}
+
+:80
+
+# Set site root directory.
+root * /home/{$KNOT_USER}/public_html
+
+# Enable compression.
+encode zstd gzip
+
+# Enable the static file server & browser.
+file_server browse
+
+# Serve PHP through php-fpm:
+php_fastcgi unix//run/php/php-fpm.sock
