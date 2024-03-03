@@ -1,0 +1,56 @@
+#!/bin/sh
+set -e
+
+# Make KNOT_USER available in called scripts
+export KNOT_USER=redis
+
+# Write the variables to /etc/environment if they are defined
+if [ "${KNOT_USER:-}" ]; then
+  echo "KNOT_USER=$KNOT_USER" >> /etc/environment
+fi
+if [ "${KNOT_WILDCARD_DOMAIN:-}" ]; then
+  echo "KNOT_WILDCARD_DOMAIN=$KNOT_WILDCARD_DOMAIN" >> /etc/environment
+fi
+if [ "${KNOT_SPACEID:-}" ]; then
+  echo "KNOT_SPACEID=$KNOT_SPACEID" >> /etc/environment
+fi
+
+# If the folder /etc/knot-startup.d/ exists then run all scripts in it
+if [ -d /etc/knot-startup.d/ ]; then
+  for f in /etc/knot-startup.d/*; do
+    echo "Running startup script $f"
+    bash $f
+  done
+fi
+
+# If the folder /home/${KNOT_USER}/.knot-startup.d/ exists then run all scripts in it
+if [ -d /home/${KNOT_USER}/.knot-startup.d/ ]; then
+  for f in /home/${KNOT_USER}/.knot-startup.d/*; do
+    echo "Running startup script $f"
+    gosu ${KNOT_USER} bash $f
+  done
+fi
+
+# If KNOT_SERVER is defined
+if [ "${KNOT_SERVER:-}" ]; then
+
+	# Get the host architecture, arm64 or amd64
+	ARCH=$(uname -m)
+  case "$ARCH" in
+		'x86_64') url="knot_linux_amd64";;
+		'aarch64') url="knot_linux_arm64";;
+		*) echo >&2 "error: unsupported architecture: '$ARCH'"; exit 1 ;;
+	esac
+
+  echo "Fetching agent binary for $ARCH"
+
+	# Download the application from the server
+  curl -sLk ${KNOT_SERVER}/download/$url.zip | funzip > /usr/local/bin/knot
+	chmod +x /usr/local/bin/knot
+
+  echo "Running knot agent..."
+  gosu ${KNOT_USER} /usr/local/bin/knot agent &
+fi
+
+# Run the old entrypoint
+exec /usr/local/bin/docker-entrypoint.sh "$@"

@@ -9,17 +9,19 @@ default: all
 
 .PHONY: all
 ## Build the everything
-all: knot-base-debian knot-base-ubuntu \
-	knot-base-debian-desktop knot-base-ubuntu-desktop \
-	knot-base-debian-php-8.2 knot-base-ubuntu-php-8.2 \
-	knot-base-debian-php-8.3 knot-base-ubuntu-php-8.3
+all: knot-debian knot-ubuntu \
+	knot-debian-php-8.2 knot-ubuntu-php-8.2 \
+	knot-debian-php-8.3 knot-ubuntu-php-8.3 \
+	knot-debian-desktop knot-ubuntu-desktop \
+	knot-redis-7.2 \
+	knot-mariadb-10.11 knot-mariadb-11.4
 
-.PHONEY: knot-base-debian
+.PHONEY: knot-debian
 ## Build a base debian image and push to github, includes start up scripts and code-server
-knot-base-debian:
+knot-debian:
 	docker buildx build \
 		--platform linux/amd64,linux/arm64 \
-		--tag $(TAG_BASE)/knot-base-debian:$(DEBIAN_VERSION) \
+		--tag $(TAG_BASE)/knot-debian:$(DEBIAN_VERSION) \
 		--build-arg IMAGE_BASE=debian \
 		--build-arg IMAGE_VERSION=$(DEBIAN_VERSION) \
 		--build-arg DOCKER_HUB=$(DOCKER_HUB) \
@@ -28,12 +30,12 @@ knot-base-debian:
 		--push \
 		./base
 
-.PHONEY: knot-base-ubuntu
+.PHONEY: knot-ubuntu
 ## Build a base ubuntu image and push to github, includes start up scripts and code-server
-knot-base-ubuntu:
+knot-ubuntu:
 	docker buildx build \
 		--platform linux/amd64,linux/arm64 \
-		--tag $(TAG_BASE)/knot-base-ubuntu:$(UBUNTU_VERSION) \
+		--tag $(TAG_BASE)/knot-ubuntu:$(UBUNTU_VERSION) \
 		--build-arg IMAGE_BASE=ubuntu \
 		--build-arg IMAGE_VERSION=$(UBUNTU_VERSION) \
 		--build-arg DOCKER_HUB=$(DOCKER_HUB) \
@@ -42,12 +44,12 @@ knot-base-ubuntu:
 		--push \
 		./base
 
-.PHONEY: knot-base-debian-desktop
+.PHONEY: knot-debian-desktop
 ## Build a base debian image and push to github, includes start up scripts, code-server and xfce
-knot-base-debian-desktop:
+knot-debian-desktop: knot-debian
 	docker buildx build \
 		--platform linux/amd64,linux/arm64 \
-		--tag $(TAG_BASE)/knot-base-debian-desktop:$(DEBIAN_VERSION) \
+		--tag $(TAG_BASE)/knot-desktop:debian-$(DEBIAN_VERSION) \
 		--build-arg IMAGE_BASE=debian \
 		--build-arg IMAGE_VERSION=$(DEBIAN_VERSION) \
 		--build-arg DOCKER_HUB=$(DOCKER_HUB) \
@@ -56,12 +58,12 @@ knot-base-debian-desktop:
 		--push \
 		./desktop
 
-.PHONEY: knot-base-ubuntu-desktop
+.PHONEY: knot-ubuntu-desktop
 ## Build a base ubuntu image and push to github, includes start up scripts, code-server and xfce
-knot-base-ubuntu-desktop:
+knot-ubuntu-desktop: knot-ubuntu
 	docker buildx build \
 		--platform linux/amd64,linux/arm64 \
-		--tag $(TAG_BASE)/knot-base-ubuntu-desktop:$(UBUNTU_VERSION) \
+		--tag $(TAG_BASE)/knot-desktop:ubuntu-$(UBUNTU_VERSION) \
 		--build-arg IMAGE_BASE=ubuntu \
 		--build-arg IMAGE_VERSION=$(UBUNTU_VERSION) \
 		--build-arg DOCKER_HUB=$(DOCKER_HUB) \
@@ -71,12 +73,12 @@ knot-base-ubuntu-desktop:
 		./desktop
 
 
-.PHONEY: knot-base-debian-php-%
+.PHONEY: knot-debian-php-%
 ## Build a debian image with caddy and PHP
-knot-base-debian-php-%:
+knot-debian-php-%: knot-debian
 	docker buildx build \
 		--platform linux/amd64,linux/arm64 \
-		--tag $(TAG_BASE)/knot-base-debian-php:$* \
+		--tag $(TAG_BASE)/knot-php:$*-debian \
 		--build-arg IMAGE_BASE=debian \
 		--build-arg IMAGE_VERSION=$(DEBIAN_VERSION) \
 		--build-arg DOCKER_HUB=$(DOCKER_HUB) \
@@ -86,12 +88,12 @@ knot-base-debian-php-%:
 		--push \
 		./php
 
-.PHONEY: knot-base-ubuntu-php-%
+.PHONEY: knot-ubuntu-php-%
 ## Build an ubuntu image with caddy and PHP
-knot-base-ubuntu-php-%:
+knot-ubuntu-php-%: knot-ubuntu
 	docker buildx build \
 		--platform linux/amd64,linux/arm64 \
-		--tag $(TAG_BASE)/knot-base-ubuntu-php:$* \
+		--tag $(TAG_BASE)/knot-php:$*-ubuntu \
 		--build-arg IMAGE_BASE=ubuntu \
 		--build-arg IMAGE_VERSION=$(UBUNTU_VERSION) \
 		--build-arg DOCKER_HUB=$(DOCKER_HUB) \
@@ -100,6 +102,32 @@ knot-base-ubuntu-php-%:
 		--build-arg PHP_VERSION=$* \
 		--push \
 		./php
+
+.PHONEY: knot-mariadb-%
+## Build a mariadb image
+knot-mariadb-%:
+	docker buildx build \
+		--platform linux/amd64,linux/arm64 \
+		--tag $(TAG_BASE)/knot-mariadb:$* \
+		--build-arg DOCKER_HUB=$(DOCKER_HUB) \
+		--build-arg APT_CACHE=$(APT_CACHE) \
+		--build-arg TAG_BASE=$(TAG_BASE) \
+		--build-arg MARIADB_VERSION=$* \
+		--push \
+		./mariadb
+
+.PHONEY: knot-redis-%
+## Build a redis image
+knot-redis-%:
+	docker buildx build \
+		--platform linux/amd64,linux/arm64 \
+		--tag $(TAG_BASE)/knot-redis:$* \
+		--build-arg DOCKER_HUB=$(DOCKER_HUB) \
+		--build-arg APT_CACHE=$(APT_CACHE) \
+		--build-arg TAG_BASE=$(TAG_BASE) \
+		--build-arg REDIS_VERSION=$* \
+		--push \
+		./redis
 
 .PHONY: help
 ## This help screen

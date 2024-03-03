@@ -3,7 +3,7 @@ ARG IMAGE_VERSION
 ARG IMAGE_BASE
 ARG TAG_BASE
 
-FROM ${TAG_BASE}/knot-base-${IMAGE_BASE}:${IMAGE_VERSION}
+FROM ${TAG_BASE}/knot-${IMAGE_BASE}:${IMAGE_VERSION}
 
 ENV DEBIAN_FRONTEND=noninteractive \
   # This allows epiphany to run in the container

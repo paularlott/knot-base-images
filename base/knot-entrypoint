@@ -4,6 +4,17 @@ set -e
 # Get the KNOT_USER if not set then set it to knot
 export KNOT_USER=${KNOT_USER:-knot}
 
+# Write the variables to /etc/environment if they are defined
+if [ "${KNOT_USER:-}" ]; then
+  echo "KNOT_USER=$KNOT_USER" >> /etc/environment
+fi
+if [ "${KNOT_WILDCARD_DOMAIN:-}" ]; then
+  echo "KNOT_WILDCARD_DOMAIN=$KNOT_WILDCARD_DOMAIN" >> /etc/environment
+fi
+if [ "${KNOT_SPACEID:-}" ]; then
+  echo "KNOT_SPACEID=$KNOT_SPACEID" >> /etc/environment
+fi
+
 # If KNOT_SERVICE_PASSWORD is defined then use it; else use a uuid
 if [ -z "${KNOT_SERVICE_PASSWORD}" ]; then
   KNOT_SERVICE_PASSWORD=$(uuidgen)

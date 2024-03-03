@@ -26,8 +26,8 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   && apt-get install -y \
     tzdata procps rsync openssh-server sudo tzdata fish iputils-ping htop iproute2 iftop rsync \
     git vim curl wget unzip locales ssl-cert gettext software-properties-common lsb-release \
-    uuid-runtime screen apt-transport-https dnsutils unzip iputils-ping iproute2 procps gnupg2 \
-    cron logrotate mariadb-client jq gettext-base make direnv \
+    uuid-runtime screen apt-transport-https dnsutils iputils-ping iproute2 procps gnupg2 \
+    cron logrotate mariadb-client jq gettext-base make direnv nano \
   \
   # https://github.com/tianon/gosu/releases
   && ARCH=$(uname -m); \
