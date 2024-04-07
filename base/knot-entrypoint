@@ -107,6 +107,23 @@ fi
 if [ -z "$@" ]; then
   # Check for /usr/local/bin/knot and if present run it
   if [ -x /usr/local/bin/knot ]; then
+
+    # If KNOT_DNS_LISTEN is defined update /etc/resolv.conf to use agent for DNS forwarding
+    if [ "${KNOT_DNS_LISTEN:-}" ]; then
+      echo "Updating /etc/resolv.conf to use agent for DNS forwarding"
+
+      # Get the search line from /etc/resolv.conf if present
+      SEARCH=$(grep -i '^search' /etc/resolv.conf | awk '{print $2}')
+
+      # Create new /etc/resolv.conf
+      echo "nameserver 127.0.0.1" > /etc/resolv.conf
+
+      # Add search line if present
+      if [ "${SEARCH}" ]; then
+        echo "search ${SEARCH}" >> /etc/resolv.conf
+      fi
+    fi
+
     echo "Running knot agent..."
     exec gosu ${KNOT_USER} /usr/local/bin/knot agent
   else
