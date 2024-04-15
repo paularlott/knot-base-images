@@ -15,7 +15,7 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   if [ -n "$APT_CACHE" ]; then echo "Acquire::HTTP::Proxy \"$APT_CACHE\";" > /etc/apt/apt.conf.d/00proxy; fi \
   && apt-get update -y \
   && apt-get dist-upgrade -y \
-  && apt-get install -y bash unzip curl \
+  && apt-get install -y bash unzip curl sudo \
   && if [ -n "$APT_CACHE" ]; then rm -f /etc/apt/apt.conf.d/00proxy; fi
 
 # Copy files

@@ -15,6 +15,10 @@ if [ "${KNOT_SPACEID:-}" ]; then
   echo "KNOT_SPACEID=$KNOT_SPACEID" >> /etc/environment
 fi
 
+# Setup sudoers
+echo "${KNOT_USER} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${KNOT_USER}
+chmod 0440 /etc/sudoers.d/${KNOT_USER}
+
 # If the folder /etc/knot-startup.d/ exists then run all scripts in it
 if [ -d /etc/knot-startup.d/ ]; then
   for f in /etc/knot-startup.d/*; do
