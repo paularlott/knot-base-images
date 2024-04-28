@@ -82,3 +82,5 @@ COPY files/bin/* /usr/local/bin/
 COPY files/caddy/Caddyfile /etc/caddy/Caddyfile
 
 COPY files/misc/container-crons /etc/cron.d/container-crons
+
+RUN sed -i "s/8\.2/${PHP_VERSION}/g" /etc/php/${PHP_VERSION}/fpm/pool.d/docker.conf
