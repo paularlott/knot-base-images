@@ -1,7 +1,7 @@
 # Source https://github.com/docker-library/redis/
 
-ARG DOCKER_HUB
-ARG REDIS_VERSION
+ARG DOCKER_HUB=
+ARG REDIS_VERSION=7.2
 
 FROM ${DOCKER_HUB}library/redis:${REDIS_VERSION}-bookworm
 

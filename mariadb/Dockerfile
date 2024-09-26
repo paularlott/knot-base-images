@@ -1,7 +1,7 @@
 # Source https://github.com/MariaDB/mariadb-docker/
 
-ARG DOCKER_HUB
-ARG MARIADB_VERSION
+ARG DOCKER_HUB=
+ARG MARIADB_VERSION=10.6
 
 FROM ${DOCKER_HUB}library/mariadb:${MARIADB_VERSION}
 

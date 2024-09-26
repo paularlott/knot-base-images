@@ -1,7 +1,7 @@
 # Source https://github.com/docker-library/redis/
 
-ARG DOCKER_HUB
-ARG VALKEY_VERSION
+ARG DOCKER_HUB=
+ARG VALKEY_VERSION=8.0.0
 
 FROM ${DOCKER_HUB}valkey/valkey:${VALKEY_VERSION}-bookworm
 
