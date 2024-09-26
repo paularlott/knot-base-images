@@ -3,7 +3,7 @@
 
 TAG_BASE ?= paularlott
 DEBIAN_VERSION ?= 12
-UBUNTU_VERSION ?= 22.04
+UBUNTU_VERSION ?= 24.04
 
 default: all
 
@@ -13,8 +13,8 @@ all: knot-debian knot-ubuntu \
 	knot-debian-php-8.2 knot-ubuntu-php-8.2 \
 	knot-debian-php-8.3 knot-ubuntu-php-8.3 \
 	knot-debian-desktop knot-ubuntu-desktop \
-	knot-redis-7.2 \
-	knot-mariadb-10.11 knot-mariadb-11.3
+	knot-redis-7.2 knot-valkey-7.2.5 \
+	knot-mariadb-10.11 knot-mariadb-11.4
 
 .PHONEY: knot-debian
 ## Build a base debian image and push to github, includes start up scripts and code-server
@@ -78,7 +78,7 @@ knot-ubuntu-desktop: knot-ubuntu
 knot-debian-php-%: knot-debian
 	docker buildx build \
 		--platform linux/amd64,linux/arm64 \
-		--tag $(TAG_BASE)/knot-php:$*-debian \
+		--tag $(TAG_BASE)/knot-php:$*-debian$(DEBIAN_VERSION) \
 		--build-arg IMAGE_BASE=debian \
 		--build-arg IMAGE_VERSION=$(DEBIAN_VERSION) \
 		--build-arg DOCKER_HUB=$(DOCKER_HUB) \
@@ -93,7 +93,7 @@ knot-debian-php-%: knot-debian
 knot-ubuntu-php-%: knot-ubuntu
 	docker buildx build \
 		--platform linux/amd64,linux/arm64 \
-		--tag $(TAG_BASE)/knot-php:$*-ubuntu \
+		--tag $(TAG_BASE)/knot-php:$*-ubuntu$(UBUNTU_VERSION) \
 		--build-arg IMAGE_BASE=ubuntu \
 		--build-arg IMAGE_VERSION=$(UBUNTU_VERSION) \
 		--build-arg DOCKER_HUB=$(DOCKER_HUB) \
@@ -128,6 +128,19 @@ knot-redis-%:
 		--build-arg REDIS_VERSION=$* \
 		--push \
 		./redis
+
+.PHONEY: knot-valkey-%
+## Build a redis image
+knot-valkey-%:
+	docker buildx build \
+		--platform linux/amd64,linux/arm64 \
+		--tag $(TAG_BASE)/knot-valkey:$* \
+		--build-arg DOCKER_HUB=$(DOCKER_HUB) \
+		--build-arg APT_CACHE=$(APT_CACHE) \
+		--build-arg TAG_BASE=$(TAG_BASE) \
+		--build-arg VALKEY_VERSION=$* \
+		--push \
+		./valkey
 
 .PHONY: help
 ## This help screen
