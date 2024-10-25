@@ -92,21 +92,21 @@ if [ "${KNOT_SERVER:-}" ]; then
 	# Get the host architecture, arm64 or amd64
 	ARCH=$(uname -m)
   case "$ARCH" in
-		'x86_64') url="knot_linux_amd64";;
-		'aarch64') url="knot_linux_arm64";;
+		'x86_64') url="knot_agent_linux_amd64";;
+		'aarch64') url="knot_agent_linux_arm64";;
 		*) echo >&2 "error: unsupported architecture: '$ARCH'"; exit 1 ;;
 	esac
 
   echo "Fetching agent binary for $ARCH"
 
 	# Download the application from the server
-  curl -sLk ${KNOT_SERVER}/download/$url.zip | funzip > /usr/local/bin/knot
-	chmod +x /usr/local/bin/knot
+  curl -sLk ${KNOT_SERVER}/agents/$url.zip | funzip > /usr/local/bin/knot-agent
+	chmod +x /usr/local/bin/knot-agent
 fi
 
 if [ -z "$@" ]; then
   # Check for /usr/local/bin/knot and if present run it
-  if [ -x /usr/local/bin/knot ]; then
+  if [ -x /usr/local/bin/knot-agent ]; then
 
     # If KNOT_DNS_LISTEN is defined update /etc/resolv.conf to use agent for DNS forwarding
     if [ "${KNOT_DNS_LISTEN:-}" ]; then
@@ -124,11 +124,11 @@ if [ -z "$@" ]; then
       fi
 
       # Allow the agent to bind to low ports
-      setcap CAP_NET_BIND_SERVICE=+eip /usr/local/bin/knot
+      setcap CAP_NET_BIND_SERVICE=+eip /usr/local/bin/knot-agent
     fi
 
     echo "Running knot agent..."
-    exec gosu ${KNOT_USER} /usr/local/bin/knot agent
+    exec gosu ${KNOT_USER} /usr/local/bin/knot-agent agent
   else
     echo "Running..."
     while true; do sleep infinity; done

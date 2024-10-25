@@ -16,6 +16,16 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   && apt-get update -y \
   && apt-get dist-upgrade -y \
   && apt-get install -y bash unzip curl sudo libcap2-bin \
+  # https://github.com/tianon/gosu/releases
+  && ARCH=$(uname -m); \
+    GOSU_VERSION=1.17; \
+    case "$ARCH" in \
+      'x86_64') url="https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64";; \
+      'aarch64') url="https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-arm64";; \
+      *) echo >&2 "error: unsupported architecture: '$ARCH'"; exit 1 ;; \
+    esac; \
+    curl -sLk "$url" > /usr/local/bin/gosu; \
+    chmod +x /usr/local/bin/gosu \
   && if [ -n "$APT_CACHE" ]; then rm -f /etc/apt/apt.conf.d/00proxy; fi
 
 # Copy files
