@@ -40,6 +40,7 @@ else
     --shell /bin/bash
 
   mkdir -p /home/${KNOT_USER}/.ssh && chmod 0700 /home/${KNOT_USER}/.ssh && chown -R ${KNOT_USER}:${KNOT_USER} /home/${KNOT_USER}/.ssh
+  mkdir -p /home/${KNOT_USER}/.local/lib /home/${KNOT_USER}/.local/bin && chown -R ${KNOT_USER}:${KNOT_USER} /home/${KNOT_USER}/.local
 fi
 
 usermod -aG ssl-cert $KNOT_USER
@@ -62,9 +63,22 @@ fi
 
 # If KNOT_CODE_SERVER_PORT is defined then start code-server
 if [ "${KNOT_CODE_SERVER_PORT:-}" ]; then
+  # Fetch the latest version of code-server
+  gosu ${KNOT_USER} /usr/local/bin/knot-fetch-code-server
+
 	# Start code-server
   echo "Starting code-server.."
-	gosu ${KNOT_USER} /opt/code-server/bin/code-server --disable-telemetry --auth none --bind-addr 127.0.0.1:${KNOT_CODE_SERVER_PORT} >/tmp/code-server.log 2>&1 &
+	gosu ${KNOT_USER} ~/.local/bin/code-server --disable-telemetry --auth none --bind-addr 127.0.0.1:${KNOT_CODE_SERVER_PORT} >/tmp/code-server.log 2>&1 &
+fi
+
+# If KNOT_VSCODE_TUNNEL is defined then start code tunnel
+if [ "${KNOT_VSCODE_TUNNEL:-}" ]; then
+  # Fetch the latest version of code
+  gosu ${KNOT_USER} /usr/local/bin/knot-fetch-vscode
+
+  # Start code tunnel
+  echo "Starting Visual Studio Code tunnel.."
+  gosu ${KNOT_USER} screen -dmS ${KNOT_VSCODE_TUNNEL} /usr/local/bin/knot-run-vscode
 fi
 
 # Make KNOT_USER available in called scripts

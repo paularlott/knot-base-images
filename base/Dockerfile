@@ -44,14 +44,12 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   && echo "LANG=en_US.UTF-8" > /etc/locale.conf \
   && locale-gen en_US.UTF-8 \
   && if [ -n "$APT_CACHE" ]; then rm -f /etc/apt/apt.conf.d/00proxy; fi \
-  && if id -u ubuntu > /dev/null 2>&1; then userdel -r ubuntu; fi
+  && if id -u ubuntu > /dev/null 2>&1; then userdel -r ubuntu; fi \
+  && apt-get clean \
+  && mkdir -p /run/sshd
 
 # Copy files
-COPY knot-entrypoint /usr/local/bin/
-
-RUN mkdir -p /opt/code-server \
-  && curl -fsSL https://code-server.dev/install.sh | sh -s -- --method=standalone --prefix=/opt/code-server \
-  && mkdir -p /run/sshd
+COPY files/* /usr/local/bin/
 
 VOLUME /home
 

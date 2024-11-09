@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Check if Visual Studio Code is already installed
+if [ -f ~/.local/bin/code ]; then
+  echo "Visual Studio Code is already installed"
+  exit 0
+fi
+
+# Get the host architecture, arm64 or amd64
+ARCH=$(uname -m)
+case "$ARCH" in
+	'x86_64') arch="x64";;
+	'aarch64') arch="arm64";;
+	*) echo >&2 "error: unsupported architecture: '$ARCH'"; exit 1 ;;
+esac
+
+# Download and extract the Visual Studio Code tarball
+echo "Downloading Visual Studio Code.."
+curl -sLk "https://code.visualstudio.com/sha/download?build=stable&os=cli-alpine-$arch" | tar -xzf - -C ~/.local/bin/
+
+echo "Visual Studio Code installed successfully"
+exit 0
