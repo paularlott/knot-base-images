@@ -27,7 +27,7 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
     tzdata procps rsync openssh-server sudo tzdata fish iputils-ping htop iproute2 iftop rsync \
     git vim curl wget unzip locales ssl-cert gettext software-properties-common lsb-release \
     uuid-runtime screen apt-transport-https dnsutils iputils-ping iproute2 procps gnupg2 \
-    cron logrotate mariadb-client jq gettext-base make direnv nano \
+    cron logrotate mariadb-client jq gettext-base make direnv nano rsyslog \
   \
   # https://github.com/tianon/gosu/releases
   && ARCH=$(uname -m); \
@@ -46,10 +46,12 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   && if [ -n "$APT_CACHE" ]; then rm -f /etc/apt/apt.conf.d/00proxy; fi \
   && if id -u ubuntu > /dev/null 2>&1; then userdel -r ubuntu; fi \
   && apt-get clean \
-  && mkdir -p /run/sshd
+  && mkdir -p /run/sshd \
+  && sed -i 's/^module(load="imklog" permitnonkernelfacility="on")/#module(load="imklog" permitnonkernelfacility="on")/' /etc/rsyslog.conf
 
 # Copy files
-COPY files/* /usr/local/bin/
+COPY files/bin/* /usr/local/bin/
+COPY files/rsyslog.d/* /etc/rsyslog.d/
 
 VOLUME /home
 
