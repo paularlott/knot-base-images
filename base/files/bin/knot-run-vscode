@@ -1,0 +1,6 @@
+#!/bin/bash
+
+while true; do
+  ~/.local/bin/code tunnel --accept-server-license-terms
+  sleep 1
+done
