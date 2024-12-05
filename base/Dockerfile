@@ -47,11 +47,13 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   && if id -u ubuntu > /dev/null 2>&1; then userdel -r ubuntu; fi \
   && apt-get clean \
   && mkdir -p /run/sshd \
-  && sed -i 's/^module(load="imklog" permitnonkernelfacility="on")/#module(load="imklog" permitnonkernelfacility="on")/' /etc/rsyslog.conf
+  \
+  # make rsyslog work in container
+  && sed -i 's/^\(module(load="imklog".*\)$/#\1/' /etc/rsyslog.conf
 
 # Copy files
 COPY files/bin/* /usr/local/bin/
-COPY files/rsyslog.d/* /etc/rsyslog.d/
+COPY files/knot-startup.d/* /etc/knot-startup.d/
 
 VOLUME /home
 

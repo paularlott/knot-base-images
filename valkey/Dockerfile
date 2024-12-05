@@ -1,4 +1,4 @@
-# Source https://github.com/docker-library/redis/
+# Source https://github.com/valkey-io/valkey-container/
 
 ARG DOCKER_HUB=
 ARG VALKEY_VERSION=8.0.0
@@ -15,7 +15,7 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   if [ -n "$APT_CACHE" ]; then echo "Acquire::HTTP::Proxy \"$APT_CACHE\";" > /etc/apt/apt.conf.d/00proxy; fi \
   && apt-get update -y \
   && apt-get dist-upgrade -y \
-  && apt-get install -y bash unzip curl libcap2-bin \
+  && apt-get install -y bash unzip curl libcap2-bin rsyslog \
   # https://github.com/tianon/gosu/releases
   && ARCH=$(uname -m); \
     GOSU_VERSION=1.17; \
@@ -26,10 +26,14 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
     esac; \
     curl -sLk "$url" > /usr/local/bin/gosu; \
     chmod +x /usr/local/bin/gosu \
-  && if [ -n "$APT_CACHE" ]; then rm -f /etc/apt/apt.conf.d/00proxy; fi
+  && if [ -n "$APT_CACHE" ]; then rm -f /etc/apt/apt.conf.d/00proxy; fi \
+  \
+  # make rsyslog work in container
+  && sed -i 's/^\(module(load="imklog".*\)$/#\1/' /etc/rsyslog.conf
 
 # Copy files
-COPY knot-entrypoint /usr/local/bin/
+COPY files/knot-entrypoint /usr/local/bin/
+COPY files/valkey-server.conf /etc/valkey/valkey-server.conf
 
 ENTRYPOINT ["/usr/local/bin/knot-entrypoint"]
-CMD ["valkey-server"]
+CMD ["valkey-server", "/etc/valkey/valkey-server.conf"]

@@ -1,0 +1,12 @@
+#!/bin/bash
+set -e
+
+# If KNOT_CODE_SERVER_PORT is defined then start code-server
+if [ "${KNOT_CODE_SERVER_PORT:-}" ]; then
+  # Fetch the latest version of code-server
+  gosu ${KNOT_USER} /usr/local/bin/knot-fetch-code-server
+
+	# Start code-server
+  echo "Starting code-server.."
+	gosu ${KNOT_USER} ~/.local/bin/code-server --disable-telemetry --auth none --bind-addr 127.0.0.1:${KNOT_CODE_SERVER_PORT} >/tmp/code-server.log 2>&1 &
+fi
