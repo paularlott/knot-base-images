@@ -95,6 +95,7 @@ if [ "${KNOT_SERVER:-}" ]; then
 
   echo "Starting knot agent..."
   gosu ${KNOT_USER} /usr/local/bin/knot-agent agent 2>&1 &
+  agent_pid=$!
 fi
 
 # If KNOT_SYSLOG_PORT is not defined or not 0 then route to agents syslogd port
@@ -108,7 +109,6 @@ rsyslogd
 
 # If KNOT_SSH is defined then start SSH Server
 if [ "${KNOT_SSH_PORT:-}" ]; then
-	# Start SSH Server
   echo "Starting SSH Server.."
 	/usr/sbin/sshd
 fi
@@ -133,8 +133,8 @@ if [ -d /home/${KNOT_USER}/.knot-startup.d/ ]; then
 fi
 
 if [ -z "$@" ]; then
-  echo "Running..."
-  while true; do sleep infinity; done
+  echo "System started..."
+  wait $agent_pid
 else
   echo "Running command..."
   exec gosu ${KNOT_USER} "$@"
