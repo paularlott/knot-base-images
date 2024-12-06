@@ -50,6 +50,7 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   \
   # make rsyslog work in container
   && sed -i 's/^\(module(load="imklog".*\)$/#\1/' /etc/rsyslog.conf \
+  && touch /etc/rsyslog.d/50-default.conf \
   && sed -i 's/^\(auth,.*\)$/#\1/' /etc/rsyslog.d/50-default.conf \
   && sed -i 's/^\(\*\.\*;.*\)$/#\1/' /etc/rsyslog.d/50-default.conf
 
