@@ -36,4 +36,4 @@ COPY knot-entrypoint /usr/local/bin/
 COPY redis.conf /etc/redis/redis.conf
 
 ENTRYPOINT ["/usr/local/bin/knot-entrypoint"]
-CMD ["redis-server", "/etc/valkey/redis.conf"]
+CMD ["redis-server", "/etc/redis/redis.conf"]
