@@ -10,8 +10,8 @@ default: all
 .PHONY: all
 ## Build the everything
 all: knot-debian knot-ubuntu \
-	knot-debian-php-8.2 knot-ubuntu-php-8.2 \
 	knot-debian-php-8.3 knot-ubuntu-php-8.3 \
+	knot-debian-php-8.4 knot-ubuntu-php-8.4 \
 	knot-debian-desktop knot-ubuntu-desktop \
 	knot-redis-7.2 knot-valkey-8.0.1 \
 	knot-mariadb-10.11 knot-mariadb-11.5

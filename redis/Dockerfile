@@ -29,7 +29,9 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   && if [ -n "$APT_CACHE" ]; then rm -f /etc/apt/apt.conf.d/00proxy; fi \
   \
   # make rsyslog work in container
-  && sed -i 's/^\(module(load="imklog".*\)$/#\1/' /etc/rsyslog.conf
+  && sed -i 's/^\(module(load="imklog".*\)$/#\1/' /etc/rsyslog.conf \
+  && sed -i 's/^\(auth,.*\)$/#\1/' /etc/rsyslog.d/50-default.conf \
+  && sed -i 's/^\(\*\.\*;.*\)$/#\1/' /etc/rsyslog.d/50-default.conf
 
 # Copy files
 COPY knot-entrypoint /usr/local/bin/

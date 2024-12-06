@@ -7,7 +7,7 @@ crontab /etc/cron.d/container-crons
 
 # Start php-fpm
 echo "Starting php-fpm.."
-/usr/sbin/php-fpm -D
+/usr/sbin/php-fpm 2>&1 | logger -t 'php-fpm' -p daemon.error &
 
 # Create public_html directory
 if [ ! -d "/home/${KNOT_USER}/public_html" ]; then

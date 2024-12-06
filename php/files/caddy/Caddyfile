@@ -11,6 +11,15 @@
 
 :80
 
+# Log to syslog.
+log {
+  level info
+  output net udp/127.0.0.1:514 {
+    dial_timeout 10s
+    soft_start
+  }
+}
+
 # Set site root directory.
 root * /home/{$KNOT_USER}/public_html
 
