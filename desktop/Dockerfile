@@ -52,7 +52,7 @@ ADD https://github.com/EliverLara/Nordic/releases/download/v2.2.0/Nordic-darker.
 
 RUN ARCH=$(uname -m); \
   CODENAME=$(lsb_release -cs); \
-  KASMVNC_VERSION=1.3.1; \
+  KASMVNC_VERSION=1.3.3; \
   if [ "$CODENAME" = "noble" ]; then CODENAME="jammy"; fi; \
 	case "$ARCH" in \
 		'x86_64') url="https://github.com/kasmtech/KasmVNC/releases/download/v${KASMVNC_VERSION}/kasmvncserver_${CODENAME}_${KASMVNC_VERSION}_amd64.deb";; \
