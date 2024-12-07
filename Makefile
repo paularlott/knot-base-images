@@ -10,6 +10,7 @@ default: all
 .PHONY: all
 ## Build the everything
 all: knot-debian knot-ubuntu \
+	knot-caddy \
 	knot-debian-php-8.3 knot-ubuntu-php-8.3 \
 	knot-debian-php-8.4 knot-ubuntu-php-8.4 \
 	knot-debian-desktop knot-ubuntu-desktop \
@@ -72,6 +73,18 @@ knot-ubuntu-desktop: knot-ubuntu
 		--push \
 		./desktop
 
+.PHONEY: knot-caddy
+## Build a caddy image used for the PHP containers
+knot-caddy:
+	docker buildx build \
+		--platform linux/amd64,linux/arm64 \
+		--tag $(TAG_BASE)/knot-caddy:2.8.4 \
+		--build-arg IMAGE_VERSION=2.8.4 \
+		--build-arg DOCKER_HUB=$(DOCKER_HUB) \
+		--build-arg APT_CACHE=$(APT_CACHE) \
+		--build-arg TAG_BASE=$(TAG_BASE) \
+		--push \
+		./caddy
 
 .PHONEY: knot-debian-php-%
 ## Build a debian image with caddy and PHP

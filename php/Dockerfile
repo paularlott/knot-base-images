@@ -3,6 +3,8 @@ ARG IMAGE_VERSION=latest
 ARG IMAGE_BASE=ubuntu
 ARG TAG_BASE=paularlott
 
+FROM ${TAG_BASE}/knot-caddy:2.8.4 AS caddy
+
 FROM ${TAG_BASE}/knot-${IMAGE_BASE}:${IMAGE_VERSION}
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -26,15 +28,10 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
 		echo "Unsupported OS"; exit 1 ; \
 	fi \
   \
-  # Caddy repository
-  && curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg \
-  && curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list \
-  \
   # Install
   && apt-get update -y \
   && apt-get install -y dialog \
   && apt-get install -y \
-    caddy \
     php${PHP_VERSION}-fpm php${PHP_VERSION}-cli \
     php${PHP_VERSION}-gd php${PHP_VERSION}-opcache php${PHP_VERSION}-pdo php${PHP_VERSION}-pdo-mysql php${PHP_VERSION}-bcmath \
     php${PHP_VERSION}-mbstring php${PHP_VERSION}-exif php${PHP_VERSION}-zip php${PHP_VERSION}-sockets php${PHP_VERSION}-mysqli \
@@ -83,5 +80,9 @@ COPY files/bin/* /usr/local/bin/
 COPY files/caddy/Caddyfile /etc/caddy/Caddyfile
 
 COPY files/misc/container-crons /etc/cron.d/container-crons
+
+# Caddy server
+COPY --from=caddy /usr/bin/caddy /usr/bin/caddy
+COPY --from=caddy  /usr/share/caddy/index.html  /usr/share/caddy/index.html
 
 RUN sed -i "s/8\.2/${PHP_VERSION}/g" /etc/php/${PHP_VERSION}/fpm/pool.d/docker.conf

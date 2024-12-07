@@ -18,6 +18,7 @@ log {
     dial_timeout 10s
     soft_start
   }
+  format transform "{common_log}"
 }
 
 # Set site root directory.
