@@ -109,7 +109,7 @@ rsyslogd
 
 # If KNOT_SSH is defined then start SSH Server
 if [ "${KNOT_SSH_PORT:-}" ]; then
-  echo "Starting SSH Server.."
+  logger -p local0.info "Starting SSH Server on port ${KNOT_SSH_PORT}"
 	/usr/sbin/sshd
 fi
 
@@ -119,7 +119,7 @@ export KNOT_USER
 # If the folder /etc/knot-startup.d/ exists then run all scripts in it
 if [ -d /etc/knot-startup.d/ ]; then
   for f in /etc/knot-startup.d/*; do
-    echo "Running startup script $f"
+    logger -p local0.info "Running startup script $f"
     bash $f
   done
 fi
@@ -127,15 +127,15 @@ fi
 # If the folder /home/${KNOT_USER}/.knot-startup.d/ exists then run all scripts in it
 if [ -d /home/${KNOT_USER}/.knot-startup.d/ ]; then
   for f in /home/${KNOT_USER}/.knot-startup.d/*; do
-    echo "Running startup script $f"
+    logger -p local0.info "Running user startup script $f"
     gosu ${KNOT_USER} bash $f
   done
 fi
 
 if [ -z "$@" ]; then
-  echo "System started..."
+  logger -p local0.info "System started..."
   wait $agent_pid
 else
-  echo "Running command..."
+  logger -p local0.info "Running command..."
   exec gosu ${KNOT_USER} "$@"
 fi

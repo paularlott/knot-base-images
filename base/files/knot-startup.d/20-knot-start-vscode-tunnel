@@ -7,6 +7,6 @@ if [ "${KNOT_VSCODE_TUNNEL:-}" ]; then
   gosu ${KNOT_USER} /usr/local/bin/knot-fetch-vscode
 
   # Start code tunnel
-  echo "Starting Visual Studio Code tunnel.."
+  logger -p local0.info "Starting Visual Studio Code tunnel.."
   gosu ${KNOT_USER} screen -dmS ${KNOT_VSCODE_TUNNEL} /usr/local/bin/knot-run-vscode
 fi

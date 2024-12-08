@@ -9,25 +9,25 @@ case "$ARCH" in
 esac
 
 # Get the latest version of code-server
-echo "Checking the latest version of code-server.."
+logger -p local0.info "Checking the latest version of code-server.."
 latest_version=$(curl -s https://api.github.com/repos/coder/code-server/releases/latest | jq -r .tag_name)
 latest_version=${latest_version#v}
-echo "Latest version of code-server is ${latest_version}"
+logger -p local0.info "Latest version of code-server is ${latest_version}"
 
 # Check if the latest version is already installed
 if [ -d ~/.local/lib/code-server-$latest_version ]; then
-  echo "code-server $latest_version is already installed"
+  logger -p local0.info "code-server $latest_version is already installed"
   exit 0
 fi
 
 # Download the latest version of code-server
-echo "Downloading code-server.."
+logger -p local0.info "Downloading code-server.."
 curl -fL https://github.com/coder/code-server/releases/download/v$latest_version/code-server-$latest_version-linux-$arch.tar.gz | tar -C ~/.local/lib -xz
 
 # Remove old versions of code-server
 versions=$(ls -1 ~/.local/lib | grep code-server- | grep -v $latest_version)
 if [ -n "$versions" ]; then
-  echo "Removing old version of code-server.."
+  logger -p local0.info "Removing old versions of code-server.."
   for version in $versions; do
     echo "  $version"
     rm -rf ~/.local/lib/$version
@@ -35,9 +35,9 @@ if [ -n "$versions" ]; then
 fi
 
 # Move the code-server to the correct directory
-echo "Installing code-server.."
+logger -p local0.info "Installing code-server.."
 mv ~/.local/lib/code-server-$latest_version-linux-$arch ~/.local/lib/code-server-$latest_version
 ln -sfn ~/.local/lib/code-server-$latest_version/bin/code-server ~/.local/bin/code-server
 
-echo "code-server $latest_version installed successfully"
+logger -p local0.info "code-server $latest_version installed successfully"
 exit 0

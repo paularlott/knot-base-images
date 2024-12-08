@@ -73,7 +73,7 @@ export KNOT_USER
 # If the folder /etc/knot-startup.d/ exists then run all scripts in it
 if [ -d /etc/knot-startup.d/ ]; then
   for f in /etc/knot-startup.d/*; do
-    echo "Running startup script $f"
+    logger -p local0.info "Running startup script $f"
     bash $f
   done
 fi
@@ -81,7 +81,7 @@ fi
 # If the folder /home/${KNOT_USER}/.knot-startup.d/ exists then run all scripts in it
 if [ -d /home/${KNOT_USER}/.knot-startup.d/ ]; then
   for f in /home/${KNOT_USER}/.knot-startup.d/*; do
-    echo "Running startup script $f"
+    logger -p local0.info "Running user startup script $f"
     gosu ${KNOT_USER} bash $f
   done
 fi
