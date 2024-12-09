@@ -31,7 +31,9 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   # make rsyslog work in container
   && sed -i 's/^\(module(load="imklog".*\)$/#\1/' /etc/rsyslog.conf \
   && sed -i 's/^\(auth,.*\)$/#\1/' /etc/rsyslog.conf \
-  && sed -i 's/^\(\*\.\*;.*\)$/#\1/' /etc/rsyslog.conf
+  && sed -i 's/^\(\*\.\*;.*\)$/#\1/' /etc/rsyslog.conf \
+  && mkdir -p /home/valkey \
+  && chown valkey:valkey /home/valkey
 
 # Copy files
 COPY files/knot-entrypoint /usr/local/bin/
