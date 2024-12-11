@@ -4,7 +4,7 @@
 {
   admin 127.0.0.1:2019
   storage file_system {
-	  root /caddy-data
+	  root /home/caddy/data
   }
   auto_https off
 }

@@ -6,7 +6,7 @@ chmod 0644 /etc/cron.d/container-crons
 crontab /etc/cron.d/container-crons
 
 # Start php-fpm
-logger -p local0.inf "Starting php-fpm.."
+logger -p local0.info "Starting php-fpm.."
 /usr/sbin/php-fpm 2>&1 | logger -t 'php-fpm' -p daemon.error &
 
 # Create public_html directory
@@ -18,6 +18,7 @@ fi
 
 # Start Caddy
 logger -p local0.info "Starting Caddy.."
+mkdir -p /home/caddy/config /home/caddy/data
 XDG_CONFIG_HOME=/home/caddy/config XDG_DATA_HOME=/home/caddy/data caddy start --config /etc/caddy/Caddyfile --adapter caddyfile
 
 # Start cron
