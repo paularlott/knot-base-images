@@ -4,12 +4,22 @@
 {
   admin 127.0.0.1:2019
   storage file_system {
-	  root /caddy-data
+	  root /home/caddy/data
   }
   auto_https off
 }
 
 :80
+
+# Log to syslog.
+log {
+  level info
+  output net udp/127.0.0.1:514 {
+    dial_timeout 10s
+    soft_start
+  }
+  format transform "{common_log}"
+}
 
 # Set site root directory.
 root * /home/{$KNOT_USER}/public_html

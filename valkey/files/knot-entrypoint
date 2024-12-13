@@ -2,7 +2,7 @@
 set -e
 
 # Make KNOT_USER available in called scripts
-export KNOT_USER=redis
+export KNOT_USER=valkey
 
 # Write the variables to /etc/environment if they are defined
 if [ "${KNOT_USER:-}" ]; then
@@ -13,13 +13,6 @@ if [ "${KNOT_WILDCARD_DOMAIN:-}" ]; then
 fi
 if [ "${KNOT_SPACEID:-}" ]; then
   echo "KNOT_SPACEID=$KNOT_SPACEID" >> /etc/environment
-fi
-
-# If "/home/${KNOT_USER}" doesn't exist, create it
-if [ ! -d "/home/${KNOT_USER}" ]; then
-  mkdir -p "/home/${KNOT_USER}/.ssh"
-  chmod 0700 "/home/${KNOT_USER}/.ssh"
-  chown -R "${KNOT_USER}:${KNOT_USER}" "/home/${KNOT_USER}/"
 fi
 
 # If KNOT_SERVER is defined then fetch the agent and start it

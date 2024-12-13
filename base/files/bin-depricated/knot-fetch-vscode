@@ -2,7 +2,7 @@
 
 # Check if Visual Studio Code is already installed
 if [ -f ~/.local/bin/code ]; then
-  echo "Visual Studio Code is already installed"
+  logger -p local0.info "Visual Studio Code is already installed"
   exit 0
 fi
 
@@ -15,8 +15,8 @@ case "$ARCH" in
 esac
 
 # Download and extract the Visual Studio Code tarball
-echo "Downloading Visual Studio Code.."
+logger -p local0.info "Downloading Visual Studio Code.."
 curl -sLk "https://code.visualstudio.com/sha/download?build=stable&os=cli-alpine-$arch" | tar -xzf - -C ~/.local/bin/
 
-echo "Visual Studio Code installed successfully"
+logger -p local0.info "Visual Studio Code installed successfully.."
 exit 0

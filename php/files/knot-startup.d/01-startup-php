@@ -6,20 +6,21 @@ chmod 0644 /etc/cron.d/container-crons
 crontab /etc/cron.d/container-crons
 
 # Start php-fpm
-echo "Starting php-fpm.."
-/usr/sbin/php-fpm -D
+logger -p local0.info "Starting php-fpm.."
+/usr/sbin/php-fpm 2>&1 | logger -t 'php-fpm' -p daemon.error &
 
 # Create public_html directory
 if [ ! -d "/home/${KNOT_USER}/public_html" ]; then
-  echo "Creating public_html directory.."
+  logger -p local0.info "Creating public_html directory.."
   mkdir -p /home/${KNOT_USER}/public_html
   chown ${KNOT_USER}:${KNOT_USER} /home/${KNOT_USER}/public_html
 fi
 
 # Start Caddy
-echo "Starting Caddy.."
+logger -p local0.info "Starting Caddy.."
+mkdir -p /home/caddy/config /home/caddy/data
 XDG_CONFIG_HOME=/home/caddy/config XDG_DATA_HOME=/home/caddy/data caddy start --config /etc/caddy/Caddyfile --adapter caddyfile
 
 # Start cron
-echo "Starting cron.."
+logger -p local0.info "Starting cron.."
 cron

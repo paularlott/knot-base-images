@@ -1,8 +1,8 @@
 #!/bin/sh
 set -e
 
-# Make KNOT_USER available in called scripts
-export KNOT_USER=redis
+# Get the KNOT_USER if not set then set it to knot
+export KNOT_USER=${KNOT_USER:-knot}
 
 # Write the variables to /etc/environment if they are defined
 if [ "${KNOT_USER:-}" ]; then
@@ -15,12 +15,44 @@ if [ "${KNOT_SPACEID:-}" ]; then
   echo "KNOT_SPACEID=$KNOT_SPACEID" >> /etc/environment
 fi
 
-# If "/home/${KNOT_USER}" doesn't exist, create it
-if [ ! -d "/home/${KNOT_USER}" ]; then
-  mkdir -p "/home/${KNOT_USER}/.ssh"
-  chmod 0700 "/home/${KNOT_USER}/.ssh"
-  chown -R "${KNOT_USER}:${KNOT_USER}" "/home/${KNOT_USER}/"
+# If KNOT_SERVICE_PASSWORD is defined then use it; else use a uuid
+if [ -z "${KNOT_SERVICE_PASSWORD}" ]; then
+  KNOT_SERVICE_PASSWORD=$(uuidgen)
+  export KNOT_SERVICE_PASSWORD
 fi
+
+echo "Creating user ${KNOT_USER}.."
+echo "${KNOT_USER} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${KNOT_USER}
+chmod 0440 /etc/sudoers.d/${KNOT_USER}
+
+# If the home directory exists then create the user without a home otherwise create with home
+if [ -d "/home/${KNOT_USER}" ]; then
+  useradd ${KNOT_USER} \
+    --uid 1000 \
+    --user-group \
+    --no-create-home \
+    --shell /bin/bash
+else
+  useradd ${KNOT_USER} \
+    --uid 1000 \
+    --user-group \
+    --create-home \
+    --shell /bin/bash
+
+  mkdir -p /home/${KNOT_USER}/.ssh && chmod 0700 /home/${KNOT_USER}/.ssh && chown -R ${KNOT_USER}:${KNOT_USER} /home/${KNOT_USER}/.ssh
+  mkdir -p /home/${KNOT_USER}/.local/lib /home/${KNOT_USER}/.local/bin && chown -R ${KNOT_USER}:${KNOT_USER} /home/${KNOT_USER}/.local
+fi
+
+usermod -aG ssl-cert $KNOT_USER
+
+# Check home is owned by the user; else fix
+if [ $(stat -c '%U:%G' /home/${KNOT_USER}) != "${KNOT_USER}:${KNOT_USER}" ]; then
+  echo "Changing file ownership.."
+  chown ${KNOT_USER}:${KNOT_USER} -R /home/${KNOT_USER}
+fi
+
+export HOME=/home/${KNOT_USER}
+cd /home/${KNOT_USER}
 
 # If KNOT_SERVER is defined then fetch the agent and start it
 if [ "${KNOT_SERVER:-}" ]; then
@@ -63,6 +95,7 @@ if [ "${KNOT_SERVER:-}" ]; then
 
   echo "Starting knot agent..."
   gosu ${KNOT_USER} /usr/local/bin/knot-agent agent 2>&1 &
+  agent_pid=$!
 fi
 
 # If KNOT_SYSLOG_PORT is not defined or not 0 then route to agents syslogd port
@@ -93,5 +126,10 @@ if [ -d /home/${KNOT_USER}/.knot-startup.d/ ]; then
   done
 fi
 
-# Run the old entrypoint
-exec /usr/local/bin/docker-entrypoint.sh "$@"
+if [ -z "$@" ]; then
+  logger -p local0.info "System started..."
+  wait $agent_pid
+else
+  logger -p local0.info "Running command..."
+  exec gosu ${KNOT_USER} "$@"
+fi

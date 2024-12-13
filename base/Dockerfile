@@ -24,10 +24,10 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   && apt-get update -y \
   && apt-get dist-upgrade -y \
   && apt-get install -y \
-    tzdata procps rsync openssh-server sudo tzdata fish iputils-ping htop iproute2 iftop rsync \
+    tzdata procps rsync openssh-client sudo tzdata fish iputils-ping htop iproute2 iftop rsync \
     git vim curl wget unzip locales ssl-cert gettext software-properties-common lsb-release \
     uuid-runtime screen apt-transport-https dnsutils iputils-ping iproute2 procps gnupg2 \
-    cron logrotate mariadb-client jq gettext-base make direnv nano \
+    cron logrotate mariadb-client jq gettext-base make direnv nano rsyslog \
   \
   # https://github.com/tianon/gosu/releases
   && ARCH=$(uname -m); \
@@ -46,10 +46,20 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   && if [ -n "$APT_CACHE" ]; then rm -f /etc/apt/apt.conf.d/00proxy; fi \
   && if id -u ubuntu > /dev/null 2>&1; then userdel -r ubuntu; fi \
   && apt-get clean \
-  && mkdir -p /run/sshd
+  && mkdir -p /run/sshd \
+  \
+  # make rsyslog work in container
+  && sed -i 's/^\(module(load="imklog".*\)$/#\1/' /etc/rsyslog.conf \
+  && sed -i 's/^\(auth,.*\)$/#\1/' /etc/rsyslog.conf \
+  && sed -i 's/^\(\*\.\*;.*\)$/#\1/' /etc/rsyslog.conf \
+  && sed -i 's/^\$RepeatedMsgReduction on$/\$RepeatedMsgReduction off/' /etc/rsyslog.conf \
+  && touch /etc/rsyslog.d/50-default.conf \
+  && sed -i 's/^\(auth,.*\)$/#\1/' /etc/rsyslog.d/50-default.conf \
+  && sed -i 's/^\(\*\.\*;.*\)$/#\1/' /etc/rsyslog.d/50-default.conf
 
 # Copy files
-COPY files/* /usr/local/bin/
+COPY files/bin/* /usr/local/bin/
+#COPY files/knot-startup.d/* /etc/knot-startup.d/
 
 VOLUME /home
 

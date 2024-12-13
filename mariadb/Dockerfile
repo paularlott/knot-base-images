@@ -15,7 +15,7 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   if [ -n "$APT_CACHE" ]; then echo "Acquire::HTTP::Proxy \"$APT_CACHE\";" > /etc/apt/apt.conf.d/00proxy; fi \
   && apt-get update -y \
   && apt-get dist-upgrade -y \
-  && apt-get install -y bash unzip curl sudo libcap2-bin \
+  && apt-get install -y bash unzip curl sudo libcap2-bin rsyslog locales vim \
   # https://github.com/tianon/gosu/releases
   && ARCH=$(uname -m); \
     GOSU_VERSION=1.17; \
@@ -26,11 +26,17 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
     esac; \
     curl -sLk "$url" > /usr/local/bin/gosu; \
     chmod +x /usr/local/bin/gosu \
-  && if [ -n "$APT_CACHE" ]; then rm -f /etc/apt/apt.conf.d/00proxy; fi
+  && if [ -n "$APT_CACHE" ]; then rm -f /etc/apt/apt.conf.d/00proxy; fi \
+  \
+  # make rsyslog work in container
+  && sed -i 's/^\(module(load="imklog".*\)$/#\1/' /etc/rsyslog.conf \
+  && sed -i 's/^\(auth,.*\)$/#\1/' /etc/rsyslog.d/50-default.conf \
+  && sed -i 's/^\(\*\.\*;.*\)$/#\1/' /etc/rsyslog.d/50-default.conf
 
 # Copy files
 COPY knot-entrypoint /usr/local/bin/
 COPY localaccess.sql /docker-entrypoint-initdb.d/
+COPY 99-logging.cnf /etc/mysql/mariadb.conf.d/
 
 ENTRYPOINT ["/usr/local/bin/knot-entrypoint"]
 CMD ["mariadbd"]

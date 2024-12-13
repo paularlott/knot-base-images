@@ -1,0 +1,12 @@
+#!/bin/bash
+set -e
+
+# If KNOT_VSCODE_TUNNEL is defined then start code tunnel
+if [ "${KNOT_VSCODE_TUNNEL:-}" ]; then
+  # Fetch the latest version of code
+  gosu ${KNOT_USER} /usr/local/bin/knot-fetch-vscode
+
+  # Start code tunnel
+  logger -p local0.info "Starting Visual Studio Code tunnel.."
+  gosu ${KNOT_USER} screen -dmS ${KNOT_VSCODE_TUNNEL} /usr/local/bin/knot-run-vscode
+fi
