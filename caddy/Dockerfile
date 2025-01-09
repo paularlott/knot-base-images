@@ -40,13 +40,13 @@ RUN set -eux \
   && caddy version
 
 # https://github.com/caddyserver/caddy/releases
-ENV CADDY_VERSION=v2.8.4
+ENV CADDY_VERSION=v2.9.1
 
 # See https://caddyserver.com/docs/conventions#file-locations for details
 ENV XDG_CONFIG_HOME=/config
 ENV XDG_DATA_HOME=/data
 
-LABEL org.opencontainers.image.version=v2.8.4
+LABEL org.opencontainers.image.version=v2.9.1
 LABEL org.opencontainers.image.title=Caddy
 LABEL org.opencontainers.image.description="a powerful, enterprise-ready, open source web server with automatic HTTPS written in Go"
 LABEL org.opencontainers.image.url=https://caddyserver.com

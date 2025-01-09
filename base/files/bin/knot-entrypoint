@@ -25,25 +25,30 @@ echo "Creating user ${KNOT_USER}.."
 echo "${KNOT_USER} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${KNOT_USER}
 chmod 0440 /etc/sudoers.d/${KNOT_USER}
 
-# If the home directory exists then create the user without a home otherwise create with home
-if [ -d "/home/${KNOT_USER}" ]; then
-  useradd ${KNOT_USER} \
-    --uid 1000 \
-    --user-group \
-    --no-create-home \
-    --shell /bin/bash
+# Check if the user already exists
+if id -u ${KNOT_USER} >/dev/null 2>&1; then
+  echo "User ${KNOT_USER} already exists. Skipping user creation."
 else
-  useradd ${KNOT_USER} \
-    --uid 1000 \
-    --user-group \
-    --create-home \
-    --shell /bin/bash
+  # If the home directory exists then create the user without a home otherwise create with home
+  if [ -d "/home/${KNOT_USER}" ]; then
+    useradd ${KNOT_USER} \
+      --uid 1000 \
+      --user-group \
+      --no-create-home \
+      --shell /bin/bash
+  else
+    useradd ${KNOT_USER} \
+      --uid 1000 \
+      --user-group \
+      --create-home \
+      --shell /bin/bash
 
-  mkdir -p /home/${KNOT_USER}/.ssh && chmod 0700 /home/${KNOT_USER}/.ssh && chown -R ${KNOT_USER}:${KNOT_USER} /home/${KNOT_USER}/.ssh
-  mkdir -p /home/${KNOT_USER}/.local/lib /home/${KNOT_USER}/.local/bin && chown -R ${KNOT_USER}:${KNOT_USER} /home/${KNOT_USER}/.local
+    mkdir -p /home/${KNOT_USER}/.ssh && chmod 0700 /home/${KNOT_USER}/.ssh && chown -R ${KNOT_USER}:${KNOT_USER} /home/${KNOT_USER}/.ssh
+    mkdir -p /home/${KNOT_USER}/.local/lib /home/${KNOT_USER}/.local/bin && chown -R ${KNOT_USER}:${KNOT_USER} /home/${KNOT_USER}/.local
+  fi
+
+  usermod -aG ssl-cert $KNOT_USER
 fi
-
-usermod -aG ssl-cert $KNOT_USER
 
 # Check home is owned by the user; else fix
 if [ $(stat -c '%U:%G' /home/${KNOT_USER}) != "${KNOT_USER}:${KNOT_USER}" ]; then

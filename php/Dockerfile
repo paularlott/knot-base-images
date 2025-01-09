@@ -3,7 +3,7 @@ ARG IMAGE_VERSION=latest
 ARG IMAGE_BASE=ubuntu
 ARG TAG_BASE=paularlott
 
-FROM ${TAG_BASE}/knot-caddy:2.8.4 AS caddy
+FROM ${TAG_BASE}/knot-caddy:2.9.1 AS caddy
 
 FROM ${TAG_BASE}/knot-${IMAGE_BASE}:${IMAGE_VERSION}
 

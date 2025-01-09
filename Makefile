@@ -14,7 +14,7 @@ all: knot-debian knot-ubuntu \
 	knot-debian-php-8.3 knot-ubuntu-php-8.3 \
 	knot-debian-php-8.4 knot-ubuntu-php-8.4 \
 	knot-debian-desktop knot-ubuntu-desktop \
-	knot-redis-7.2 knot-valkey-8.0.1 \
+	knot-redis-7.2 knot-valkey-8.0.2 \
 	knot-mariadb-10.11 knot-mariadb-11.6
 
 .PHONEY: knot-debian
@@ -78,8 +78,8 @@ knot-ubuntu-desktop: knot-ubuntu
 knot-caddy:
 	docker buildx build \
 		--platform linux/amd64,linux/arm64 \
-		--tag $(TAG_BASE)/knot-caddy:2.8.4 \
-		--build-arg IMAGE_VERSION=2.8.4 \
+		--tag $(TAG_BASE)/knot-caddy:2.9.1 \
+		--build-arg IMAGE_VERSION=2.9.1 \
 		--build-arg DOCKER_HUB=$(DOCKER_HUB) \
 		--build-arg APT_CACHE=$(APT_CACHE) \
 		--build-arg TAG_BASE=$(TAG_BASE) \
