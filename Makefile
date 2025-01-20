@@ -13,9 +13,11 @@ all: knot-debian knot-ubuntu \
 	knot-caddy \
 	knot-debian-php-8.3 knot-ubuntu-php-8.3 \
 	knot-debian-php-8.4 knot-ubuntu-php-8.4 \
-	knot-debian-desktop knot-ubuntu-desktop \
-	knot-redis-7.2 knot-valkey-8.0.2 \
+	knot-ubuntu-desktop \
+	knot-valkey-8.0.2 \
 	knot-mariadb-10.11 knot-mariadb-11.6
+
+# knot-debian-desktop knot-redis-7.2
 
 .PHONEY: knot-debian
 ## Build a base debian image and push to github, includes start up scripts and code-server
