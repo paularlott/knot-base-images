@@ -18,6 +18,8 @@ RUN --mount=type=cache,target=/go/pkg/mod \
   \
   && xcaddy build v${IMAGE_VERSION} \
     --output /usr/bin/caddy \
+    --with github.com/caddy-dns/cloudflare \
+    --with github.com/pteich/caddy-tlsconsul \
     --with github.com/caddyserver/transform-encoder
 
 ## Build the runtime image
