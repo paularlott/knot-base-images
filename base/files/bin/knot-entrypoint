@@ -29,6 +29,19 @@ chmod 0440 /etc/sudoers.d/${KNOT_USER}
 if id -u ${KNOT_USER} >/dev/null 2>&1; then
   echo "User ${KNOT_USER} already exists. Skipping user creation."
 else
+  # Check if user has changed i.e. space passed to a new user, compare the contents of /home/.knot-user with $KNOT_USER
+  # if they don't match then rename the old home directory to the new user, if it exists
+  if [ -f /home/.knot-user ]; then
+    OLD_USER=$(cat /home/.knot-user)
+    if [ "$OLD_USER" != "$KNOT_USER" ] && [ -d "/home/$OLD_USER" ]; then
+      echo "Renaming home directory from /home/$OLD_USER to /home/$KNOT_USER"
+      mv /home/$OLD_USER /home/$KNOT_USER
+    fi
+  fi
+
+  # Remember the user in /home/.knot-user
+  echo $KNOT_USER > /home/.knot-user
+
   # If the home directory exists then create the user without a home otherwise create with home
   if [ -d "/home/${KNOT_USER}" ]; then
     useradd ${KNOT_USER} \
