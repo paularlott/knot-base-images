@@ -4,7 +4,7 @@
 TAG_BASE ?= paularlott
 DEBIAN_VERSION ?= 12
 UBUNTU_VERSION ?= 24.04
-CADDY_VERSION ?= 2.9.1
+CADDY_VERSION ?= 2.10.0
 
 BUILD_DATE ?= $(shell date -u +'%Y%m%d')
 
@@ -17,8 +17,9 @@ all: knot-ubuntu \
 	knot-ubuntu-php-8.3 \
 	knot-ubuntu-php-8.4 \
 	knot-ubuntu-desktop \
-	knot-valkey-8.0.2 \
-	knot-mariadb-10.11 knot-mariadb-11.6
+	knot-valkey-8.1.1 \
+	knot-mariadb-10.11 \
+	knot-mariadb-11.4
 
 # knot-debian knot-debian-php-8.3 knot-debian-php-8.4
 # knot-debian-desktop knot-redis-7.2

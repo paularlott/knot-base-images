@@ -1,7 +1,7 @@
 ARG IMAGE_VERSION
 ARG DOCKER_HUB
 
-FROM ${DOCKER_HUB}library/golang:1.23.4-alpine AS builder
+FROM ${DOCKER_HUB}library/golang:1.24.3-alpine AS builder
 
 ARG IMAGE_VERSION
 RUN --mount=type=cache,target=/go/pkg/mod \
