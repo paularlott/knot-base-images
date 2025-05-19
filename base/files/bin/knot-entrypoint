@@ -92,6 +92,9 @@ if [ "${KNOT_SERVER:-}" ]; then
   fi
   chmod +x /usr/local/bin/knot
 
+  # Allow the agent to bind to low ports
+  setcap CAP_NET_BIND_SERVICE=+eip /usr/local/bin/knot
+
   # If KNOT_DNS_LISTEN is defined update /etc/resolv.conf to use agent for DNS forwarding
   if [ "${KNOT_DNS_LISTEN:-}" ]; then
     echo "Updating /etc/resolv.conf to use agent for DNS forwarding"
@@ -106,9 +109,6 @@ if [ "${KNOT_SERVER:-}" ]; then
     if [ "${SEARCH}" ]; then
       echo "search ${SEARCH}" >> /etc/resolv.conf
     fi
-
-    # Allow the agent to bind to low ports
-    setcap CAP_NET_BIND_SERVICE=+eip /usr/local/bin/knot
   fi
 
   echo "Starting knot agent..."
