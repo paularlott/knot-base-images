@@ -95,22 +95,6 @@ if [ "${KNOT_SERVER:-}" ]; then
   # Allow the agent to bind to low ports
   setcap CAP_NET_BIND_SERVICE=+eip /usr/local/bin/knot
 
-  # If KNOT_DNS_LISTEN is defined update /etc/resolv.conf to use agent for DNS forwarding
-  if [ "${KNOT_DNS_LISTEN:-}" ]; then
-    echo "Updating /etc/resolv.conf to use agent for DNS forwarding"
-
-    # Get the search line from /etc/resolv.conf if present
-    SEARCH=$(grep -i '^search' /etc/resolv.conf | awk '{print $2}')
-
-    # Create new /etc/resolv.conf
-    echo "nameserver 127.0.0.1" > /etc/resolv.conf
-
-    # Add search line if present
-    if [ "${SEARCH}" ]; then
-      echo "search ${SEARCH}" >> /etc/resolv.conf
-    fi
-  fi
-
   echo "Starting knot agent..."
   gosu ${KNOT_USER} /usr/local/bin/knot agent 2>&1 &
   agent_pid=$!
