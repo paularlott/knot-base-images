@@ -17,7 +17,7 @@ all: knot-ubuntu \
 	knot-ubuntu-php-8.3 \
 	knot-ubuntu-php-8.4 \
 	knot-ubuntu-desktop \
-	knot-valkey-8.1.1 \
+	knot-valkey-8.1.2 \
 	knot-mariadb-10.11 \
 	knot-mariadb-11.4
 
