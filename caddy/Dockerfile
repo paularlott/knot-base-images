@@ -1,7 +1,7 @@
 ARG IMAGE_VERSION
 ARG DOCKER_HUB
 
-FROM ${DOCKER_HUB}library/golang:1.24.3-alpine AS builder
+FROM ${DOCKER_HUB}library/golang:1.25.1-alpine AS builder
 
 ARG IMAGE_VERSION
 RUN --mount=type=cache,target=/go/pkg/mod \
@@ -53,7 +53,7 @@ LABEL org.opencontainers.image.title=Caddy
 LABEL org.opencontainers.image.description="a powerful, enterprise-ready, open source web server with automatic HTTPS written in Go"
 LABEL org.opencontainers.image.url=https://caddyserver.com
 LABEL org.opencontainers.image.documentation=https://caddyserver.com/docs
-LABEL org.opencontainers.image.vendor="Light Code Labs"
+LABEL org.opencontainers.image.vendor="knot"
 LABEL org.opencontainers.image.licenses=Apache-2.0
 LABEL org.opencontainers.image.source="https://github.com/caddyserver/caddy-docker"
 
