@@ -35,9 +35,6 @@ define DOCKERFILE_CONTEXT
 $(1)
 endef
 define TAG_AND_PUSH_IMAGES
-@for tag in $(2); do \
-	docker tag $(1) $$tag; \
-done
 endef
 endif
 
@@ -79,6 +76,7 @@ all: knot-ubuntu \
 knot-ubuntu:
 	$(BUILD_CMD) \
 		$(PLATFORM_ARG) \
+		--tag $(TAG_BASE)/knot-ubuntu:$(UBUNTU_VERSION)-$(BUILD_DATE) \
 		--tag $(TAG_BASE)/knot-ubuntu:$(UBUNTU_VERSION) \
 		--build-arg IMAGE_BASE=ubuntu \
 		--build-arg IMAGE_VERSION=$(UBUNTU_VERSION) \
@@ -108,6 +106,7 @@ knot-ubuntu:
 knot-ubuntu-desktop:
 	$(BUILD_CMD) \
 		$(PLATFORM_ARG) \
+		--tag $(TAG_BASE)/knot-desktop:$(UBUNTU_VERSION)-$(BUILD_DATE) \
 		--tag $(TAG_BASE)/knot-desktop:$(UBUNTU_VERSION) \
 		--build-arg IMAGE_BASE=ubuntu \
 		--build-arg IMAGE_VERSION=$(UBUNTU_VERSION) \
@@ -123,6 +122,7 @@ knot-ubuntu-desktop:
 knot-caddy:
 	$(BUILD_CMD) \
 		$(PLATFORM_ARG) \
+		--tag $(TAG_BASE)/knot-caddy:$(CADDY_VERSION)-$(BUILD_DATE) \
 		--tag $(TAG_BASE)/knot-caddy:$(CADDY_VERSION) \
 		--build-arg IMAGE_VERSION=$(CADDY_VERSION) \
 		--build-arg DOCKER_HUB=$(DOCKER_HUB) \
@@ -152,6 +152,7 @@ knot-caddy:
 knot-ubuntu-php-%:
 	$(BUILD_CMD) \
 		$(PLATFORM_ARG) \
+		--tag $(TAG_BASE)/knot-php:$*-$(BUILD_DATE) \
 		--tag $(TAG_BASE)/knot-php:$* \
 		--build-arg IMAGE_BASE=ubuntu \
 		--build-arg IMAGE_VERSION=$(UBUNTU_VERSION) \
@@ -168,6 +169,7 @@ knot-ubuntu-php-%:
 knot-mariadb-%:
 	$(BUILD_CMD) \
 		$(PLATFORM_ARG) \
+		--tag $(TAG_BASE)/knot-mariadb:$*-$(BUILD_DATE) \
 		--tag $(TAG_BASE)/knot-mariadb:$* \
 		--build-arg DOCKER_HUB=$(DOCKER_HUB) \
 		--build-arg APT_CACHE=$(APT_CACHE) \
@@ -195,6 +197,7 @@ knot-mariadb-%:
 knot-valkey-%:
 	$(BUILD_CMD) \
 		$(PLATFORM_ARG) \
+		--tag $(TAG_BASE)/knot-valkey:$*-$(BUILD_DATE) \
 		--tag $(TAG_BASE)/knot-valkey:$* \
 		--build-arg DOCKER_HUB=$(DOCKER_HUB) \
 		--build-arg APT_CACHE=$(APT_CACHE) \
