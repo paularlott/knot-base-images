@@ -8,7 +8,9 @@ FROM ${DOCKER_HUB}library/mariadb:${MARIADB_VERSION}
 ARG TZ='Etc/UTC'
 
 ENV DEBIAN_FRONTEND=noninteractive \
-  TZ=$TZ
+  TZ=$TZ \
+  KNOT_SSH_PORT=2222 \
+  KNOT_SYSLOG_PORT=1514
 
 RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
     --mount=type=cache,sharing=private,target=/var/lib/apt \

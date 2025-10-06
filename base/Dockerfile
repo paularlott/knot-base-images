@@ -16,7 +16,9 @@ ENV DEBIAN_FRONTEND=noninteractive \
   LANGUAGE=$LANGUAGE \
   LC_ALL=$LC_ALL \
   TZ=$TZ \
-  TERM=$TERM
+  TERM=$TERM \
+  KNOT_SSH_PORT=2222 \
+  KNOT_SYSLOG_PORT=1514
 
 RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
     --mount=type=cache,sharing=private,target=/var/lib/apt \
