@@ -12,7 +12,8 @@ BUILD_DATE ?= $(shell date -u +'%Y%m%d')
 # Define build command based on BUILD_WITH variable
 ifeq ($(BUILD_WITH),apple)
     BUILD_CMD = container build
-    PLATFORM_ARG = --platform linux/amd64,linux/arm64
+    #PLATFORM_ARG = --platform linux/amd64,linux/arm64
+	PLATFORM_ARG = --arch arm64 --arch amd64
     PUSH_ARG =
 define DOCKERFILE_CONTEXT
 -f $(1)/Dockerfile \
@@ -24,7 +25,7 @@ define TAG_AND_PUSH_IMAGES
 	container image tag $(1) $$tag; \
 done
 @for tag in $(1) $(2); do \
-	container images push $$tag; \
+	container image push $$tag; \
 done
 endef
 else
