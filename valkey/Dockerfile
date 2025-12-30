@@ -3,7 +3,7 @@
 ARG DOCKER_HUB=
 ARG VALKEY_VERSION=8.0.0
 
-FROM ${DOCKER_HUB}valkey/valkey:${VALKEY_VERSION}-bookworm
+FROM ${DOCKER_HUB}valkey/valkey:${VALKEY_VERSION}-trixie
 
 ARG TZ='Etc/UTC'
 
