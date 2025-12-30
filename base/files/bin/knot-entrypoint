@@ -96,7 +96,7 @@ if [ "${KNOT_SERVER:-}" ]; then
   setcap CAP_NET_BIND_SERVICE=+eip /usr/local/bin/knot
 
   echo "Starting knot agent..."
-  gosu ${KNOT_USER} /usr/local/bin/knot agent 2>&1 &
+  gosu ${KNOT_USER} /usr/local/bin/knot agent start 2>&1 &
   agent_pid=$!
 fi
 
