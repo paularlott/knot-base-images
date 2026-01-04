@@ -31,20 +31,21 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   # Install
   && apt-get update -y \
   && apt-get install -y dialog \
-  && apt-get install -y \
-    php${PHP_VERSION}-fpm php${PHP_VERSION}-cli \
-    php${PHP_VERSION}-gd php${PHP_VERSION}-opcache php${PHP_VERSION}-pdo php${PHP_VERSION}-pdo-mysql php${PHP_VERSION}-bcmath \
+  && PACKAGES="php${PHP_VERSION}-fpm php${PHP_VERSION}-cli \
+    php${PHP_VERSION}-gd php${PHP_VERSION}-pdo php${PHP_VERSION}-pdo-mysql php${PHP_VERSION}-bcmath \
     php${PHP_VERSION}-mbstring php${PHP_VERSION}-exif php${PHP_VERSION}-zip php${PHP_VERSION}-sockets php${PHP_VERSION}-mysqli \
     php${PHP_VERSION}-iconv php${PHP_VERSION}-gettext php${PHP_VERSION}-curl \
     php${PHP_VERSION}-redis php${PHP_VERSION}-mailparse \
     php${PHP_VERSION}-dev php${PHP_VERSION}-xml php-pear \
-    libzip-dev \
+    libzip-dev" \
+  && if [ "$PHP_VERSION" = "8.3" ] || [ "$PHP_VERSION" = "8.4" ]; then PACKAGES="$PACKAGES php${PHP_VERSION}-opcache"; fi \
+  && apt-get install -y $PACKAGES \
   && mkdir -p /run/php/ \
   && chown -R www-data:www-data /run/php \
   && ln -fs /usr/sbin/php-fpm${PHP_VERSION} /usr/sbin/php-fpm \
   \
   # xdebug
-  && pecl install xdebug \
+  && if [ "$PHP_VERSION" != "8.5" ]; then pecl install xdebug; fi \
   \
   # Profiler
   && git clone https://github.com/NoiseByNorthwest/php-spx.git \
