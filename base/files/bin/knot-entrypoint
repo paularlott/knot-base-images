@@ -72,6 +72,13 @@ fi
 export HOME=/home/${KNOT_USER}
 cd /home/${KNOT_USER}
 
+# If KNOT_SSHD is set to "native" and KNOT_SSH_PORT isn't 0 then start sshd
+if [ "$KNOT_SSHD" = "native" ] && [ "${KNOT_SSH_PORT:-0}" -ne 0 ]; then
+  sed -i "s/#Port 22/Port ${KNOT_SSH_PORT}/" /etc/ssh/sshd_config
+  echo "Starting SSH daemon on port ${KNOT_SSH_PORT}..."
+  /usr/sbin/sshd
+fi
+
 # If KNOT_SERVER is defined then fetch the agent and start it
 if [ "${KNOT_SERVER:-}" ]; then
 
