@@ -2,8 +2,9 @@ ARG DOCKER_HUB=
 ARG IMAGE_VERSION=latest
 ARG IMAGE_BASE=ubuntu
 ARG TAG_BASE=paularlott
+ARG CADDY_VERSION
 
-FROM ${TAG_BASE}/knot-caddy:2.10.2 AS caddy
+FROM ${TAG_BASE}/knot-caddy:${CADDY_VERSION} AS caddy
 
 FROM ${TAG_BASE}/knot-${IMAGE_BASE}:${IMAGE_VERSION}
 
