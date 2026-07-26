@@ -20,7 +20,7 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   && apt-get install -y bash unzip curl rsyslog \
   # https://github.com/tianon/gosu/releases
   && ARCH=$(uname -m); \
-    GOSU_VERSION=1.17; \
+    GOSU_VERSION=1.19; \
     case "$ARCH" in \
       'x86_64') url="https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64";; \
       'aarch64') url="https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-arm64";; \
