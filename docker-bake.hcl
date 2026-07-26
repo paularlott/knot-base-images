@@ -27,7 +27,7 @@ variable "UBUNTU_VERSIONS" {
   default = ["24.04", "26.04"]
 }
 
-variable "UBUNTU_BASE_VERSION" {
+variable "PHP_UBUNTU_BASE_VERSION" {
   default = "24.04"
 }
 
@@ -198,13 +198,13 @@ target "knot-ubuntu-php" {
   context     = "./php"
 
   contexts = {
-    "${TAG_BASE}/knot-caddy:${CADDY_VERSION}"        = "target:knot-caddy"
-    "${TAG_BASE}/knot-ubuntu:${UBUNTU_BASE_VERSION}" = "target:knot-ubuntu-${replace(UBUNTU_BASE_VERSION, ".", "-")}"
+    "${TAG_BASE}/knot-caddy:${CADDY_VERSION}"               = "target:knot-caddy"
+    "${TAG_BASE}/knot-ubuntu:${PHP_UBUNTU_BASE_VERSION}"    = "target:knot-ubuntu-${replace(PHP_UBUNTU_BASE_VERSION, ".", "-")}"
   }
 
   args = {
     IMAGE_BASE    = "ubuntu"
-    IMAGE_VERSION = "${UBUNTU_BASE_VERSION}"
+    IMAGE_VERSION = "${PHP_UBUNTU_BASE_VERSION}"
     DOCKER_HUB    = "${DOCKER_HUB}"
     APT_CACHE     = "${APT_CACHE}"
     TAG_BASE      = "${TAG_BASE}"
