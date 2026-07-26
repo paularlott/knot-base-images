@@ -191,39 +191,48 @@ target "knot-ubuntu-desktop" {
 }
 
 target "knot-ubuntu-php" {
-  name        = "knot-ubuntu-php-${replace(version, ".", "-")}"
+  name        = "knot-ubuntu-php-${replace(ubuntu, ".", "-")}-${replace(php, ".", "-")}"
   description = "Ubuntu + Caddy + PHP image"
-  matrix      = { version = PHP_VERSIONS }
+  matrix      = {
+    ubuntu = UBUNTU_VERSIONS
+    php    = PHP_VERSIONS
+  }
   inherits    = ["_common"]
   context     = "./php"
 
   contexts = {
-    "${TAG_BASE}/knot-caddy:${CADDY_VERSION}"               = "target:knot-caddy"
-    "${TAG_BASE}/knot-ubuntu:${PHP_UBUNTU_BASE_VERSION}"    = "target:knot-ubuntu-${replace(PHP_UBUNTU_BASE_VERSION, ".", "-")}"
+    "${TAG_BASE}/knot-caddy:${CADDY_VERSION}" = "target:knot-caddy"
+    "${TAG_BASE}/knot-ubuntu:${ubuntu}"        = "target:knot-ubuntu-${replace(ubuntu, ".", "-")}"
   }
 
   args = {
     IMAGE_BASE    = "ubuntu"
-    IMAGE_VERSION = "${PHP_UBUNTU_BASE_VERSION}"
+    IMAGE_VERSION = "${ubuntu}"
     DOCKER_HUB    = "${DOCKER_HUB}"
     APT_CACHE     = "${APT_CACHE}"
     TAG_BASE      = "${TAG_BASE}"
     CADDY_VERSION = "${CADDY_VERSION}"
-    PHP_VERSION   = "${version}"
+    PHP_VERSION   = "${php}"
   }
 
-  tags = [
-    "${TAG_BASE}/knot-php:${version}",
-    "${TAG_BASE}/knot-php:${version}-${BUILD_DATE}",
-  ]
+  tags = concat(
+    [
+      "${TAG_BASE}/knot-php:${ubuntu}-${php}",
+      "${TAG_BASE}/knot-php:${ubuntu}-${php}-${BUILD_DATE}",
+    ],
+    ubuntu == PHP_UBUNTU_BASE_VERSION ? [
+      "${TAG_BASE}/knot-php:${php}",
+      "${TAG_BASE}/knot-php:${php}-${BUILD_DATE}",
+    ] : []
+  )
 
   cache-from = [{
     type = "registry"
-    ref  = "${cache_base()}/knot-php:buildcache-${version}"
+    ref  = "${cache_base()}/knot-php:buildcache-${ubuntu}-${php}"
   }]
   cache-to = [{
     type              = "registry"
-    ref               = "${cache_base()}/knot-php:buildcache-${version}"
+    ref               = "${cache_base()}/knot-php:buildcache-${ubuntu}-${php}"
     mode              = "max"
     "oci-media-types" = true
     "image-manifest"  = true
