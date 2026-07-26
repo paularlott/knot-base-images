@@ -71,6 +71,12 @@ function "major_minor" {
 target "_common" {
   platforms = ["linux/amd64", "linux/arm64"]
   output    = [{ type = "image", push = true }]
+
+  labels = {
+    "org.opencontainers.image.vendor"  = "Paul Arlott"
+    "org.opencontainers.image.source"  = "https://github.com/paularlott/knot-base-images"
+    "org.opencontainers.image.created" = "${BUILD_DATE}"
+  }
 }
 
 # =============================================================================
@@ -98,6 +104,12 @@ target "knot-ubuntu" {
   matrix      = { version = UBUNTU_VERSIONS }
   inherits    = ["_common"]
   context     = "./base"
+
+  labels = {
+    "org.opencontainers.image.title"       = "Knot Ubuntu"
+    "org.opencontainers.image.description" = "Base Ubuntu image with knot startup scripts"
+    "org.opencontainers.image.version"     = "${version}"
+  }
 
   args = {
     IMAGE_BASE    = "ubuntu"
@@ -130,6 +142,12 @@ target "knot-caddy" {
   inherits    = ["_common"]
   context     = "./caddy"
 
+  labels = {
+    "org.opencontainers.image.title"       = "Knot Caddy"
+    "org.opencontainers.image.description" = "Caddy server image with xcaddy-built binary"
+    "org.opencontainers.image.version"     = "${CADDY_VERSION}"
+  }
+
   args = {
     IMAGE_VERSION = "${CADDY_VERSION}"
     DOCKER_HUB    = "${DOCKER_HUB}"
@@ -159,6 +177,12 @@ target "knot-ubuntu-desktop" {
   matrix      = { version = UBUNTU_VERSIONS }
   inherits    = ["_common"]
   context     = "./desktop"
+
+  labels = {
+    "org.opencontainers.image.title"       = "Knot Desktop"
+    "org.opencontainers.image.description" = "Ubuntu desktop image with XFCE and code-server"
+    "org.opencontainers.image.version"     = "${version}"
+  }
 
   contexts = {
     "${TAG_BASE}/knot-ubuntu:${version}" = "target:knot-ubuntu-${replace(version, ".", "-")}"
@@ -199,6 +223,12 @@ target "knot-ubuntu-php" {
   }
   inherits    = ["_common"]
   context     = "./php"
+
+  labels = {
+    "org.opencontainers.image.title"       = "Knot PHP"
+    "org.opencontainers.image.description" = "Ubuntu + Caddy + PHP image"
+    "org.opencontainers.image.version"     = "${ubuntu}-${php}"
+  }
 
   contexts = {
     "${TAG_BASE}/knot-caddy:${CADDY_VERSION}" = "target:knot-caddy"
@@ -246,6 +276,12 @@ target "knot-mariadb" {
   inherits    = ["_common"]
   context     = "./mariadb"
 
+  labels = {
+    "org.opencontainers.image.title"       = "Knot MariaDB"
+    "org.opencontainers.image.description" = "MariaDB image with knot startup tooling"
+    "org.opencontainers.image.version"     = "${version}"
+  }
+
   args = {
     DOCKER_HUB      = "${DOCKER_HUB}"
     APT_CACHE       = "${APT_CACHE}"
@@ -277,6 +313,12 @@ target "knot-valkey" {
   matrix      = { version = VALKEY_VERSIONS }
   inherits    = ["_common"]
   context     = "./valkey"
+
+  labels = {
+    "org.opencontainers.image.title"       = "Knot Valkey"
+    "org.opencontainers.image.description" = "Valkey image with knot startup tooling"
+    "org.opencontainers.image.version"     = "${version}"
+  }
 
   args = {
     DOCKER_HUB     = "${DOCKER_HUB}"
