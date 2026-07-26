@@ -18,16 +18,9 @@ ENV PHP_VERSION=${PHP_VERSION}
 RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
     --mount=type=cache,sharing=private,target=/var/lib/apt \
   if [ -n "$APT_CACHE" ]; then echo "Acquire::HTTP::Proxy \"$APT_CACHE\";" > /etc/apt/apt.conf.d/00proxy; fi \
-  # PHP repository
-  && OS=$(lsb_release -si); \
-  if [ "$OS" = "Debian" ]; then \
-		curl -sSLo /usr/share/keyrings/deb.sury.org-php.gpg https://packages.sury.org/php/apt.gpg; \
-    echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list; \
-	elif [ "$OS" = "Ubuntu" ]; then \
-		add-apt-repository -y ppa:ondrej/php; \
-	else \
-		echo "Unsupported OS"; exit 1 ; \
-	fi \
+  # PHP repository (Sury — works for both Debian and Ubuntu)
+  && curl -sSLo /usr/share/keyrings/deb.sury.org-php.gpg https://packages.sury.org/php/apt.gpg \
+  && echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list \
   \
   # Install
   && apt-get update -y \
@@ -37,16 +30,13 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
     php${PHP_VERSION}-mbstring php${PHP_VERSION}-exif php${PHP_VERSION}-zip php${PHP_VERSION}-sockets php${PHP_VERSION}-mysqli \
     php${PHP_VERSION}-iconv php${PHP_VERSION}-gettext php${PHP_VERSION}-curl \
     php${PHP_VERSION}-redis php${PHP_VERSION}-mailparse \
-    php${PHP_VERSION}-dev php${PHP_VERSION}-xml php-pear \
+    php${PHP_VERSION}-dev php${PHP_VERSION}-xml php${PHP_VERSION}-xdebug php-pear \
     libzip-dev" \
   && if [ "$PHP_VERSION" = "8.3" ] || [ "$PHP_VERSION" = "8.4" ]; then PACKAGES="$PACKAGES php${PHP_VERSION}-opcache"; fi \
   && apt-get install -y $PACKAGES \
   && mkdir -p /run/php/ \
   && chown -R www-data:www-data /run/php \
   && ln -fs /usr/sbin/php-fpm${PHP_VERSION} /usr/sbin/php-fpm \
-  \
-  # xdebug
-  && if [ "$PHP_VERSION" != "8.5" ]; then pecl install xdebug; fi \
   \
   # Profiler
   && git clone https://github.com/NoiseByNorthwest/php-spx.git \
