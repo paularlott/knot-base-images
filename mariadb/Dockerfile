@@ -6,6 +6,8 @@ ARG MARIADB_VERSION=10.6
 FROM ${DOCKER_HUB}library/mariadb:${MARIADB_VERSION}
 
 ARG TZ='Etc/UTC'
+ARG APT_CACHE
+ARG GOSU_VERSION=1.19
 
 ENV DEBIAN_FRONTEND=noninteractive \
   TZ=$TZ \
@@ -20,7 +22,6 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   && apt-get install -y bash unzip curl sudo rsyslog locales vim \
   # https://github.com/tianon/gosu/releases
   && ARCH=$(uname -m); \
-    GOSU_VERSION=1.19; \
     case "$ARCH" in \
       'x86_64') url="https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64";; \
       'aarch64') url="https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-arm64";; \

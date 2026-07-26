@@ -10,6 +10,7 @@ ARG LC_ALL='en_US.UTF-8'
 ARG APT_CACHE
 ARG TZ='Etc/UTC'
 ARG TERM='xterm-256color'
+ARG GOSU_VERSION=1.19
 
 ENV DEBIAN_FRONTEND=noninteractive \
   LANG=$LANG \
@@ -33,7 +34,6 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   \
   # https://github.com/tianon/gosu/releases
   && ARCH=$(uname -m); \
-    GOSU_VERSION=1.19; \
     case "$ARCH" in \
       'x86_64') url="https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64";; \
       'aarch64') url="https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-arm64";; \
