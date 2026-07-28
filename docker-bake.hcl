@@ -24,7 +24,7 @@ variable "BUILD_DATE" {
 
 variable "UBUNTU_VERSIONS" {
   type    = list(string)
-  default = ["24.04", "26.04"]
+  default = ["24.04"]
 }
 
 variable "PHP_UBUNTU_BASE_VERSION" {
@@ -33,7 +33,7 @@ variable "PHP_UBUNTU_BASE_VERSION" {
 
 variable "PHP_VERSIONS" {
   type    = list(string)
-  default = ["8.3", "8.4", "8.5"]
+  default = ["8.5"]
 }
 
 variable "CADDY_VERSION" {
@@ -42,12 +42,12 @@ variable "CADDY_VERSION" {
 
 variable "MARIADB_VERSIONS" {
   type    = list(string)
-  default = ["10.11", "11.4", "11.8"]
+  default = ["12.3"]
 }
 
 variable "VALKEY_VERSIONS" {
   type    = list(string)
-  default = ["9.0.4", "9.1.1"]
+  default = ["9.1.1"]
 }
 
 variable "GOSU_VERSION" {
