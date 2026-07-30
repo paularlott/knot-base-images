@@ -31,6 +31,7 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
     git vim curl wget unzip locales ssl-cert gettext software-properties-common lsb-release \
     uuid-runtime screen apt-transport-https dnsutils iputils-ping iproute2 procps gnupg2 \
     cron logrotate mariadb-client jq gettext-base make direnv nano rsyslog tmux \
+    bat ripgrep fzf zoxide \
   \
   # https://github.com/tianon/gosu/releases
   && ARCH=$(uname -m); \

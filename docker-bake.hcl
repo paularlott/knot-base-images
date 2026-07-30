@@ -103,7 +103,7 @@ target "knot-ubuntu" {
   description = "Base Ubuntu image with code-server and startup scripts"
   matrix      = { version = UBUNTU_VERSIONS }
   inherits    = ["_common"]
-  context     = "./base"
+  context     = "./ubuntu"
 
   labels = {
     "org.opencontainers.image.title"       = "Knot Ubuntu"
