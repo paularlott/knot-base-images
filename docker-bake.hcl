@@ -45,6 +45,10 @@ variable "CADDY_VERSION" {
   default = "2.11.4"
 }
 
+variable "FRANKENPHP_VERSION" {
+  default = "1.12.6"
+}
+
 variable "MARIADB_VERSIONS" {
   type    = list(string)
   default = ["12.3"]
@@ -279,21 +283,15 @@ target "knot-frankenphp" {
 
   labels = {
     "org.opencontainers.image.title"       = "Knot FrankenPHP"
-    "org.opencontainers.image.description" = "Ubuntu + FrankenPHP image"
+    "org.opencontainers.image.description" = "FrankenPHP image with knot startup tooling"
     "org.opencontainers.image.version"     = "${php}"
   }
 
-  contexts = {
-    "${TAG_BASE}/knot-ubuntu:${PHP_UBUNTU_BASE_VERSION}" = "target:knot-ubuntu-${replace(PHP_UBUNTU_BASE_VERSION, ".", "-")}"
-  }
-
   args = {
-    IMAGE_BASE    = "ubuntu"
-    IMAGE_VERSION = "${PHP_UBUNTU_BASE_VERSION}"
-    DOCKER_HUB    = "${DOCKER_HUB}"
-    APT_CACHE     = "${APT_CACHE}"
-    TAG_BASE      = "${TAG_BASE}"
-    PHP_VERSION   = "${php}"
+    APT_CACHE          = "${APT_CACHE}"
+    PHP_VERSION        = "${php}"
+    FRANKENPHP_VERSION = "${FRANKENPHP_VERSION}"
+    GOSU_VERSION       = "${GOSU_VERSION}"
   }
 
   tags = [

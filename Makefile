@@ -17,6 +17,7 @@ FRANKENPHP_VERSIONS ?= 8.4 8.5
 MARIADB_VERSIONS ?= 10.11 11.4 11.8 12.3
 VALKEY_VERSIONS ?= 9.0.4 9.1.1
 CADDY_VERSION ?= 2.11.4
+FRANKENPHP_VERSION ?= 1.12.6
 GOSU_VERSION ?= 1.19
 
 BUILD_DATE ?= $(shell date -u +'%Y%m%d')
@@ -37,6 +38,7 @@ export APT_CACHE
 export UBUNTU_VERSION
 export PHP_UBUNTU_BASE_VERSION
 export CADDY_VERSION
+export FRANKENPHP_VERSION
 export GOSU_VERSION
 export BUILD_DATE
 export UBUNTU_VERSIONS := $(subst $(space),$(comma),$(UBUNTU_VERSIONS))
@@ -65,21 +67,21 @@ print:
 list:
 	docker buildx bake --list=targets
 
-.PHONY: knot-php
-## Build all PHP versions sequentially (avoids resource exhaustion)
-knot-php:
-	@for v in $(subst $(comma), ,$(PHP_VERSIONS)); do \
-		echo "==> Building knot-php $${v}"; \
-		docker buildx bake $(BAKE_FLAGS) "knot-php-$$(echo $$v | tr '.' '-')" || exit 1; \
-	done
+# .PHONY: knot-php
+# ## Build all PHP versions sequentially (avoids resource exhaustion)
+# knot-php:
+# 	@for v in $(subst $(comma), ,$(PHP_VERSIONS)); do \
+# 		echo "==> Building knot-php $${v}"; \
+# 		docker buildx bake $(BAKE_FLAGS) "knot-php-$$(echo $$v | tr '.' '-')" || exit 1; \
+# 	done
 
-.PHONY: knot-frankenphp
-## Build all FrankenPHP versions sequentially (avoids resource exhaustion)
-knot-frankenphp:
-	@for v in $(subst $(comma), ,$(FRANKENPHP_VERSIONS)); do \
-		echo "==> Building knot-frankenphp $${v}"; \
-		docker buildx bake $(BAKE_FLAGS) "knot-frankenphp-$$(echo $$v | tr '.' '-')" || exit 1; \
-	done
+# .PHONY: knot-frankenphp
+# ## Build all FrankenPHP versions sequentially (avoids resource exhaustion)
+# knot-frankenphp:
+# 	@for v in $(subst $(comma), ,$(FRANKENPHP_VERSIONS)); do \
+# 		echo "==> Building knot-frankenphp $${v}"; \
+# 		docker buildx bake $(BAKE_FLAGS) "knot-frankenphp-$$(echo $$v | tr '.' '-')" || exit 1; \
+# 	done
 
 .PHONY: knot-%
 ## Forward any knot-* target to bake (e.g. make knot-ubuntu-26.04, make knot-caddy)
