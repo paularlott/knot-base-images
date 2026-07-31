@@ -36,6 +36,11 @@ variable "PHP_VERSIONS" {
   default = ["8.5"]
 }
 
+variable "FRANKENPHP_VERSIONS" {
+  type    = list(string)
+  default = ["8.4", "8.5"]
+}
+
 variable "CADDY_VERSION" {
   default = "2.11.4"
 }
@@ -87,7 +92,8 @@ group "default" {
   targets = [
     "knot-ubuntu",
     "knot-caddy",
-    "knot-ubuntu-php",
+    "knot-php",
+    "knot-frankenphp",
     "knot-ubuntu-desktop",
     "knot-valkey",
     "knot-mariadb",
@@ -214,12 +220,11 @@ target "knot-ubuntu-desktop" {
   }]
 }
 
-target "knot-ubuntu-php" {
-  name        = "knot-ubuntu-php-${replace(ubuntu, ".", "-")}-${replace(php, ".", "-")}"
+target "knot-php" {
+  name        = "knot-php-${replace(php, ".", "-")}"
   description = "Ubuntu + Caddy + PHP image"
   matrix      = {
-    ubuntu = UBUNTU_VERSIONS
-    php    = PHP_VERSIONS
+    php = PHP_VERSIONS
   }
   inherits    = ["_common"]
   context     = "./php"
@@ -227,17 +232,17 @@ target "knot-ubuntu-php" {
   labels = {
     "org.opencontainers.image.title"       = "Knot PHP"
     "org.opencontainers.image.description" = "Ubuntu + Caddy + PHP image"
-    "org.opencontainers.image.version"     = "${ubuntu}-${php}"
+    "org.opencontainers.image.version"     = "${php}"
   }
 
   contexts = {
-    "${TAG_BASE}/knot-caddy:${CADDY_VERSION}" = "target:knot-caddy"
-    "${TAG_BASE}/knot-ubuntu:${ubuntu}"        = "target:knot-ubuntu-${replace(ubuntu, ".", "-")}"
+    "${TAG_BASE}/knot-caddy:${CADDY_VERSION}"            = "target:knot-caddy"
+    "${TAG_BASE}/knot-ubuntu:${PHP_UBUNTU_BASE_VERSION}" = "target:knot-ubuntu-${replace(PHP_UBUNTU_BASE_VERSION, ".", "-")}"
   }
 
   args = {
     IMAGE_BASE    = "ubuntu"
-    IMAGE_VERSION = "${ubuntu}"
+    IMAGE_VERSION = "${PHP_UBUNTU_BASE_VERSION}"
     DOCKER_HUB    = "${DOCKER_HUB}"
     APT_CACHE     = "${APT_CACHE}"
     TAG_BASE      = "${TAG_BASE}"
@@ -245,24 +250,64 @@ target "knot-ubuntu-php" {
     PHP_VERSION   = "${php}"
   }
 
-  tags = concat(
-    [
-      "${TAG_BASE}/knot-php:${ubuntu}-${php}",
-      "${TAG_BASE}/knot-php:${ubuntu}-${php}-${BUILD_DATE}",
-    ],
-    ubuntu == PHP_UBUNTU_BASE_VERSION ? [
-      "${TAG_BASE}/knot-php:${php}",
-      "${TAG_BASE}/knot-php:${php}-${BUILD_DATE}",
-    ] : []
-  )
+  tags = [
+    "${TAG_BASE}/knot-php:${php}",
+    "${TAG_BASE}/knot-php:${php}-${BUILD_DATE}",
+  ]
 
   cache-from = [{
     type = "registry"
-    ref  = "${cache_base()}/knot-php:buildcache-${ubuntu}-${php}"
+    ref  = "${cache_base()}/knot-php:buildcache-${php}"
   }]
   cache-to = [{
     type              = "registry"
-    ref               = "${cache_base()}/knot-php:buildcache-${ubuntu}-${php}"
+    ref               = "${cache_base()}/knot-php:buildcache-${php}"
+    mode              = "max"
+    "oci-media-types" = true
+    "image-manifest"  = true
+  }]
+}
+
+target "knot-frankenphp" {
+  name        = "knot-frankenphp-${replace(php, ".", "-")}"
+  description = "Ubuntu + FrankenPHP image"
+  matrix      = {
+    php = FRANKENPHP_VERSIONS
+  }
+  inherits    = ["_common"]
+  context     = "./frankenphp"
+
+  labels = {
+    "org.opencontainers.image.title"       = "Knot FrankenPHP"
+    "org.opencontainers.image.description" = "Ubuntu + FrankenPHP image"
+    "org.opencontainers.image.version"     = "${php}"
+  }
+
+  contexts = {
+    "${TAG_BASE}/knot-ubuntu:${PHP_UBUNTU_BASE_VERSION}" = "target:knot-ubuntu-${replace(PHP_UBUNTU_BASE_VERSION, ".", "-")}"
+  }
+
+  args = {
+    IMAGE_BASE    = "ubuntu"
+    IMAGE_VERSION = "${PHP_UBUNTU_BASE_VERSION}"
+    DOCKER_HUB    = "${DOCKER_HUB}"
+    APT_CACHE     = "${APT_CACHE}"
+    TAG_BASE      = "${TAG_BASE}"
+    PHP_VERSION   = "${php}"
+  }
+
+  tags = [
+    "${TAG_BASE}/knot-frankenphp:${php}",
+    "${TAG_BASE}/knot-frankenphp:${php}-${BUILD_DATE}",
+  ]
+
+  cache-from = [{
+    type = "registry"
+    ref  = "${cache_base()}/knot-frankenphp:buildcache-${php}"
+  }]
+  cache-to = [{
+    type              = "registry"
+    ref               = "${cache_base()}/knot-frankenphp:buildcache-${php}"
     mode              = "max"
     "oci-media-types" = true
     "image-manifest"  = true

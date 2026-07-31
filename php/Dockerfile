@@ -47,7 +47,7 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
 	&& make -j 8 \
 	&& make install \
 	&& cd .. \
-	&& rm -rf php-spx.github \
+	&& rm -rf php-spx \
   && phpenmod php-spx \
   \
   # Composer
