@@ -46,8 +46,7 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
 	&& make -j 8 \
 	&& make install \
 	&& cd .. \
-	&& rm -rf php-spx \
-  && phpenmod php-spx \
+  && rm -rf php-spx \
   \
   # Composer
   && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
@@ -78,7 +77,6 @@ COPY files/fpm-pool.d/* /etc/php/${PHP_VERSION}/fpm/pool.d/
 COPY files/conf.d/* /etc/php/${PHP_VERSION}/fpm/conf.d/
 COPY files/php-conf/* /etc/php/${PHP_VERSION}/cli/conf.d/
 COPY files/php-conf/* /etc/php/${PHP_VERSION}/fpm/conf.d/
-COPY files/php-mods/php-spx.ini /etc/php/${PHP_VERSION}/mods-available/php-spx.ini
 COPY files/php-mods/xdebug.ini /etc/php/${PHP_VERSION}/mods-available/xdebug.ini
 COPY files/bin/* /usr/local/bin/
 

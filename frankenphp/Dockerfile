@@ -24,18 +24,9 @@ RUN CGO_ENABLED=1 \
         --with github.com/caddy-dns/cloudflare@latest \
         --with github.com/caddyserver/transform-encoder@latest
 
-# Build PHP extensions: Xdebug + php-spx
-RUN git clone https://github.com/NoiseByNorthwest/php-spx.git /tmp/php-spx \
-    && cd /tmp/php-spx \
-    && git checkout release/latest \
-    && phpize \
-    && ./configure \
-    && make -j 8 \
-    && make install \
-    && rm -rf /tmp/php-spx \
-    && pecl install xdebug \
+# Build PHP extension: Xdebug
+RUN pecl install xdebug \
     && mkdir -p /tmp/exts \
-    && cp "$(php-config --extension-dir)/spx.so" /tmp/exts/ \
     && cp "$(php-config --extension-dir)/xdebug.so" /tmp/exts/
 
 # =============================================================================
@@ -121,10 +112,10 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
 # Replace the FrankenPHP binary with our custom build (includes transform-encoder etc.)
 COPY --from=builder /usr/local/bin/frankenphp /usr/local/bin/frankenphp
 
-# PHP extensions: Xdebug + php-spx (built in stage 1)
+# PHP extension: Xdebug (built in stage 1)
 COPY --from=builder /tmp/exts/ /tmp/exts/
 RUN EXT_DIR=$(php-config --extension-dir) \
-    && mv /tmp/exts/spx.so /tmp/exts/xdebug.so "$EXT_DIR/" \
+    && mv /tmp/exts/xdebug.so "$EXT_DIR/" \
     && rm -rf /tmp/exts
 
 # Knot entrypoint and startup scripts
@@ -133,8 +124,7 @@ COPY files/knot-startup.d/ /etc/knot-startup.d/
 COPY files/caddy/Caddyfile /etc/frankenphp/Caddyfile
 COPY files/misc/container-crons /etc/cron.d/container-crons
 
-# PHP configuration: php-spx enabled, xdebug disabled by default
-COPY files/php-mods/php-spx.ini /usr/local/etc/php/conf.d/zz-php-spx.ini
+# PHP configuration: xdebug disabled by default
 COPY files/php-mods/xdebug.ini /usr/local/etc/php/conf.d/zz-xdebug.ini.disabled
 
 VOLUME /home

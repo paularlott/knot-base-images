@@ -1,0 +1,21 @@
+#!/bin/sh
+# Restart FrankenPHP with the correct environment.
+# Used by phpenxdebug/phpdisxdebug/phpenspx/phpdisspx.
+
+# KNOT_USER may not be in the environment (sudo strips it), so read from /home/.knot-user
+KNOT_USER="${KNOT_USER:-$(cat /home/.knot-user 2>/dev/null || echo knot)}"
+export KNOT_USER
+
+echo "Stopping FrankenPHP.."
+pkill -x frankenphp 2>/dev/null || true
+sleep 1
+
+echo "Starting FrankenPHP.."
+mkdir -p /home/frankenphp/config /home/frankenphp/data
+cd /home/frankenphp
+nohup env \
+  KNOT_USER="$KNOT_USER" \
+  XDG_CONFIG_HOME=/home/frankenphp/config \
+  XDG_DATA_HOME=/home/frankenphp/data \
+  frankenphp start --config /etc/frankenphp/Caddyfile --adapter caddyfile \
+  > /tmp/frankenphp.log 2>&1 &
