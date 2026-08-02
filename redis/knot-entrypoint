@@ -52,6 +52,7 @@ fi
 # If KNOT_SYSLOG_PORT is not defined or not 0 then route to agents syslogd port
 if [ -x /usr/local/bin/knot ] && [ "${KNOT_SYSLOG_PORT:-1}" -ne 0 ]; then
   echo "Forwarding logs to knot agent syslogd port ${KNOT_SYSLOG_PORT:-514}"
+  mkdir -p /etc/rsyslog.d
   echo "*.* @127.0.0.1:${KNOT_SYSLOG_PORT:-514}" > /etc/rsyslog.d/99-knotagent.conf
 fi
 

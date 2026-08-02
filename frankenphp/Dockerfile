@@ -1,8 +1,6 @@
 ARG FRANKENPHP_VERSION=1.12.6
 ARG PHP_VERSION=8.5
-ARG GOSU_VERSION=1.19
 ARG APT_CACHE=
-ARG NODEJS_VERSION=20.x
 
 # =============================================================================
 # Stage 1: Build FrankenPHP with custom Caddy modules
@@ -26,14 +24,26 @@ RUN CGO_ENABLED=1 \
         --with github.com/caddy-dns/cloudflare@latest \
         --with github.com/caddyserver/transform-encoder@latest
 
+# Build PHP extensions: Xdebug + php-spx
+RUN git clone https://github.com/NoiseByNorthwest/php-spx.git /tmp/php-spx \
+    && cd /tmp/php-spx \
+    && git checkout release/latest \
+    && phpize \
+    && ./configure \
+    && make -j 8 \
+    && make install \
+    && rm -rf /tmp/php-spx \
+    && pecl install xdebug \
+    && mkdir -p /tmp/exts \
+    && cp "$(php-config --extension-dir)/spx.so" /tmp/exts/ \
+    && cp "$(php-config --extension-dir)/xdebug.so" /tmp/exts/
+
 # =============================================================================
 # Stage 2: Runtime — based on official FrankenPHP image
 # =============================================================================
 FROM dunglas/frankenphp:${FRANKENPHP_VERSION}-php${PHP_VERSION}
 
-ARG GOSU_VERSION
 ARG APT_CACHE
-ARG NODEJS_VERSION
 
 ENV DEBIAN_FRONTEND=noninteractive \
   LANG=en_US.UTF-8 \
@@ -53,13 +63,32 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
     tzdata procps rsync openssh-client openssh-server sudo fish iputils-ping htop iproute2 iftop \
     git vim curl wget unzip locales ssl-cert gettext lsb-release \
     uuid-runtime screen dnsutils gnupg2 \
-    cron logrotate mariadb-client jq gettext-base make direnv nano rsyslog tmux \
+    cron logrotate mariadb-client valkey-tools jq gettext-base make direnv nano rsyslog tmux \
     bat ripgrep fzf zoxide \
   \
-  # gosu
-  && ARCH=$(dpkg --print-architecture); \
-    curl -Lo /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-${ARCH}"; \
+  # gosu - https://github.com/tianon/gosu/releases (latest)
+  && DPKG_ARCH=$(dpkg --print-architecture); \
+    case "$DPKG_ARCH" in \
+      'amd64') mago_triple="x86_64-unknown-linux-gnu";; \
+      'arm64') mago_triple="aarch64-unknown-linux-gnu";; \
+      *) echo >&2 "error: unsupported architecture: '$DPKG_ARCH'"; exit 1 ;; \
+    esac; \
+    curl -Lo /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/latest/download/gosu-${DPKG_ARCH}"; \
     chmod +x /usr/local/bin/gosu \
+  \
+  # mago - PHP toolchain - https://github.com/carthage-software/mago (latest)
+  && MAGO_VERSION=$(curl -fsSL https://api.github.com/repos/carthage-software/mago/releases/latest | jq -r '.tag_name'); \
+    curl -fsSL "https://github.com/carthage-software/mago/releases/download/${MAGO_VERSION}/mago-${MAGO_VERSION}-${mago_triple}.tar.gz" -o /tmp/mago.tgz; \
+    tar -xzf /tmp/mago.tgz -C /tmp; \
+    install -m 0755 "/tmp/mago-${MAGO_VERSION}-${mago_triple}/mago" /usr/local/bin/mago; \
+    rm -rf "/tmp/mago-${MAGO_VERSION}-${mago_triple}" /tmp/mago.tgz \
+  \
+  # mutagen - https://github.com/mutagen-io/mutagen (latest)
+  && MUTAGEN_VERSION=$(curl -fsSL https://api.github.com/repos/mutagen-io/mutagen/releases/latest | jq -r '.tag_name'); \
+    curl -fsSL "https://github.com/mutagen-io/mutagen/releases/download/${MUTAGEN_VERSION}/mutagen_linux_${DPKG_ARCH}_${MUTAGEN_VERSION}.tar.gz" -o /tmp/mutagen.tgz; \
+    tar -xzf /tmp/mutagen.tgz -C /tmp mutagen; \
+    install -m 0755 /tmp/mutagen /usr/local/bin/mutagen; \
+    rm -rf /tmp/mutagen /tmp/mutagen.tgz \
   \
   # Locale
   && echo "LC_ALL=en_US.UTF-8" >> /etc/environment \
@@ -67,8 +96,9 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   && echo "LANG=en_US.UTF-8" > /etc/locale.conf \
   && dpkg-reconfigure --frontend=noninteractive locales \
   \
-  # Node.js
-  && curl -fsSL https://deb.nodesource.com/setup_${NODEJS_VERSION} | bash - \
+  # Node.js (latest LTS)
+  && NODEJS_MAJOR=$(curl -fsSL https://nodejs.org/dist/index.json | jq -r '[.[] | select(.lts != false)] | .[0].version' | sed 's/^v//; s/\..*//') \
+  && curl -fsSL "https://deb.nodesource.com/setup_${NODEJS_MAJOR}.x" | bash - \
   && apt-get install -y nodejs \
   \
   # Composer
@@ -91,11 +121,21 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
 # Replace the FrankenPHP binary with our custom build (includes transform-encoder etc.)
 COPY --from=builder /usr/local/bin/frankenphp /usr/local/bin/frankenphp
 
+# PHP extensions: Xdebug + php-spx (built in stage 1)
+COPY --from=builder /tmp/exts/ /tmp/exts/
+RUN EXT_DIR=$(php-config --extension-dir) \
+    && mv /tmp/exts/spx.so /tmp/exts/xdebug.so "$EXT_DIR/" \
+    && rm -rf /tmp/exts
+
 # Knot entrypoint and startup scripts
 COPY files/bin/* /usr/local/bin/
 COPY files/knot-startup.d/ /etc/knot-startup.d/
 COPY files/caddy/Caddyfile /etc/frankenphp/Caddyfile
 COPY files/misc/container-crons /etc/cron.d/container-crons
+
+# PHP configuration: php-spx enabled, xdebug disabled by default
+COPY files/php-mods/php-spx.ini /usr/local/etc/php/conf.d/zz-php-spx.ini
+COPY files/php-mods/xdebug.ini /usr/local/etc/php/conf.d/zz-xdebug.ini.disabled
 
 VOLUME /home
 

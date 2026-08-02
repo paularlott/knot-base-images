@@ -1,0 +1,13 @@
+#!/bin/sh
+set -e
+
+# Enable xdebug
+echo "Enabling xdebug.."
+sudo mv /usr/local/etc/php/conf.d/zz-xdebug.ini.disabled /usr/local/etc/php/conf.d/zz-xdebug.ini 2>/dev/null || true
+
+# Restart FrankenPHP
+echo "Restarting FrankenPHP.."
+sudo pkill -x frankenphp 2>/dev/null || true
+sleep 1
+sudo bash -c 'cd /home/frankenphp && nohup env XDG_CONFIG_HOME=/home/frankenphp/config XDG_DATA_HOME=/home/frankenphp/data frankenphp start --config /etc/frankenphp/Caddyfile --adapter caddyfile > /tmp/frankenphp.log 2>&1 &'
+echo "Done."

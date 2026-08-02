@@ -3,33 +3,24 @@
 ARG DOCKER_HUB=
 ARG VALKEY_VERSION=8.0.0
 
-FROM ${DOCKER_HUB}valkey/valkey:${VALKEY_VERSION}-trixie
+FROM ${DOCKER_HUB}valkey/valkey:${VALKEY_VERSION}-alpine
 
 ARG TZ='Etc/UTC'
-ARG APT_CACHE
-ARG GOSU_VERSION=1.19
 
-ENV DEBIAN_FRONTEND=noninteractive \
-  TZ=$TZ \
+ENV TZ=$TZ \
   KNOT_SSH_PORT=2222 \
   KNOT_SYSLOG_PORT=1514
 
-RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
-    --mount=type=cache,sharing=private,target=/var/lib/apt \
-  if [ -n "$APT_CACHE" ]; then echo "Acquire::HTTP::Proxy \"$APT_CACHE\";" > /etc/apt/apt.conf.d/00proxy; fi \
-  && apt-get update -y \
-  && apt-get dist-upgrade -y \
-  && apt-get install -y bash unzip curl rsyslog libcap2-bin \
-  # https://github.com/tianon/gosu/releases
+RUN apk add --no-cache bash curl libcap rsyslog unzip \
+  # gosu - https://github.com/tianon/gosu/releases
   && ARCH=$(uname -m); \
     case "$ARCH" in \
-      'x86_64') url="https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64";; \
-      'aarch64') url="https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-arm64";; \
+      'x86_64') url="https://github.com/tianon/gosu/releases/latest/download/gosu-amd64";; \
+      'aarch64') url="https://github.com/tianon/gosu/releases/latest/download/gosu-arm64";; \
       *) echo >&2 "error: unsupported architecture: '$ARCH'"; exit 1 ;; \
     esac; \
-    curl -sLk "$url" > /usr/local/bin/gosu; \
+    curl -fsSL "$url" -o /usr/local/bin/gosu; \
     chmod +x /usr/local/bin/gosu \
-  && if [ -n "$APT_CACHE" ]; then rm -f /etc/apt/apt.conf.d/00proxy; fi \
   \
   # make rsyslog work in container
   && sed -i 's/^\(module(load="imklog".*\)$/#\1/' /etc/rsyslog.conf \

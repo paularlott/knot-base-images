@@ -59,8 +59,9 @@ variable "VALKEY_VERSIONS" {
   default = ["9.1.1"]
 }
 
-variable "GOSU_VERSION" {
-  default = "1.19"
+variable "REDIS_VERSIONS" {
+  type    = list(string)
+  default = ["8.10.0"]
 }
 
 # =============================================================================
@@ -101,6 +102,7 @@ group "default" {
     "knot-ubuntu-desktop",
     "knot-valkey",
     "knot-mariadb",
+    "knot-redis",
   ]
 }
 
@@ -126,7 +128,6 @@ target "knot-ubuntu" {
     IMAGE_VERSION = "${version}"
     DOCKER_HUB    = "${DOCKER_HUB}"
     APT_CACHE     = "${APT_CACHE}"
-    GOSU_VERSION  = "${GOSU_VERSION}"
   }
 
   tags = [
@@ -291,7 +292,6 @@ target "knot-frankenphp" {
     APT_CACHE          = "${APT_CACHE}"
     PHP_VERSION        = "${php}"
     FRANKENPHP_VERSION = "${FRANKENPHP_VERSION}"
-    GOSU_VERSION       = "${GOSU_VERSION}"
   }
 
   tags = [
@@ -329,7 +329,6 @@ target "knot-mariadb" {
     DOCKER_HUB      = "${DOCKER_HUB}"
     APT_CACHE       = "${APT_CACHE}"
     MARIADB_VERSION = "${version}"
-    GOSU_VERSION    = "${GOSU_VERSION}"
   }
 
   tags = [
@@ -367,7 +366,6 @@ target "knot-valkey" {
     DOCKER_HUB     = "${DOCKER_HUB}"
     APT_CACHE      = "${APT_CACHE}"
     VALKEY_VERSION = "${version}"
-    GOSU_VERSION   = "${GOSU_VERSION}"
   }
 
   tags = [
@@ -383,6 +381,43 @@ target "knot-valkey" {
   cache-to = [{
     type              = "registry"
     ref               = "${cache_base()}/knot-valkey:buildcache-${version}"
+    mode              = "max"
+    "oci-media-types" = true
+    "image-manifest"  = true
+  }]
+}
+
+target "knot-redis" {
+  name        = "knot-redis-${replace(version, ".", "-")}"
+  description = "Redis image"
+  matrix      = { version = REDIS_VERSIONS }
+  inherits    = ["_common"]
+  context     = "./redis"
+
+  labels = {
+    "org.opencontainers.image.title"       = "Knot Redis"
+    "org.opencontainers.image.description" = "Redis image with knot startup tooling"
+    "org.opencontainers.image.version"     = "${version}"
+  }
+
+  args = {
+    DOCKER_HUB    = "${DOCKER_HUB}"
+    REDIS_VERSION = "${version}"
+  }
+
+  tags = [
+    "${TAG_BASE}/knot-redis:${version}",
+    "${TAG_BASE}/knot-redis:${version}-${BUILD_DATE}",
+    "${TAG_BASE}/knot-redis:${major_minor(version)}",
+  ]
+
+  cache-from = [{
+    type = "registry"
+    ref  = "${cache_base()}/knot-redis:buildcache-${version}"
+  }]
+  cache-to = [{
+    type              = "registry"
+    ref               = "${cache_base()}/knot-redis:buildcache-${version}"
     mode              = "max"
     "oci-media-types" = true
     "image-manifest"  = true

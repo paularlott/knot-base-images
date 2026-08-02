@@ -7,7 +7,6 @@ FROM ${DOCKER_HUB}library/mariadb:${MARIADB_VERSION}
 
 ARG TZ='Etc/UTC'
 ARG APT_CACHE
-ARG GOSU_VERSION=1.19
 
 ENV DEBIAN_FRONTEND=noninteractive \
   TZ=$TZ \
@@ -23,8 +22,8 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   # https://github.com/tianon/gosu/releases
   && ARCH=$(uname -m); \
     case "$ARCH" in \
-      'x86_64') url="https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64";; \
-      'aarch64') url="https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-arm64";; \
+      'x86_64') url="https://github.com/tianon/gosu/releases/latest/download/gosu-amd64";; \
+      'aarch64') url="https://github.com/tianon/gosu/releases/latest/download/gosu-arm64";; \
       *) echo >&2 "error: unsupported architecture: '$ARCH'"; exit 1 ;; \
     esac; \
     curl -sLk "$url" > /usr/local/bin/gosu; \

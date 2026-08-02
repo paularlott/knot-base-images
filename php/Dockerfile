@@ -12,7 +12,6 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 ARG APT_CACHE
 ARG PHP_VERSION
-ARG NODEJS_VERSION=20.x
 ENV PHP_VERSION=${PHP_VERSION}
 
 RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
@@ -53,9 +52,23 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   # Composer
   && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
   \
-  # Node.js
-  && curl -fsSL https://deb.nodesource.com/setup_${NODEJS_VERSION} | bash - \
+  # Node.js (latest LTS)
+  && NODEJS_MAJOR=$(curl -fsSL https://nodejs.org/dist/index.json | jq -r '[.[] | select(.lts != false)] | .[0].version' | sed 's/^v//; s/\..*//') \
+  && curl -fsSL "https://deb.nodesource.com/setup_${NODEJS_MAJOR}.x" | bash - \
   && apt-get install -y nodejs \
+  \
+  # mago - PHP toolchain - https://github.com/carthage-software/mago (latest)
+  && ARCH=$(uname -m); \
+    case "$ARCH" in \
+      'x86_64')  mago_triple="x86_64-unknown-linux-gnu";; \
+      'aarch64') mago_triple="aarch64-unknown-linux-gnu";; \
+      *) echo >&2 "error: unsupported architecture: '$ARCH'"; exit 1 ;; \
+    esac; \
+    MAGO_VERSION=$(curl -fsSL https://api.github.com/repos/carthage-software/mago/releases/latest | jq -r '.tag_name'); \
+    curl -fsSL "https://github.com/carthage-software/mago/releases/download/${MAGO_VERSION}/mago-${MAGO_VERSION}-${mago_triple}.tar.gz" -o /tmp/mago.tgz; \
+    tar -xzf /tmp/mago.tgz -C /tmp; \
+    install -m 0755 "/tmp/mago-${MAGO_VERSION}-${mago_triple}/mago" /usr/local/bin/mago; \
+    rm -rf "/tmp/mago-${MAGO_VERSION}-${mago_triple}" /tmp/mago.tgz \
   \
   && if [ -n "$APT_CACHE" ]; then rm -f /etc/apt/apt.conf.d/00proxy; fi
 

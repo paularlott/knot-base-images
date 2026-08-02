@@ -16,9 +16,9 @@ PHP_VERSIONS ?= 8.3 8.4 8.5
 FRANKENPHP_VERSIONS ?= 8.4 8.5
 MARIADB_VERSIONS ?= 10.11 11.4 11.8 12.3
 VALKEY_VERSIONS ?= 9.0.4 9.1.1
+REDIS_VERSIONS ?= 8.10.0
 CADDY_VERSION ?= 2.11.4
 FRANKENPHP_VERSION ?= 1.12.6
-GOSU_VERSION ?= 1.19
 
 BUILD_DATE ?= $(shell date -u +'%Y%m%d')
 
@@ -39,13 +39,13 @@ export UBUNTU_VERSION
 export PHP_UBUNTU_BASE_VERSION
 export CADDY_VERSION
 export FRANKENPHP_VERSION
-export GOSU_VERSION
 export BUILD_DATE
 export UBUNTU_VERSIONS := $(subst $(space),$(comma),$(UBUNTU_VERSIONS))
 export PHP_VERSIONS := $(subst $(space),$(comma),$(PHP_VERSIONS))
 export FRANKENPHP_VERSIONS := $(subst $(space),$(comma),$(FRANKENPHP_VERSIONS))
 export MARIADB_VERSIONS := $(subst $(space),$(comma),$(MARIADB_VERSIONS))
 export VALKEY_VERSIONS := $(subst $(space),$(comma),$(VALKEY_VERSIONS))
+export REDIS_VERSIONS := $(subst $(space),$(comma),$(REDIS_VERSIONS))
 
 # Optional extra flags passed to bake (e.g. make BAKE_FLAGS=--print)
 BAKE_FLAGS ?=
