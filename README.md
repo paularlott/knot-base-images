@@ -24,6 +24,7 @@ These images are designed first and foremost for **knot spaces**, but they are o
 | [`knot-valkey`](valkey/README.md) | Valkey (the Redis fork) with the knot entrypoint, agent integration and syslog logging. | [`valkey/`](valkey/) |
 | [`knot-redis`](redis/README.md) | Redis with the knot entrypoint, agent integration and syslog logging. | [`redis/`](redis/) |
 | [`knot-mailpit`](mailpit/README.md) | Mailpit SMTP mail catcher with the knot entrypoint, agent integration and syslog logging. | [`mailpit/`](mailpit/) |
+| [`knot-victoria-logs`](victoria-logs/README.md) | VictoriaLogs log database (rebased onto Alpine) with the knot entrypoint, agent integration and syslog logging. | [`victoria-logs/`](victoria-logs/) |
 
 ## Image relationships
 
@@ -37,6 +38,7 @@ knot-mysql        (standalone, official MySQL base)
 knot-valkey       (standalone, official Valkey base)
 knot-redis        (standalone, official Redis base)
 knot-mailpit      (standalone, official Mailpit base)
+knot-victoria-logs (standalone, rebased from distroless VictoriaLogs onto Alpine)
 ```
 
 ## How knot uses these images
@@ -95,6 +97,8 @@ Version matrices and the image namespace are configurable through environment va
 | `VALKEY_VERSIONS` | Valkey versions |
 | `REDIS_VERSIONS` | Redis versions |
 | `MAILPIT_VERSIONS` | Mailpit versions |
+| `VICTORIA_LOGS_VERSIONS` | VictoriaLogs versions |
+| `ALPINE_VERSION` | Alpine base version (for `knot-victoria-logs`) |
 | `CADDY_VERSION` | Caddy version |
 | `FRANKENPHP_VERSION` | FrankenPHP release |
 

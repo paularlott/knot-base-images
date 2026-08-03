@@ -19,6 +19,8 @@ MYSQL_VERSIONS ?= 9.7
 VALKEY_VERSIONS ?= 9.0.4 9.1.1
 REDIS_VERSIONS ?= 8.10.0
 MAILPIT_VERSIONS ?= 1.30
+VICTORIA_LOGS_VERSIONS ?= 1.52.0
+ALPINE_VERSION ?= 3.20
 CADDY_VERSION ?= 2.11.4
 FRANKENPHP_VERSION ?= 1.12.6
 
@@ -50,6 +52,8 @@ export MYSQL_VERSIONS := $(subst $(space),$(comma),$(MYSQL_VERSIONS))
 export VALKEY_VERSIONS := $(subst $(space),$(comma),$(VALKEY_VERSIONS))
 export REDIS_VERSIONS := $(subst $(space),$(comma),$(REDIS_VERSIONS))
 export MAILPIT_VERSIONS := $(subst $(space),$(comma),$(MAILPIT_VERSIONS))
+export VICTORIA_LOGS_VERSIONS := $(subst $(space),$(comma),$(VICTORIA_LOGS_VERSIONS))
+export ALPINE_VERSION
 
 # Optional extra flags passed to bake (e.g. make BAKE_FLAGS=--print)
 BAKE_FLAGS ?=

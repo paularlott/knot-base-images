@@ -74,6 +74,15 @@ variable "MAILPIT_VERSIONS" {
   default = ["1.30"]
 }
 
+variable "VICTORIA_LOGS_VERSIONS" {
+  type    = list(string)
+  default = ["1.52.0"]
+}
+
+variable "ALPINE_VERSION" {
+  default = "3.20"
+}
+
 # =============================================================================
 # Helper functions and shared target
 # =============================================================================
@@ -115,6 +124,7 @@ group "default" {
     "knot-mysql",
     "knot-redis",
     "knot-mailpit",
+    "knot-victoria-logs",
   ]
 }
 
@@ -502,6 +512,43 @@ target "knot-mailpit" {
   cache-to = [{
     type              = "registry"
     ref               = "${cache_base()}/knot-mailpit:buildcache-${version}"
+    mode              = "max"
+    "oci-media-types" = true
+    "image-manifest"  = true
+  }]
+}
+
+target "knot-victoria-logs" {
+  name        = "knot-victoria-logs-${replace(version, ".", "-")}"
+  description = "VictoriaLogs image"
+  matrix      = { version = VICTORIA_LOGS_VERSIONS }
+  inherits    = ["_common"]
+  context     = "./victoria-logs"
+
+  labels = {
+    "org.opencontainers.image.title"       = "Knot VictoriaLogs"
+    "org.opencontainers.image.description" = "VictoriaLogs log database with knot startup tooling"
+    "org.opencontainers.image.version"     = "${version}"
+  }
+
+  args = {
+    DOCKER_HUB              = "${DOCKER_HUB}"
+    VICTORIA_LOGS_VERSION   = "${version}"
+    ALPINE_VERSION          = "${ALPINE_VERSION}"
+  }
+
+  tags = [
+    "${TAG_BASE}/knot-victoria-logs:${version}",
+    "${TAG_BASE}/knot-victoria-logs:${version}-${BUILD_DATE}",
+  ]
+
+  cache-from = [{
+    type = "registry"
+    ref  = "${cache_base()}/knot-victoria-logs:buildcache-${version}"
+  }]
+  cache-to = [{
+    type              = "registry"
+    ref               = "${cache_base()}/knot-victoria-logs:buildcache-${version}"
     mode              = "max"
     "oci-media-types" = true
     "image-manifest"  = true
