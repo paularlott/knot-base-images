@@ -23,6 +23,7 @@ These images are designed first and foremost for **knot spaces**, but they are o
 | [`knot-mysql`](mysql/README.md) | MySQL with the knot entrypoint, agent integration and syslog logging. | [`mysql/`](mysql/) |
 | [`knot-valkey`](valkey/README.md) | Valkey (the Redis fork) with the knot entrypoint, agent integration and syslog logging. | [`valkey/`](valkey/) |
 | [`knot-redis`](redis/README.md) | Redis with the knot entrypoint, agent integration and syslog logging. | [`redis/`](redis/) |
+| [`knot-mailpit`](mailpit/README.md) | Mailpit SMTP mail catcher with the knot entrypoint, agent integration and syslog logging. | [`mailpit/`](mailpit/) |
 
 ## Image relationships
 
@@ -35,6 +36,7 @@ knot-mariadb      (standalone, official MariaDB base)
 knot-mysql        (standalone, official MySQL base)
 knot-valkey       (standalone, official Valkey base)
 knot-redis        (standalone, official Redis base)
+knot-mailpit      (standalone, official Mailpit base)
 ```
 
 ## How knot uses these images
@@ -92,6 +94,7 @@ Version matrices and the image namespace are configurable through environment va
 | `MYSQL_VERSIONS` | MySQL versions |
 | `VALKEY_VERSIONS` | Valkey versions |
 | `REDIS_VERSIONS` | Redis versions |
+| `MAILPIT_VERSIONS` | Mailpit versions |
 | `CADDY_VERSION` | Caddy version |
 | `FRANKENPHP_VERSION` | FrankenPHP release |
 

@@ -69,6 +69,11 @@ variable "REDIS_VERSIONS" {
   default = ["8.10.0"]
 }
 
+variable "MAILPIT_VERSIONS" {
+  type    = list(string)
+  default = ["1.30"]
+}
+
 # =============================================================================
 # Helper functions and shared target
 # =============================================================================
@@ -109,6 +114,7 @@ group "default" {
     "knot-mariadb",
     "knot-mysql",
     "knot-redis",
+    "knot-mailpit",
   ]
 }
 
@@ -460,6 +466,42 @@ target "knot-redis" {
   cache-to = [{
     type              = "registry"
     ref               = "${cache_base()}/knot-redis:buildcache-${version}"
+    mode              = "max"
+    "oci-media-types" = true
+    "image-manifest"  = true
+  }]
+}
+
+target "knot-mailpit" {
+  name        = "knot-mailpit-${replace(version, ".", "-")}"
+  description = "Mailpit image"
+  matrix      = { version = MAILPIT_VERSIONS }
+  inherits    = ["_common"]
+  context     = "./mailpit"
+
+  labels = {
+    "org.opencontainers.image.title"       = "Knot Mailpit"
+    "org.opencontainers.image.description" = "Mailpit SMTP mail catcher with knot startup tooling"
+    "org.opencontainers.image.version"     = "${version}"
+  }
+
+  args = {
+    DOCKER_HUB       = "${DOCKER_HUB}"
+    MAILPIT_VERSION  = "${version}"
+  }
+
+  tags = [
+    "${TAG_BASE}/knot-mailpit:${version}",
+    "${TAG_BASE}/knot-mailpit:${version}-${BUILD_DATE}",
+  ]
+
+  cache-from = [{
+    type = "registry"
+    ref  = "${cache_base()}/knot-mailpit:buildcache-${version}"
+  }]
+  cache-to = [{
+    type              = "registry"
+    ref               = "${cache_base()}/knot-mailpit:buildcache-${version}"
     mode              = "max"
     "oci-media-types" = true
     "image-manifest"  = true
