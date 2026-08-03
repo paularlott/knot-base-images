@@ -54,6 +54,11 @@ variable "MARIADB_VERSIONS" {
   default = ["12.3"]
 }
 
+variable "MYSQL_VERSIONS" {
+  type    = list(string)
+  default = ["9.7"]
+}
+
 variable "VALKEY_VERSIONS" {
   type    = list(string)
   default = ["9.1.1"]
@@ -102,6 +107,7 @@ group "default" {
     "knot-ubuntu-desktop",
     "knot-valkey",
     "knot-mariadb",
+    "knot-mysql",
     "knot-redis",
   ]
 }
@@ -343,6 +349,42 @@ target "knot-mariadb" {
   cache-to = [{
     type              = "registry"
     ref               = "${cache_base()}/knot-mariadb:buildcache-${version}"
+    mode              = "max"
+    "oci-media-types" = true
+    "image-manifest"  = true
+  }]
+}
+
+target "knot-mysql" {
+  name        = "knot-mysql-${replace(version, ".", "-")}"
+  description = "MySQL image"
+  matrix      = { version = MYSQL_VERSIONS }
+  inherits    = ["_common"]
+  context     = "./mysql"
+
+  labels = {
+    "org.opencontainers.image.title"       = "Knot MySQL"
+    "org.opencontainers.image.description" = "MySQL image with knot startup tooling"
+    "org.opencontainers.image.version"     = "${version}"
+  }
+
+  args = {
+    DOCKER_HUB    = "${DOCKER_HUB}"
+    MYSQL_VERSION = "${version}"
+  }
+
+  tags = [
+    "${TAG_BASE}/knot-mysql:${version}",
+    "${TAG_BASE}/knot-mysql:${version}-${BUILD_DATE}",
+  ]
+
+  cache-from = [{
+    type = "registry"
+    ref  = "${cache_base()}/knot-mysql:buildcache-${version}"
+  }]
+  cache-to = [{
+    type              = "registry"
+    ref               = "${cache_base()}/knot-mysql:buildcache-${version}"
     mode              = "max"
     "oci-media-types" = true
     "image-manifest"  = true

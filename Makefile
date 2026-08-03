@@ -15,6 +15,7 @@ PHP_UBUNTU_BASE_VERSION ?= 26.04
 PHP_VERSIONS ?= 8.3 8.4 8.5
 FRANKENPHP_VERSIONS ?= 8.4 8.5
 MARIADB_VERSIONS ?= 10.11 11.4 11.8 12.3
+MYSQL_VERSIONS ?= 9.7
 VALKEY_VERSIONS ?= 9.0.4 9.1.1
 REDIS_VERSIONS ?= 8.10.0
 CADDY_VERSION ?= 2.11.4
@@ -44,6 +45,7 @@ export UBUNTU_VERSIONS := $(subst $(space),$(comma),$(UBUNTU_VERSIONS))
 export PHP_VERSIONS := $(subst $(space),$(comma),$(PHP_VERSIONS))
 export FRANKENPHP_VERSIONS := $(subst $(space),$(comma),$(FRANKENPHP_VERSIONS))
 export MARIADB_VERSIONS := $(subst $(space),$(comma),$(MARIADB_VERSIONS))
+export MYSQL_VERSIONS := $(subst $(space),$(comma),$(MYSQL_VERSIONS))
 export VALKEY_VERSIONS := $(subst $(space),$(comma),$(VALKEY_VERSIONS))
 export REDIS_VERSIONS := $(subst $(space),$(comma),$(REDIS_VERSIONS))
 

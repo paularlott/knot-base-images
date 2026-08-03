@@ -20,6 +20,7 @@ These images are designed first and foremost for **knot spaces**, but they are o
 | [`knot-php`](php/README.md) | Ubuntu + Caddy + PHP-FPM, Composer and Node.js — serves `~/public_html`. | [`php/`](php/) |
 | [`knot-frankenphp`](frankenphp/README.md) | Ubuntu + FrankenPHP (Caddy + PHP in one process) with Composer and Node.js. | [`frankenphp/`](frankenphp/) |
 | [`knot-mariadb`](mariadb/README.md) | MariaDB with the knot entrypoint, agent integration and syslog logging. | [`mariadb/`](mariadb/) |
+| [`knot-mysql`](mysql/README.md) | MySQL with the knot entrypoint, agent integration and syslog logging. | [`mysql/`](mysql/) |
 | [`knot-valkey`](valkey/README.md) | Valkey (the Redis fork) with the knot entrypoint, agent integration and syslog logging. | [`valkey/`](valkey/) |
 | [`knot-redis`](redis/README.md) | Redis with the knot entrypoint, agent integration and syslog logging. | [`redis/`](redis/) |
 
@@ -31,6 +32,7 @@ knot-ubuntu ──┬── knot-desktop
 knot-caddy
 knot-frankenphp   (standalone, official FrankenPHP base)
 knot-mariadb      (standalone, official MariaDB base)
+knot-mysql        (standalone, official MySQL base)
 knot-valkey       (standalone, official Valkey base)
 knot-redis        (standalone, official Redis base)
 ```
@@ -87,6 +89,7 @@ Version matrices and the image namespace are configurable through environment va
 | `PHP_VERSIONS` | PHP versions for `knot-php` |
 | `FRANKENPHP_VERSIONS` | PHP versions for `knot-frankenphp` |
 | `MARIADB_VERSIONS` | MariaDB versions |
+| `MYSQL_VERSIONS` | MySQL versions |
 | `VALKEY_VERSIONS` | Valkey versions |
 | `REDIS_VERSIONS` | Redis versions |
 | `CADDY_VERSION` | Caddy version |
