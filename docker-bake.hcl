@@ -79,6 +79,10 @@ variable "VICTORIA_LOGS_VERSIONS" {
   default = ["1.52.0"]
 }
 
+variable "VMAUTH_VERSION" {
+  default = "1.148.0"
+}
+
 variable "ALPINE_VERSION" {
   default = "3.20"
 }
@@ -534,6 +538,7 @@ target "knot-victoria-logs" {
   args = {
     DOCKER_HUB              = "${DOCKER_HUB}"
     VICTORIA_LOGS_VERSION   = "${version}"
+    VMAUTH_VERSION          = "${VMAUTH_VERSION}"
     ALPINE_VERSION          = "${ALPINE_VERSION}"
   }
 

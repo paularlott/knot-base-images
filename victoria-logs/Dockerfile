@@ -2,12 +2,17 @@
 
 ARG DOCKER_HUB=
 ARG VICTORIA_LOGS_VERSION=1.52.0
+ARG VMAUTH_VERSION=1.148.0
 ARG ALPINE_VERSION=3.20
 
-# Stage 1: the upstream image ships a statically-linked binary we can lift out.
-FROM ${DOCKER_HUB}victoriametrics/victoria-logs:v${VICTORIA_LOGS_VERSION} AS upstream
+# Stage 1: VictoriaLogs static binary (upstream is distroless).
+FROM ${DOCKER_HUB}victoriametrics/victoria-logs:v${VICTORIA_LOGS_VERSION} AS vl-upstream
 
-# Stage 2: Alpine + knot toolchain (upstream is distroless, so we rebase).
+# Stage 2: vmauth static binary — the VictoriaMetrics auth proxy put in front
+# of VictoriaLogs for HTTP basic auth.
+FROM ${DOCKER_HUB}victoriametrics/vmauth:v${VMAUTH_VERSION} AS vmauth-upstream
+
+# Stage 3: Alpine + knot toolchain (upstream is distroless, so we rebase).
 FROM ${DOCKER_HUB}alpine:${ALPINE_VERSION}
 
 ARG TZ='Etc/UTC'
@@ -39,8 +44,9 @@ RUN apk add --no-cache bash curl libcap rsyslog unzip sudo tzdata \
   && mkdir -p /home/victoria-logs /data \
   && chown victoria-logs:victoria-logs /home/victoria-logs /data
 
-# Copy the static binary from the upstream image
-COPY --from=upstream /victoria-logs-prod /usr/local/bin/victoria-logs
+# Copy the static binaries from the upstream images
+COPY --from=vl-upstream /victoria-logs-prod /usr/local/bin/victoria-logs
+COPY --from=vmauth-upstream /vmauth-prod /usr/local/bin/vmauth
 
 # Copy files
 COPY knot-entrypoint /usr/local/bin/

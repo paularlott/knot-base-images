@@ -87,6 +87,39 @@ fi
 # command — e.g. set VICTORIA_LOGS_RETENTION_PERIOD=7d in the space/template.
 set -- -retentionPeriod "${VICTORIA_LOGS_RETENTION_PERIOD:-30d}" "$@"
 
+# If auth credentials are provided, put vmauth (HTTP basic auth proxy) in front
+# of VictoriaLogs. vmauth listens on :9428 and proxies to VictoriaLogs on the
+# loopback (127.0.0.1:8428). Without credentials, VictoriaLogs is exposed
+# directly on :9428 with no auth.
+if [ -n "${VICTORIA_LOGS_USERNAME:-}" ] && [ -n "${VICTORIA_LOGS_PASSWORD:-}" ]; then
+  # Build the vmauth config from env vars. Values are escaped for YAML
+  # single-quoted strings (a single quote is doubled) so arbitrary secrets,
+  # including those with special characters, are safe.
+  vl_user=$(printf '%s' "${VICTORIA_LOGS_USERNAME}" | sed "s/'/''/g")
+  vl_pass=$(printf '%s' "${VICTORIA_LOGS_PASSWORD}" | sed "s/'/''/g")
+  mkdir -p /etc/vmauth
+  cat > /etc/vmauth/auth.yml <<EOF
+users:
+  - username: '${vl_user}'
+    password: '${vl_pass}'
+    url_prefix:
+      - http://127.0.0.1:8428
+EOF
+  chown ${KNOT_USER}:${KNOT_USER} /etc/vmauth/auth.yml
+  chmod 600 /etc/vmauth/auth.yml
+
+  echo "Starting vmauth (basic auth) on :9428 -> 127.0.0.1:8428..."
+  gosu ${KNOT_USER} /usr/local/bin/vmauth \
+    -auth.config=/etc/vmauth/auth.yml \
+    -httpListenAddr=:9428 2>&1 | logger -t 'vmauth' -p daemon.info &
+
+  # VictoriaLogs listens on the loopback only; vmauth exposes :9428.
+  set -- -httpListenAddr=127.0.0.1:8428 "$@"
+else
+  echo "VICTORIA_LOGS_USERNAME/VICTORIA_LOGS_PASSWORD not set - running without auth on :9428"
+  set -- -httpListenAddr=:9428 "$@"
+fi
+
 # Run victoria-logs as the victoria-logs user, piping output to syslog (it only
 # supports stderr/stdout logging) so the knot agent captures the logs.
 exec gosu ${KNOT_USER} /usr/local/bin/victoria-logs "$@" 2>&1 | logger -t 'victoria-logs' -p daemon.info
