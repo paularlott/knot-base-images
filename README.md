@@ -24,6 +24,7 @@ These images are designed first and foremost for **knot spaces**, but they are o
 | [`knot-node`](node/README.md) | Ubuntu + Node.js LTS and corepack (`pnpm` / `yarn`) — pure runtime image. | [`node/`](node/) |
 | [`knot-mariadb`](mariadb/README.md) | MariaDB with the knot entrypoint, agent integration and syslog logging. | [`mariadb/`](mariadb/) |
 | [`knot-mysql`](mysql/README.md) | MySQL with the knot entrypoint, agent integration and syslog logging. | [`mysql/`](mysql/) |
+| [`knot-postgres`](postgres/README.md) | PostgreSQL with the knot entrypoint, agent integration and syslog logging. | [`postgres/`](postgres/) |
 | [`knot-valkey`](valkey/README.md) | Valkey (the Redis fork) with the knot entrypoint, agent integration and syslog logging. | [`valkey/`](valkey/) |
 | [`knot-redis`](redis/README.md) | Redis with the knot entrypoint, agent integration and syslog logging. | [`redis/`](redis/) |
 | [`knot-mailpit`](mailpit/README.md) | Mailpit SMTP mail catcher with the knot entrypoint, agent integration and syslog logging. | [`mailpit/`](mailpit/) |
@@ -41,6 +42,7 @@ knot-caddy
 knot-frankenphp   (standalone, official FrankenPHP base)
 knot-mariadb      (standalone, official MariaDB base)
 knot-mysql        (standalone, official MySQL base)
+knot-postgres     (standalone, official PostgreSQL base)
 knot-valkey       (standalone, official Valkey base)
 knot-redis        (standalone, official Redis base)
 knot-mailpit      (standalone, official Mailpit base)
@@ -105,6 +107,7 @@ Version matrices and the image namespace are configurable through environment va
 | `NODE_VERSIONS` | Node.js majors for `knot-node` |
 | `MARIADB_VERSIONS` | MariaDB versions |
 | `MYSQL_VERSIONS` | MySQL versions |
+| `POSTGRES_VERSIONS` | PostgreSQL versions |
 | `VALKEY_VERSIONS` | Valkey versions |
 | `REDIS_VERSIONS` | Redis versions |
 | `MAILPIT_VERSIONS` | Mailpit versions |

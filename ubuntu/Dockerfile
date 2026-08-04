@@ -29,7 +29,7 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
     tzdata procps rsync openssh-client openssh-server sudo tzdata fish iputils-ping htop iproute2 iftop rsync \
     git vim curl wget unzip locales ssl-cert gettext software-properties-common lsb-release \
     uuid-runtime screen apt-transport-https dnsutils iputils-ping gnupg2 \
-    cron logrotate mariadb-client valkey-tools jq gettext-base make direnv nano rsyslog tmux \
+    cron logrotate mariadb-client postgresql-client valkey-tools jq gettext-base make direnv nano rsyslog tmux \
     bat ripgrep fzf zoxide \
   \
   # gosu - https://github.com/tianon/gosu/releases (latest)

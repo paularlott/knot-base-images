@@ -78,6 +78,11 @@ variable "MYSQL_VERSIONS" {
   default = ["9.7"]
 }
 
+variable "POSTGRES_VERSIONS" {
+  type    = list(string)
+  default = ["18"]
+}
+
 variable "VALKEY_VERSIONS" {
   type    = list(string)
   default = ["9.1.1"]
@@ -145,6 +150,7 @@ group "default" {
     "knot-valkey",
     "knot-mariadb",
     "knot-mysql",
+    "knot-postgres",
     "knot-redis",
     "knot-mailpit",
     "knot-victoria-logs",
@@ -427,6 +433,43 @@ target "knot-mysql" {
   cache-to = [{
     type              = "registry"
     ref               = "${cache_base()}/knot-mysql:buildcache-${version}"
+    mode              = "max"
+    "oci-media-types" = true
+    "image-manifest"  = true
+  }]
+}
+
+target "knot-postgres" {
+  name        = "knot-postgres-${replace(version, ".", "-")}"
+  description = "PostgreSQL image"
+  matrix      = { version = POSTGRES_VERSIONS }
+  inherits    = ["_common"]
+  context     = "./postgres"
+
+  labels = {
+    "org.opencontainers.image.title"       = "Knot PostgreSQL"
+    "org.opencontainers.image.description" = "PostgreSQL image with knot startup tooling"
+    "org.opencontainers.image.version"     = "${version}"
+  }
+
+  args = {
+    DOCKER_HUB       = "${DOCKER_HUB}"
+    APT_CACHE        = "${APT_CACHE}"
+    POSTGRES_VERSION = "${version}"
+  }
+
+  tags = [
+    "${TAG_BASE}/knot-postgres:${version}",
+    "${TAG_BASE}/knot-postgres:${version}-${BUILD_DATE}",
+  ]
+
+  cache-from = [{
+    type = "registry"
+    ref  = "${cache_base()}/knot-postgres:buildcache-${version}"
+  }]
+  cache-to = [{
+    type              = "registry"
+    ref               = "${cache_base()}/knot-postgres:buildcache-${version}"
     mode              = "max"
     "oci-media-types" = true
     "image-manifest"  = true
