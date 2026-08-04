@@ -19,6 +19,9 @@ These images are designed first and foremost for **knot spaces**, but they are o
 | [`knot-caddy`](caddy/README.md) | Caddy web server built with `xcaddy`, including DNS-01 and TLS storage modules. | [`caddy/`](caddy/) |
 | [`knot-php`](php/README.md) | Ubuntu + Caddy + PHP-FPM, Composer and Node.js — serves `~/public_html`. | [`php/`](php/) |
 | [`knot-frankenphp`](frankenphp/README.md) | Ubuntu + FrankenPHP (Caddy + PHP in one process) with Composer and Node.js. | [`frankenphp/`](frankenphp/) |
+| [`knot-go`](go/README.md) | Ubuntu + the Go toolchain — pure runtime image. | [`go/`](go/) |
+| [`knot-python`](python/README.md) | Ubuntu + Python and `uv` — pure runtime image. | [`python/`](python/) |
+| [`knot-node`](node/README.md) | Ubuntu + Node.js LTS and corepack (`pnpm` / `yarn`) — pure runtime image. | [`node/`](node/) |
 | [`knot-mariadb`](mariadb/README.md) | MariaDB with the knot entrypoint, agent integration and syslog logging. | [`mariadb/`](mariadb/) |
 | [`knot-mysql`](mysql/README.md) | MySQL with the knot entrypoint, agent integration and syslog logging. | [`mysql/`](mysql/) |
 | [`knot-valkey`](valkey/README.md) | Valkey (the Redis fork) with the knot entrypoint, agent integration and syslog logging. | [`valkey/`](valkey/) |
@@ -30,7 +33,10 @@ These images are designed first and foremost for **knot spaces**, but they are o
 
 ```
 knot-ubuntu ──┬── knot-desktop
-              └── knot-php ── (uses knot-caddy)
+              ├── knot-php ── (uses knot-caddy)
+              ├── knot-go
+              ├── knot-python
+              └── knot-node
 knot-caddy
 knot-frankenphp   (standalone, official FrankenPHP base)
 knot-mariadb      (standalone, official MariaDB base)
@@ -92,6 +98,11 @@ Version matrices and the image namespace are configurable through environment va
 | `UBUNTU_VERSIONS` | Ubuntu versions to build |
 | `PHP_VERSIONS` | PHP versions for `knot-php` |
 | `FRANKENPHP_VERSIONS` | PHP versions for `knot-frankenphp` |
+| `PHP_UBUNTU_BASE_VERSION` | Ubuntu base version for `knot-php` |
+| `UBUNTU_BASE_VERSION` | Ubuntu base version for the runtime images (`knot-go` / `knot-python` / `knot-node`) |
+| `GO_VERSIONS` | Go versions for `knot-go` |
+| `PYTHON_VERSIONS` | Python versions for `knot-python` |
+| `NODE_VERSIONS` | Node.js majors for `knot-node` |
 | `MARIADB_VERSIONS` | MariaDB versions |
 | `MYSQL_VERSIONS` | MySQL versions |
 | `VALKEY_VERSIONS` | Valkey versions |

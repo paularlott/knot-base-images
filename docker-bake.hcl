@@ -31,6 +31,25 @@ variable "PHP_UBUNTU_BASE_VERSION" {
   default = "24.04"
 }
 
+variable "UBUNTU_BASE_VERSION" {
+  default = "26.04"
+}
+
+variable "GO_VERSIONS" {
+  type    = list(string)
+  default = ["1.26"]
+}
+
+variable "PYTHON_VERSIONS" {
+  type    = list(string)
+  default = ["3.14"]
+}
+
+variable "NODE_VERSIONS" {
+  type    = list(string)
+  default = ["24", "26"]
+}
+
 variable "PHP_VERSIONS" {
   type    = list(string)
   default = ["8.5"]
@@ -129,6 +148,9 @@ group "default" {
     "knot-redis",
     "knot-mailpit",
     "knot-victoria-logs",
+    "knot-go",
+    "knot-python",
+    "knot-node",
   ]
 }
 
@@ -554,6 +576,138 @@ target "knot-victoria-logs" {
   cache-to = [{
     type              = "registry"
     ref               = "${cache_base()}/knot-victoria-logs:buildcache-${version}"
+    mode              = "max"
+    "oci-media-types" = true
+    "image-manifest"  = true
+  }]
+}
+
+target "knot-go" {
+  name        = "knot-go-${replace(version, ".", "-")}"
+  description = "Go runtime image"
+  matrix      = { version = GO_VERSIONS }
+  inherits    = ["_common"]
+  context     = "./go"
+
+  labels = {
+    "org.opencontainers.image.title"       = "Knot Go"
+    "org.opencontainers.image.description" = "Go runtime image with knot startup tooling"
+    "org.opencontainers.image.version"     = "${version}"
+  }
+
+  contexts = {
+    "${TAG_BASE}/knot-ubuntu:${UBUNTU_BASE_VERSION}" = "target:knot-ubuntu-${replace(UBUNTU_BASE_VERSION, ".", "-")}"
+  }
+
+  args = {
+    IMAGE_BASE    = "ubuntu"
+    IMAGE_VERSION = "${UBUNTU_BASE_VERSION}"
+    DOCKER_HUB    = "${DOCKER_HUB}"
+    APT_CACHE     = "${APT_CACHE}"
+    TAG_BASE      = "${TAG_BASE}"
+    GO_VERSION    = "${version}"
+  }
+
+  tags = [
+    "${TAG_BASE}/knot-go:${version}",
+    "${TAG_BASE}/knot-go:${version}-${BUILD_DATE}",
+  ]
+
+  cache-from = [{
+    type = "registry"
+    ref  = "${cache_base()}/knot-go:buildcache-${version}"
+  }]
+  cache-to = [{
+    type              = "registry"
+    ref               = "${cache_base()}/knot-go:buildcache-${version}"
+    mode              = "max"
+    "oci-media-types" = true
+    "image-manifest"  = true
+  }]
+}
+
+target "knot-python" {
+  name        = "knot-python-${replace(version, ".", "-")}"
+  description = "Python runtime image"
+  matrix      = { version = PYTHON_VERSIONS }
+  inherits    = ["_common"]
+  context     = "./python"
+
+  labels = {
+    "org.opencontainers.image.title"       = "Knot Python"
+    "org.opencontainers.image.description" = "Python runtime image with knot startup tooling"
+    "org.opencontainers.image.version"     = "${version}"
+  }
+
+  contexts = {
+    "${TAG_BASE}/knot-ubuntu:${UBUNTU_BASE_VERSION}" = "target:knot-ubuntu-${replace(UBUNTU_BASE_VERSION, ".", "-")}"
+  }
+
+  args = {
+    IMAGE_BASE     = "ubuntu"
+    IMAGE_VERSION  = "${UBUNTU_BASE_VERSION}"
+    DOCKER_HUB     = "${DOCKER_HUB}"
+    APT_CACHE      = "${APT_CACHE}"
+    TAG_BASE       = "${TAG_BASE}"
+    PYTHON_VERSION = "${version}"
+  }
+
+  tags = [
+    "${TAG_BASE}/knot-python:${version}",
+    "${TAG_BASE}/knot-python:${version}-${BUILD_DATE}",
+  ]
+
+  cache-from = [{
+    type = "registry"
+    ref  = "${cache_base()}/knot-python:buildcache-${version}"
+  }]
+  cache-to = [{
+    type              = "registry"
+    ref               = "${cache_base()}/knot-python:buildcache-${version}"
+    mode              = "max"
+    "oci-media-types" = true
+    "image-manifest"  = true
+  }]
+}
+
+target "knot-node" {
+  name        = "knot-node-${replace(version, ".", "-")}"
+  description = "Node.js runtime image"
+  matrix      = { version = NODE_VERSIONS }
+  inherits    = ["_common"]
+  context     = "./node"
+
+  labels = {
+    "org.opencontainers.image.title"       = "Knot Node"
+    "org.opencontainers.image.description" = "Node.js runtime image with knot startup tooling"
+    "org.opencontainers.image.version"     = "${version}"
+  }
+
+  contexts = {
+    "${TAG_BASE}/knot-ubuntu:${UBUNTU_BASE_VERSION}" = "target:knot-ubuntu-${replace(UBUNTU_BASE_VERSION, ".", "-")}"
+  }
+
+  args = {
+    IMAGE_BASE    = "ubuntu"
+    IMAGE_VERSION = "${UBUNTU_BASE_VERSION}"
+    DOCKER_HUB    = "${DOCKER_HUB}"
+    APT_CACHE     = "${APT_CACHE}"
+    TAG_BASE      = "${TAG_BASE}"
+    NODE_MAJOR    = "${version}"
+  }
+
+  tags = [
+    "${TAG_BASE}/knot-node:${version}",
+    "${TAG_BASE}/knot-node:${version}-${BUILD_DATE}",
+  ]
+
+  cache-from = [{
+    type = "registry"
+    ref  = "${cache_base()}/knot-node:buildcache-${version}"
+  }]
+  cache-to = [{
+    type              = "registry"
+    ref               = "${cache_base()}/knot-node:buildcache-${version}"
     mode              = "max"
     "oci-media-types" = true
     "image-manifest"  = true
