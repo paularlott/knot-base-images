@@ -31,6 +31,13 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/dnf \
   && chown mysql:mysql /home/mysql \
   && usermod -d /home/mysql mysql
 
+RUN mkdir -p /var/lib/mysql-keyring \
+  && chown mysql:mysql /var/lib/mysql-keyring \
+  && _plugindir="$(mysqld --verbose --help 2>/dev/null | awk '/^plugin-dir[[:space:]]/{print $2; exit}')" \
+  && printf '{\n  "path": "/var/lib/mysql-keyring/keyring",\n  "read_only": false\n}\n' \
+     > "${_plugindir}/component_keyring_file.cnf" \
+  && chmod 644 "${_plugindir}/component_keyring_file.cnf"
+
 # Copy files
 COPY knot-entrypoint /usr/local/bin/
 COPY localaccess.sql /docker-entrypoint-initdb.d/

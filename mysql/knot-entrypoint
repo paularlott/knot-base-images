@@ -75,6 +75,66 @@ if [ -d /home/${KNOT_USER}/.knot-startup.d/ ]; then
   done
 fi
 
+if [ -n "${MYSQL_ENCRYPTION_KEY:-}" ]; then
+  KEYRING_DIR="/var/lib/mysql-keyring"
+  KEYRING_FILE="$KEYRING_DIR/keyring"
+  ENC_KEYRING="/var/lib/mysql/.mysql-keyring.enc"
+  PASSDIR="/run/mysql-encryption"
+  PASSFILE="$PASSDIR/pass"
+  MANIFEST="/usr/sbin/mysqld.my"
+  ENCCFG="/etc/mysql/conf.d/zz-knot-encryption.cnf"
+
+  mkdir -p "$KEYRING_DIR" "$PASSDIR"
+  chown mysql:mysql "$KEYRING_DIR"
+  printf '%s' "$MYSQL_ENCRYPTION_KEY" > "$PASSFILE"
+  chmod 0400 "$PASSFILE"
+
+  printf '{\n  "components": "file://component_keyring_file"\n}\n' > "$MANIFEST"
+  chmod 644 "$MANIFEST"
+
+  if [ -f "$ENC_KEYRING" ]; then
+    if ! openssl enc -d -aes-256-cbc -md sha256 -salt -pass file:"$PASSFILE" \
+         -in "$ENC_KEYRING" -out "$KEYRING_FILE"; then
+      echo >&2 "error: MYSQL_ENCRYPTION_KEY does not match the keyring used to encrypt this data directory"
+      exit 1
+    fi
+  else
+    : > "$KEYRING_FILE"
+  fi
+  chown mysql:mysql "$KEYRING_FILE"
+  chmod 660 "$KEYRING_FILE"
+
+  cat > "$ENCCFG" <<EOF
+# Managed by knot-entrypoint when MYSQL_ENCRYPTION_KEY is set - do not edit.
+[mysqld]
+default_table_encryption=ON
+innodb_redo_log_encrypt=ON
+innodb_undo_log_encrypt=ON
+binlog_encryption=ON
+EOF
+
+  logger -p local0.info "MySQL data-at-rest encryption enabled (component_keyring_file)"
+
+  (
+    set +e
+    _last=""
+    while true; do
+      if [ -s "$KEYRING_FILE" ]; then
+        _sz=$(wc -c < "$KEYRING_FILE" 2>/dev/null || echo 0)
+        if [ "$_sz" != "$_last" ]; then
+          _tmp="${ENC_KEYRING}.tmp"
+          if openssl enc -aes-256-cbc -md sha256 -salt -pass file:"$PASSFILE" \
+               -in "$KEYRING_FILE" -out "$_tmp" 2>/dev/null; then
+            mv "$_tmp" "$ENC_KEYRING"
+            _last="$_sz"
+          fi
+        fi
+      fi
+      sleep 10
+    done
+  ) &
+fi
+
 # Run the old entrypoint
 if [ "$@" = 'mysqld' ]; then
   exec /usr/local/bin/docker-entrypoint.sh "$@" 2>&1 | logger -t 'mysqld' -p daemon.error

@@ -75,6 +75,43 @@ if [ -d /home/${KNOT_USER}/.knot-startup.d/ ]; then
   done
 fi
 
+if [ -n "${MARIADB_ENCRYPTION_KEY:-}" ]; then
+  ENC_KEYFILE="/var/lib/mysql/.mariadb-keyfile.enc"
+  PASSFILE="/run/mariadb-encryption-key"
+  ENCCFG="/etc/mysql/mariadb.conf.d/zz-knot-encryption.cnf"
+
+  mkdir -p /run
+  printf '%s' "$MARIADB_ENCRYPTION_KEY" > "$PASSFILE"
+  chown mysql:mysql "$PASSFILE"
+  chmod 0400 "$PASSFILE"
+
+  if [ ! -f "$ENC_KEYFILE" ]; then
+    _keyfile_plain="$(mktemp)"
+    printf '1;%s\n' "$(openssl rand -hex 32)" > "$_keyfile_plain"
+    openssl enc -aes-256-cbc -md sha1 -salt -pass file:"$PASSFILE" \
+      -in "$_keyfile_plain" -out "$ENC_KEYFILE"
+    rm -f "$_keyfile_plain"
+  fi
+  chown mysql:mysql "$ENC_KEYFILE" 2>/dev/null || true
+  chmod 0400 "$ENC_KEYFILE"
+
+  cat > "$ENCCFG" <<EOF
+# Managed by knot-entrypoint when MARIADB_ENCRYPTION_KEY is set - do not edit.
+[mariadb]
+plugin_load_add = file_key_management
+loose_file_key_management_filename = $ENC_KEYFILE
+loose_file_key_management_filekey = FILE:$PASSFILE
+innodb_encrypt_tables = FORCE
+innodb_encrypt_log = ON
+innodb_encryption_threads = 4
+aria_encrypt_tables = ON
+encrypt_binlog = ON
+encrypt_tmp_files = ON
+EOF
+
+  logger -p local0.info "MariaDB data-at-rest encryption enabled (file_key_management)"
+fi
+
 # Run the old entrypoint
 if [ "$@" = 'mariadbd' ]; then
   exec /usr/local/bin/docker-entrypoint.sh "$@" 2>&1 | logger -t 'mysqld' -p daemon.error

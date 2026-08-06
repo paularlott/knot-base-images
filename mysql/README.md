@@ -48,6 +48,28 @@ The image layers the knot entrypoint on top of the official MySQL image. On star
 
 - **Home directory** — the `mysql` user's home is relocated from `/var/lib/mysql` (the data directory) to `/home/mysql`, so the knot agent's state and user startup hooks live under `/home/mysql/.knot` and `~/.knot-startup.d/` instead of colliding with database files.
 - **Local root access** — `/docker-entrypoint-initdb.d/localaccess.sql` clears the `root@localhost` password on first initialisation so that `mysqladmin ping` works for health checks.
+- **Data-at-rest encryption** — see [Encryption](#data-at-rest-encryption).
+
+## Data-at-rest encryption
+
+Set `MYSQL_ENCRYPTION_KEY` to a non-empty passphrase to transparently encrypt the database at rest using MySQL's `component_keyring_file` keyring component. When the variable is set, the entrypoint:
+
+1. Loads `component_keyring_file` at startup via a `mysqld.my` manifest, with its keyring data file at `/var/lib/mysql-keyring/keyring` (kept outside the data directory, as required by the component).
+2. Writes `/etc/mysql/conf.d/zz-knot-encryption.cnf` that enables `default_table_encryption`, InnoDB redo and undo log encryption, and binary log encryption.
+3. Wraps the keyring with the passphrase: the keyring is stored **encrypted** in the data directory (`/var/lib/mysql/.mysql-keyring.enc`) and decrypted to the runtime location on each start; a background loop keeps the encrypted copy up to date as MySQL writes keys. The passphrase itself lives only on tmpfs for the lifetime of the container, so the **persistent volume never holds the plaintext keyring**.
+
+Because the encrypted keyring lives in the data directory (persisted across restarts) and the passphrase is injected at runtime via the environment, a stolen volume alone is useless without the passphrase.
+
+```yaml
+environment:
+  - MYSQL_ROOT_PASSWORD=${{.user.service_password}}
+  - MYSQL_ENCRYPTION_KEY=${{.user.service_password}}
+```
+
+**Caveats:**
+- The keyring is generated on first initialisation. **Do not change `MYSQL_ENCRYPTION_KEY` afterwards** — MySQL will be unable to decrypt the existing data and refuse to start. Treat the passphrase like any other secret: store it in a password manager / secret provider and keep it stable.
+- MySQL Community ships only the file-based `component_keyring_file`; this image wraps it with `openssl` (`AES-256-CBC`) so the keyring is encrypted with the passphrase. The encrypted copy is refreshed every few seconds; a hard crash within a few seconds of first initialisation could lose keys written in that window, so avoid force-killing a space during its first boot.
+- This protects data at rest; it is not a substitute for a hardware security module (HSM) or external KMS for regulatory compliance.
 
 ## Environment variables
 
@@ -59,6 +81,7 @@ The image layers the knot entrypoint on top of the official MySQL image. On star
 | `KNOT_SPACEID` | _(unset)_ | Space identifier |
 | `KNOT_SYSLOG_PORT` | `1514` | Syslog forward target (`0` disables forwarding) |
 | `TZ` | `Etc/UTC` | Timezone |
+| `MYSQL_ENCRYPTION_KEY` | _(unset)_ | Set to a non-empty passphrase to enable data-at-rest encryption (see below) |
 
 Plus all standard MySQL variables (`MYSQL_ROOT_PASSWORD`, `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD`, …) and MySQL config files mounted under `/etc/mysql/`.
 

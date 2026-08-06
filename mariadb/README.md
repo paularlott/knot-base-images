@@ -48,6 +48,28 @@ The image layers the knot entrypoint on top of the official MariaDB image. On st
 
 - **Logging** — `/etc/mysql/mariadb.conf.d/99-logging.cnf` routes the server error log to syslog so it is captured by the knot agent.
 - **Local root access** — `/docker-entrypoint-initdb.d/localaccess.sql` clears the `root@localhost` password on first initialisation so that `mysqladmin ping` works for health checks.
+- **Data-at-rest encryption** — see [Encryption](#data-at-rest-encryption).
+
+## Data-at-rest encryption
+
+Set `MARIADB_ENCRYPTION_KEY` to a non-empty passphrase to transparently encrypt the database at rest using MariaDB's `file_key_management` plugin. When the variable is set, the entrypoint:
+
+1. Generates a random 256-bit encryption key (id `1`) on first start and stores it in `/var/lib/mysql/.mariadb-keyfile.enc`, encrypted with the passphrase via `openssl` (`AES-256-CBC`, SHA-1 digest — the format MariaDB expects).
+2. Writes `/etc/mysql/mariadb.conf.d/zz-knot-encryption.cnf` (loaded automatically) that loads `file_key_management` and forces encryption of InnoDB tables, the InnoDB redo log, Aria tables, the binary log and temporary files.
+3. Keeps the passphrase only on tmpfs (`/run/...`) for the lifetime of the container — the **persistent volume never holds the plaintext key**.
+
+The encrypted key file lives in the data directory (persisted across restarts), while the passphrase is injected at runtime via the environment. A stolen volume alone is therefore useless without the passphrase.
+
+```yaml
+environment:
+  - MARIADB_ROOT_PASSWORD=${{.user.service_password}}
+  - MARIADB_ENCRYPTION_KEY=${{.user.service_password}}
+```
+
+**Caveats:**
+- The key is generated once on first initialisation. **Do not change `MARIADB_ENCRYPTION_KEY` afterwards** — MariaDB will be unable to decrypt the existing data and refuse to start. Treat the passphrase like any other secret: store it in a password manager / secret provider and keep it stable.
+- Enabling encryption on an already-populated volume re-encrypts tables in the background; keep `innodb_encrypt_threads` capacity in mind.
+- This protects data at rest; it is not a substitute for a hardware security module (HSM) or external KMS for regulatory compliance.
 
 ## Environment variables
 
@@ -59,6 +81,7 @@ The image layers the knot entrypoint on top of the official MariaDB image. On st
 | `KNOT_SPACEID` | _(unset)_ | Space identifier |
 | `KNOT_SYSLOG_PORT` | `1514` | Syslog forward target (`0` disables forwarding) |
 | `TZ` | `Etc/UTC` | Timezone |
+| `MARIADB_ENCRYPTION_KEY` | _(unset)_ | Set to a non-empty passphrase to enable data-at-rest encryption (see below) |
 
 Plus all standard MariaDB variables (`MARIADB_ROOT_PASSWORD`, `MARIADB_DATABASE`, `MARIADB_USER`, `MARIADB_PASSWORD`, …) and MariaDB config files mounted under `/etc/mysql/`.
 
