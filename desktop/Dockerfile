@@ -51,9 +51,12 @@ COPY files/misc/chromium /usr/local/bin/
 COPY files/backgrounds/ /usr/share/backgrounds/
 ADD https://github.com/EliverLara/Nordic/releases/download/v2.2.0/Nordic-darker.tar.xz /usr/share/assets/
 
-RUN set -e; \
+RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
+    --mount=type=cache,sharing=private,target=/var/lib/apt \
+  set -e; \
   ARCH=$(uname -m); \
   CODENAME=$(lsb_release -cs); \
+  if [ -n "$APT_CACHE" ]; then echo "Acquire::HTTP::Proxy \"$APT_CACHE\";" > /etc/apt/apt.conf.d/00proxy; fi; \
   if [ -z "$KASMVNC_VERSION" ]; then \
     KASMVNC_VERSION=$(wget -qO- https://api.github.com/repos/kasmtech/KasmVNC/releases/latest \
       | jq -r '.tag_name | ltrimstr("v")'); \
@@ -70,6 +73,8 @@ RUN set -e; \
   esac; \
   echo "Installing KasmVNC ${KASMVNC_VERSION} (${CODENAME})"; \
   wget -O "/tmp/kasmvncserver.deb" "$url"; \
-  dpkg -i /tmp/kasmvncserver.deb; \
+  apt-get update -y; \
+  apt-get install -y /tmp/kasmvncserver.deb; \
   rm /tmp/kasmvncserver.deb; \
+  if [ -n "$APT_CACHE" ]; then rm -f /etc/apt/apt.conf.d/00proxy; fi; \
   chmod +r /usr/share/assets/* /usr/share/backgrounds/*
