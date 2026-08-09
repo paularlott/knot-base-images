@@ -68,6 +68,10 @@ variable "FRANKENPHP_VERSION" {
   default = "1.12.6"
 }
 
+variable "SCRIPTLING_VERSION" {
+  default = "v0.20.1"
+}
+
 variable "MARIADB_VERSIONS" {
   type    = list(string)
   default = ["12.3"]
@@ -146,6 +150,7 @@ group "default" {
     "knot-caddy",
     "knot-php",
     "knot-frankenphp",
+    "knot-frankenscriptling",
     "knot-ubuntu-desktop",
     "knot-valkey",
     "knot-mariadb",
@@ -360,6 +365,50 @@ target "knot-frankenphp" {
   cache-to = [{
     type              = "registry"
     ref               = "${cache_base()}/knot-frankenphp:buildcache-${php}"
+    mode              = "max"
+    "oci-media-types" = true
+    "image-manifest"  = true
+  }]
+}
+
+target "knot-frankenscriptling" {
+  name        = "knot-frankenscriptling-${replace(php, ".", "-")}"
+  description = "FrankenPHP with the Scriptling PHP extension"
+  matrix      = {
+    php = FRANKENPHP_VERSIONS
+  }
+  inherits    = ["_common"]
+  context     = "./frankenscriptling"
+
+  labels = {
+    "org.opencontainers.image.title"       = "Knot FrankenScriptling"
+    "org.opencontainers.image.description" = "FrankenPHP with the Scriptling PHP extension"
+    "org.opencontainers.image.version"     = "${php}"
+  }
+
+  contexts = {
+    "${TAG_BASE}/knot-frankenphp:${php}" = "target:knot-frankenphp-${replace(php, ".", "-")}"
+  }
+
+  args = {
+    FRANKENPHP_VERSION = "${FRANKENPHP_VERSION}"
+    PHP_VERSION        = "${php}"
+    SCRIPTLING_VERSION = "${SCRIPTLING_VERSION}"
+    TAG_BASE           = "${TAG_BASE}"
+  }
+
+  tags = [
+    "${TAG_BASE}/knot-frankenscriptling:${php}",
+    "${TAG_BASE}/knot-frankenscriptling:${php}-${BUILD_DATE}",
+  ]
+
+  cache-from = [{
+    type = "registry"
+    ref  = "${cache_base()}/knot-frankenscriptling:buildcache-${php}"
+  }]
+  cache-to = [{
+    type              = "registry"
+    ref               = "${cache_base()}/knot-frankenscriptling:buildcache-${php}"
     mode              = "max"
     "oci-media-types" = true
     "image-manifest"  = true

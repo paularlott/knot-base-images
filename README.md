@@ -19,6 +19,7 @@ These images are designed first and foremost for **knot spaces**, but they are o
 | [`knot-caddy`](caddy/README.md) | Caddy web server built with `xcaddy`, including DNS-01 and TLS storage modules. | [`caddy/`](caddy/) |
 | [`knot-php`](php/README.md) | Ubuntu + Caddy + PHP-FPM, Composer and Node.js — serves `~/public_html`. | [`php/`](php/) |
 | [`knot-frankenphp`](frankenphp/README.md) | Ubuntu + FrankenPHP (Caddy + PHP in one process) with Composer and Node.js. | [`frankenphp/`](frankenphp/) |
+| [`knot-frankenscriptling`](frankenscriptling/README.md) | `knot-frankenphp` + the Scriptling PHP extension. | [`frankenscriptling/`](frankenscriptling/) |
 | [`knot-go`](go/README.md) | Ubuntu + the Go toolchain — pure runtime image. | [`go/`](go/) |
 | [`knot-python`](python/README.md) | Ubuntu + Python and `uv` — pure runtime image. | [`python/`](python/) |
 | [`knot-node`](node/README.md) | Ubuntu + Node.js LTS and corepack (`pnpm` / `yarn`) — pure runtime image. | [`node/`](node/) |
@@ -40,6 +41,7 @@ knot-ubuntu ──┬── knot-desktop
               └── knot-node
 knot-caddy
 knot-frankenphp   (standalone, official FrankenPHP base)
+knot-frankenscriptling (builds on knot-frankenphp, adds the Scriptling PHP extension)
 knot-mariadb      (standalone, official MariaDB base)
 knot-mysql        (standalone, official MySQL base)
 knot-postgres     (standalone, official PostgreSQL base)
@@ -99,7 +101,7 @@ Version matrices and the image namespace are configurable through environment va
 | `APT_CACHE` | `http://host:3142` apt proxy used during build |
 | `UBUNTU_VERSIONS` | Ubuntu versions to build |
 | `PHP_VERSIONS` | PHP versions for `knot-php` |
-| `FRANKENPHP_VERSIONS` | PHP versions for `knot-frankenphp` |
+| `FRANKENPHP_VERSIONS` | PHP versions for `knot-frankenphp` and `knot-frankenscriptling` |
 | `PHP_UBUNTU_BASE_VERSION` | Ubuntu base version for `knot-php` |
 | `UBUNTU_BASE_VERSION` | Ubuntu base version for the runtime images (`knot-go` / `knot-python` / `knot-node`) |
 | `GO_VERSIONS` | Go versions for `knot-go` |
@@ -115,6 +117,7 @@ Version matrices and the image namespace are configurable through environment va
 | `ALPINE_VERSION` | Alpine base version (for `knot-victoria-logs`) |
 | `CADDY_VERSION` | Caddy version |
 | `FRANKENPHP_VERSION` | FrankenPHP release |
+| `SCRIPTLING_VERSION` | Scriptling release tag (for `knot-frankenscriptling`) |
 
 Each target is tagged both as `<version>` and `<version>-<BUILD_DATE>` (Valkey additionally gets a `major.minor` tag).
 

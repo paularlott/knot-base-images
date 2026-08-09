@@ -29,6 +29,7 @@ VMAUTH_VERSION ?= 1.148.0
 ALPINE_VERSION ?= 3.20
 CADDY_VERSION ?= 2.11.4
 FRANKENPHP_VERSION ?= 1.12.7
+SCRIPTLING_VERSION ?= v0.20.1
 
 BUILD_DATE ?= $(shell date -u +'%Y%m%d')
 
@@ -50,6 +51,7 @@ export PHP_UBUNTU_BASE_VERSION
 export UBUNTU_BASE_VERSION
 export CADDY_VERSION
 export FRANKENPHP_VERSION
+export SCRIPTLING_VERSION
 export BUILD_DATE
 export UBUNTU_VERSIONS := $(subst $(space),$(comma),$(UBUNTU_VERSIONS))
 export PHP_VERSIONS := $(subst $(space),$(comma),$(PHP_VERSIONS))
