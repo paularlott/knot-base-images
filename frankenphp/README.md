@@ -21,11 +21,7 @@ docker run -d \
   paularlott/knot-frankenphp:8.5
 ```
 
-Files in the mounted home's `public_html` are served at `http://localhost:8080`:
-
-```bash
-echo '<?php phpinfo();' > ~/public_html/index.php
-```
+Files in the mounted home's `public_html` are served at `http://localhost:8080`.
 
 ## How it works
 

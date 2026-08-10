@@ -21,11 +21,7 @@ docker run -d \
   paularlott/knot-php:8.5
 ```
 
-Place files in the mounted home's `public_html` directory and open `http://localhost:8080`:
-
-```bash
-echo '<?php phpinfo();' > ~/public_html/index.php
-```
+Place files in the mounted home's `public_html` directory and open `http://localhost:8080`.
 
 ## How it works
 
