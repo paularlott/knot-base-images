@@ -48,6 +48,8 @@ RUN apk add --no-cache bash curl libcap rsyslog unzip sudo tzdata \
 COPY --from=vl-upstream /victoria-logs-prod /usr/local/bin/victoria-logs
 COPY --from=vmauth-upstream /vmauth-prod /usr/local/bin/vmauth
 
+RUN mkdir -p /etc/knot-startup.d
+
 # Copy files
 COPY knot-entrypoint /usr/local/bin/
 

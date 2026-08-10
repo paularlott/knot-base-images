@@ -33,6 +33,8 @@ RUN apk add --no-cache bash curl libcap rsyslog unzip sudo tzdata \
   && mkdir -p /home/mailpit /data \
   && chown mailpit:mailpit /home/mailpit /data
 
+RUN mkdir -p /etc/knot-startup.d
+
 # Copy files
 COPY knot-entrypoint /usr/local/bin/
 

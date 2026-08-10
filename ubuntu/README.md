@@ -55,7 +55,7 @@ Drop executable scripts into:
 - `/etc/knot-startup.d/` — system hooks, run as root.
 - `~/.knot-startup.d/` — per-user hooks, run as `KNOT_USER` via `gosu`.
 
-The bundled hooks fetch and start [code-server](https://github.com/coder/code-server) (when `KNOT_CODE_SERVER_PORT` is set) and a [VS Code tunnel](https://code.visualstudio.com/docs/remote/tunnels) (when `KNOT_VSCODE_TUNNEL` is set).
+See the [knot startup-scripts docs](https://getknot.dev/docs/spaces/startup-scripts/) for details.
 
 ## Environment variables
 
@@ -70,8 +70,6 @@ The bundled hooks fetch and start [code-server](https://github.com/coder/code-se
 | `KNOT_SSHD` | _(unset)_ | Set to `native` to start `sshd` |
 | `KNOT_SSH_PORT` | `2222` | Port for the SSH daemon |
 | `KNOT_SYSLOG_PORT` | `1514` | Syslog forward target (`0` disables forwarding) |
-| `KNOT_CODE_SERVER_PORT` | _(unset)_ | Start code-server bound to `127.0.0.1:<port>` |
-| `KNOT_VSCODE_TUNNEL` | _(unset)_ | Name of a VS Code tunnel to start |
 | `KNOT_LOGLEVEL` | _(unset)_ | Agent log level |
 | `TZ` | `Etc/UTC` | Timezone |
 | `LANG` / `LC_ALL` | `en_US.UTF-8` | Locale |

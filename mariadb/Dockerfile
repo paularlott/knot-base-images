@@ -35,6 +35,8 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   && sed -i 's/^\(auth,.*\)$/#\1/' /etc/rsyslog.d/50-default.conf \
   && sed -i 's/^\(\*\.\*;.*\)$/#\1/' /etc/rsyslog.d/50-default.conf
 
+RUN mkdir -p /etc/knot-startup.d
+
 # Copy files
 COPY knot-entrypoint /usr/local/bin/
 COPY localaccess.sql /docker-entrypoint-initdb.d/

@@ -29,6 +29,8 @@ RUN apk add --no-cache bash curl libcap rsyslog unzip \
   && mkdir -p /home/valkey \
   && chown valkey:valkey /home/valkey
 
+RUN mkdir -p /etc/knot-startup.d
+
 # Copy files
 COPY files/knot-entrypoint /usr/local/bin/
 COPY files/valkey-server.conf /etc/valkey/valkey-server.conf

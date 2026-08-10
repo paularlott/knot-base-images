@@ -69,7 +69,7 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
 
 # Copy files
 COPY files/bin/* /usr/local/bin/
-#COPY files/knot-startup.d/* /etc/knot-startup.d/
+RUN mkdir -p /etc/knot-startup.d
 
 VOLUME /home
 

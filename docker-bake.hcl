@@ -171,7 +171,7 @@ group "default" {
 
 target "knot-ubuntu" {
   name        = "knot-ubuntu-${replace(version, ".", "-")}"
-  description = "Base Ubuntu image with code-server and startup scripts"
+  description = "Base Ubuntu image with knot startup scripts"
   matrix      = { version = UBUNTU_VERSIONS }
   inherits    = ["_common"]
   context     = "./ubuntu"
@@ -243,14 +243,14 @@ target "knot-caddy" {
 
 target "knot-ubuntu-desktop" {
   name        = "knot-ubuntu-desktop-${replace(version, ".", "-")}"
-  description = "Ubuntu desktop image with XFCE and code-server"
+  description = "Ubuntu desktop image with XFCE served via KasmVNC"
   matrix      = { version = UBUNTU_VERSIONS }
   inherits    = ["_common"]
   context     = "./desktop"
 
   labels = {
     "org.opencontainers.image.title"       = "Knot Desktop"
-    "org.opencontainers.image.description" = "Ubuntu desktop image with XFCE and code-server"
+    "org.opencontainers.image.description" = "Ubuntu desktop image with XFCE served via KasmVNC"
     "org.opencontainers.image.version"     = "${version}"
   }
 

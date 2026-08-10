@@ -38,6 +38,8 @@ RUN mkdir -p /var/lib/mysql-keyring \
      > "${_plugindir}/component_keyring_file.cnf" \
   && chmod 644 "${_plugindir}/component_keyring_file.cnf"
 
+RUN mkdir -p /etc/knot-startup.d
+
 # Copy files
 COPY knot-entrypoint /usr/local/bin/
 COPY localaccess.sql /docker-entrypoint-initdb.d/

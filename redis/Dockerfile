@@ -27,6 +27,8 @@ RUN apk add --no-cache bash curl libcap rsyslog unzip \
   && sed -i 's/^\(auth,.*\)$/#\1/' /etc/rsyslog.conf \
   && sed -i 's/^\(\*\.\*;.*\)$/#\1/' /etc/rsyslog.conf
 
+RUN mkdir -p /etc/knot-startup.d
+
 # Copy files
 COPY knot-entrypoint /usr/local/bin/
 COPY redis.conf /etc/redis/redis.conf

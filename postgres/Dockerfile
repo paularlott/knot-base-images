@@ -43,6 +43,8 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   && chown postgres:postgres /home/postgres \
   && usermod -d /home/postgres postgres
 
+RUN mkdir -p /etc/knot-startup.d
+
 # Copy files
 COPY knot-entrypoint /usr/local/bin/
 

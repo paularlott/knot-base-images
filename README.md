@@ -14,7 +14,7 @@ These images are designed first and foremost for **knot spaces**, but they are o
 
 | Image | Description | Directory |
 |-------|-------------|-----------|
-| [`knot-ubuntu`](ubuntu/README.md) | Base Ubuntu image with the knot toolchain, code-server and VS Code tunnel support. | [`ubuntu/`](ubuntu/) |
+| [`knot-ubuntu`](ubuntu/README.md) | Base Ubuntu image with the knot toolchain and startup-hook framework. | [`ubuntu/`](ubuntu/) |
 | [`knot-desktop`](desktop/README.md) | Ubuntu + an XFCE desktop served over the web via KasmVNC. Builds on `knot-ubuntu`. | [`desktop/`](desktop/) |
 | [`knot-caddy`](caddy/README.md) | Caddy web server built with `xcaddy`, including DNS-01 and TLS storage modules. | [`caddy/`](caddy/) |
 | [`knot-php`](php/README.md) | Ubuntu + Caddy + PHP-FPM, Composer and Node.js — serves `~/public_html`. | [`php/`](php/) |
