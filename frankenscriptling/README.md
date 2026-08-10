@@ -40,12 +40,33 @@ docker run -d \
 echo '<?php $vm = new Scriptling(); echo $vm->eval("1 + 2");' > ~/public_html/index.php
 ```
 
-## Environment variables, exposed ports and volumes
+## Environment variables
 
-Identical to [`knot-frankenphp`](../frankenphp/README.md):
+The entrypoint mirrors `knot-ubuntu`, so it supports the common knot variables:
 
-- **Volume:** `/home` — persistent home directory; serve content from `~/public_html`.
-- **Port:** `80` HTTP (FrankenPHP).
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `KNOT_USER` | `knot` | Runtime user (uid `1000`); created if missing |
+| `KNOT_SERVER` | _(unset)_ | knot server URL; if set, the agent is downloaded and started |
+| `KNOT_AGENT_ENDPOINT` | _(unset)_ | Agent endpoint reported to the server |
+| `KNOT_SPACEID` | _(unset)_ | Space identifier |
+| `KNOT_SERVICE_PASSWORD` | _(auto-generated UUID)_ | Shared service password |
+| `KNOT_SSHD` | _(unset)_ | Set to `native` to start `sshd` |
+| `KNOT_SSH_PORT` | `2222` | Port for the SSH daemon |
+| `KNOT_SYSLOG_PORT` | `1514` | Syslog forward target (`0` disables forwarding) |
+| `TZ` | `Etc/UTC` | Timezone (also sets `date.timezone`) |
+
+## Exposed ports
+
+| Port | Protocol | Purpose |
+|------|----------|---------|
+| `80` | TCP | HTTP (FrankenPHP) |
+| `443` | TCP/UDP | HTTPS / HTTP/3 (when enabled) |
+| `2019` | TCP | Caddy admin API |
+
+## Volumes
+
+- **`/home`** — persistent home directory; serve content from `~/public_html`.
 
 ## License
 

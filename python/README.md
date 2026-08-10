@@ -40,7 +40,19 @@ Builds on `knot-ubuntu:26.04`, which ships Python 3.14 in its archive. `python3.
 
 ## Environment variables
 
-Built on `knot-ubuntu`, so it supports the common knot variables (`KNOT_USER`, `KNOT_SERVER`, `KNOT_SPACEID`, `KNOT_SYSLOG_PORT`, `TZ`, …).
+Built on `knot-ubuntu`, so it supports the common knot variables:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `KNOT_USER` | `knot` | Runtime user (uid `1000`); created if missing |
+| `KNOT_SERVER` | _(unset)_ | knot server URL; if set, the agent is downloaded and started |
+| `KNOT_AGENT_ENDPOINT` | _(unset)_ | Agent endpoint reported to the server |
+| `KNOT_SPACEID` | _(unset)_ | Space identifier |
+| `KNOT_SERVICE_PASSWORD` | _(auto-generated UUID)_ | Shared service password |
+| `KNOT_SSHD` | _(unset)_ | Set to `native` to start `sshd` |
+| `KNOT_SSH_PORT` | `2222` | Port for the SSH daemon |
+| `KNOT_SYSLOG_PORT` | `1514` | Syslog forward target (`0` disables forwarding) |
+| `TZ` | `Etc/UTC` | Timezone |
 
 Python-specific:
 
