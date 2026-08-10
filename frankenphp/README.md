@@ -2,7 +2,7 @@
 
 A **PHP** development image for [knot](https://getknot.dev/) spaces, based on the official [FrankenPHP](https://frankenphp.dev/) image, which runs Caddy and PHP together in a single process. The Caddy/FrankenPHP binary is rebuilt with `xcaddy` to add DNS-01, Mercure, Vulcain, brotli and log-transform modules, and the image is then layered with the knot toolchain, runtime user, `rsyslog`, startup hooks, Composer and Node.js.
 
-This is the modern, single-process alternative to the `knot-php` image; serve any HTML or PHP file from `~/public_html` on port 80.
+This is the single-process alternative to the `knot-php` image; serve any HTML or PHP file from `~/public_html` on port 80.
 
 ## Tags
 

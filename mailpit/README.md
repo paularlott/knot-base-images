@@ -2,7 +2,7 @@
 
 A [Mailpit](https://github.com/axllent/mailpit) image for [knot](https://getknot.dev/) spaces. It wraps the official `axllent/mailpit` Alpine image with the knot entrypoint, so a Mailpit instance running inside a space gets the same agent integration, `rsyslog` logging and startup hooks as every other knot base image. It is otherwise a standard Mailpit container.
 
-Mailpit is a tiny, self-contained SMTP mail catcher, mail server and testing tool for developers. It acts as an SMTP server and provides a web UI to view and inspect captured emails.
+Mailpit is an SMTP mail catcher for developers. It runs an SMTP server and a web UI for inspecting captured mail.
 
 ## Tags
 

@@ -2,7 +2,7 @@
 
 A [VictoriaLogs](https://docs.victoriametrics.com/victorialogs/) image for [knot](https://getknot.dev/) spaces. The upstream `victoriametrics/victoria-logs` image is distroless, so this image lifts the statically-linked `victoria-logs-prod` binary out and rebases it onto Alpine with the knot entrypoint. [vmauth](https://docs.victoriametrics.com/victoriametrics/vmauth/) is bundled to provide HTTP basic auth (username/password) in front of VictoriaLogs. A VictoriaLogs instance running inside a space gets the same agent integration, `rsyslog` logging and startup hooks as every other knot base image.
 
-VictoriaLogs is a cost-efficient, high-performance log database from the VictoriaMetrics team. It accepts logs over HTTP (Elasticsearch, Loki, JSON and syslog ingest) and queries them with [LogsQL](https://docs.victoriametrics.com/victorialogs/logsql/).
+VictoriaLogs accepts logs over HTTP (Elasticsearch, Loki, JSON and syslog ingest) and queries them with [LogsQL](https://docs.victoriametrics.com/victorialogs/logsql/).
 
 ## Tags
 
