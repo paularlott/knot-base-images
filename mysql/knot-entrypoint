@@ -2,7 +2,7 @@
 set -e
 
 # Make KNOT_USER available in called scripts
-export KNOT_USER=redis
+export KNOT_USER=mysql
 
 # Write the variables to /etc/environment if they are defined
 if [ "${KNOT_USER:-}" ]; then
@@ -13,13 +13,6 @@ if [ "${KNOT_WILDCARD_DOMAIN:-}" ]; then
 fi
 if [ "${KNOT_SPACEID:-}" ]; then
   echo "KNOT_SPACEID=$KNOT_SPACEID" >> /etc/environment
-fi
-
-# If "/home/${KNOT_USER}" doesn't exist, create it
-if [ ! -d "/home/${KNOT_USER}" ]; then
-  mkdir -p "/home/${KNOT_USER}/.ssh"
-  chmod 0700 "/home/${KNOT_USER}/.ssh"
-  chown -R "${KNOT_USER}:${KNOT_USER}" "/home/${KNOT_USER}/"
 fi
 
 # If KNOT_SERVER is defined then fetch the agent and start it
@@ -56,15 +49,15 @@ fi
 # If KNOT_SYSLOG_PORT is not defined or not 0 then route to agents syslogd port
 if [ -x /usr/local/bin/knot ] && [ "${KNOT_SYSLOG_PORT:-1}" -ne 0 ]; then
   echo "Forwarding logs to knot agent syslogd port ${KNOT_SYSLOG_PORT:-514}"
-  mkdir -p /etc/rsyslog.d
   echo "*.* @127.0.0.1:${KNOT_SYSLOG_PORT:-514}" > /etc/rsyslog.d/99-knotagent.conf
 fi
 
 echo "Starting rsyslogd.."
 rsyslogd
 
-# Make KNOT_USER available in called scripts
-export KNOT_USER
+# Setup sudoers
+echo "${KNOT_USER} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${KNOT_USER}
+chmod 0440 /etc/sudoers.d/${KNOT_USER}
 
 # If the folder /etc/knot-startup.d/ exists then run all scripts in it
 if [ -d /etc/knot-startup.d/ ]; then
@@ -86,5 +79,69 @@ if [ -d /home/${KNOT_USER}/.knot-startup.d/ ]; then
   done
 fi
 
+if [ -n "${MYSQL_ENCRYPTION_KEY:-}" ]; then
+  KEYRING_DIR="/var/lib/mysql-keyring"
+  KEYRING_FILE="$KEYRING_DIR/keyring"
+  ENC_KEYRING="/var/lib/mysql/.mysql-keyring.enc"
+  PASSDIR="/run/mysql-encryption"
+  PASSFILE="$PASSDIR/pass"
+  MANIFEST="/usr/sbin/mysqld.my"
+  ENCCFG="/etc/mysql/conf.d/zz-knot-encryption.cnf"
+
+  mkdir -p "$KEYRING_DIR" "$PASSDIR"
+  chown mysql:mysql "$KEYRING_DIR"
+  printf '%s' "$MYSQL_ENCRYPTION_KEY" > "$PASSFILE"
+  chmod 0400 "$PASSFILE"
+
+  printf '{\n  "components": "file://component_keyring_file"\n}\n' > "$MANIFEST"
+  chmod 644 "$MANIFEST"
+
+  if [ -f "$ENC_KEYRING" ]; then
+    if ! openssl enc -d -aes-256-cbc -md sha256 -salt -pass file:"$PASSFILE" \
+         -in "$ENC_KEYRING" -out "$KEYRING_FILE"; then
+      echo >&2 "error: MYSQL_ENCRYPTION_KEY does not match the keyring used to encrypt this data directory"
+      exit 1
+    fi
+  else
+    : > "$KEYRING_FILE"
+  fi
+  chown mysql:mysql "$KEYRING_FILE"
+  chmod 660 "$KEYRING_FILE"
+
+  cat > "$ENCCFG" <<EOF
+# Managed by knot-entrypoint when MYSQL_ENCRYPTION_KEY is set - do not edit.
+[mysqld]
+default_table_encryption=ON
+innodb_redo_log_encrypt=ON
+innodb_undo_log_encrypt=ON
+binlog_encryption=ON
+EOF
+
+  logger -p local0.info "MySQL data-at-rest encryption enabled (component_keyring_file)"
+
+  (
+    set +e
+    _last=""
+    while true; do
+      if [ -s "$KEYRING_FILE" ]; then
+        _sz=$(wc -c < "$KEYRING_FILE" 2>/dev/null || echo 0)
+        if [ "$_sz" != "$_last" ]; then
+          _tmp="${ENC_KEYRING}.tmp"
+          if openssl enc -aes-256-cbc -md sha256 -salt -pass file:"$PASSFILE" \
+               -in "$KEYRING_FILE" -out "$_tmp" 2>/dev/null; then
+            mv "$_tmp" "$ENC_KEYRING"
+            _last="$_sz"
+          fi
+        fi
+      fi
+      sleep 10
+    done
+  ) &
+fi
+
 # Run the old entrypoint
-exec /usr/local/bin/docker-entrypoint.sh "$@"
+if [ "$@" = 'mysqld' ]; then
+  exec /usr/local/bin/docker-entrypoint.sh "$@" 2>&1 | logger -t 'mysqld' -p daemon.error
+else
+  exec /usr/local/bin/docker-entrypoint.sh "$@"
+fi

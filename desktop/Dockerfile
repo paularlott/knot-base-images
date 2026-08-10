@@ -10,6 +10,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
   WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS=1
 
 ARG APT_CACHE
+ARG KASMVNC_VERSION=
 
 RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
     --mount=type=cache,sharing=private,target=/var/lib/apt \
@@ -50,16 +51,30 @@ COPY files/misc/chromium /usr/local/bin/
 COPY files/backgrounds/ /usr/share/backgrounds/
 ADD https://github.com/EliverLara/Nordic/releases/download/v2.2.0/Nordic-darker.tar.xz /usr/share/assets/
 
-RUN ARCH=$(uname -m); \
+RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
+    --mount=type=cache,sharing=private,target=/var/lib/apt \
+  set -e; \
+  ARCH=$(uname -m); \
   CODENAME=$(lsb_release -cs); \
-  KASMVNC_VERSION=1.3.3; \
-  if [ "$CODENAME" = "noble" ]; then CODENAME="jammy"; fi; \
-	case "$ARCH" in \
-		'x86_64') url="https://github.com/kasmtech/KasmVNC/releases/download/v${KASMVNC_VERSION}/kasmvncserver_${CODENAME}_${KASMVNC_VERSION}_amd64.deb";; \
-		'aarch64') url="https://github.com/kasmtech/KasmVNC/releases/download/v${KASMVNC_VERSION}/kasmvncserver_${CODENAME}_${KASMVNC_VERSION}_arm64.deb";; \
-		*) echo >&2 "error: unsupported architecture: '$ARCH'"; exit 1 ;; \
-	esac; \
+  if [ -n "$APT_CACHE" ]; then echo "Acquire::HTTP::Proxy \"$APT_CACHE\";" > /etc/apt/apt.conf.d/00proxy; fi; \
+  if [ -z "$KASMVNC_VERSION" ]; then \
+    KASMVNC_VERSION=$(wget -qO- https://api.github.com/repos/kasmtech/KasmVNC/releases/latest \
+      | jq -r '.tag_name | ltrimstr("v")'); \
+  fi; \
+  if [ -z "$KASMVNC_VERSION" ]; then echo >&2 "error: could not determine KasmVNC version"; exit 1; fi; \
+  case "$CODENAME" in \
+    focal|jammy|noble) ;; \
+    *) echo >&2 "warning: no native KasmVNC build for '$CODENAME', falling back to noble"; CODENAME="noble";; \
+  esac; \
+  case "$ARCH" in \
+    'x86_64')  url="https://github.com/kasmtech/KasmVNC/releases/download/v${KASMVNC_VERSION}/kasmvncserver_${CODENAME}_${KASMVNC_VERSION}_amd64.deb";; \
+    'aarch64') url="https://github.com/kasmtech/KasmVNC/releases/download/v${KASMVNC_VERSION}/kasmvncserver_${CODENAME}_${KASMVNC_VERSION}_arm64.deb";; \
+    *) echo >&2 "error: unsupported architecture: '$ARCH'"; exit 1 ;; \
+  esac; \
+  echo "Installing KasmVNC ${KASMVNC_VERSION} (${CODENAME})"; \
   wget -O "/tmp/kasmvncserver.deb" "$url"; \
-	dpkg -i /tmp/kasmvncserver.deb; \
+  apt-get update -y; \
+  apt-get install -y /tmp/kasmvncserver.deb; \
   rm /tmp/kasmvncserver.deb; \
+  if [ -n "$APT_CACHE" ]; then rm -f /etc/apt/apt.conf.d/00proxy; fi; \
   chmod +r /usr/share/assets/* /usr/share/backgrounds/*

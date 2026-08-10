@@ -29,7 +29,9 @@ if [ "${KNOT_SERVER:-}" ]; then
   echo "Fetching agent binary for $ARCH"
 
   # Download the application from the server
-  if ! curl -sLk ${KNOT_SERVER}/agents/$url.zip | funzip > /usr/local/bin/knot; then
+  resolve_opt=""
+  if [ -n "${KNOT_SERVER_RESOLVE:-}" ]; then resolve_opt="--resolve ${KNOT_SERVER_RESOLVE}"; fi
+  if ! curl -sSLk $resolve_opt ${KNOT_SERVER}/agents/$url.zip | funzip > /usr/local/bin/knot; then
     echo >&2 "error: failed to fetch agent binary"
     exit 1
   fi
@@ -40,11 +42,14 @@ if [ "${KNOT_SERVER:-}" ]; then
 
   echo "Starting knot agent..."
   gosu ${KNOT_USER} /usr/local/bin/knot agent start 2>&1 &
+
+  gosu ${KNOT_USER} /usr/local/bin/knot agent wait-for-start >/dev/null 2>&1 || echo >&2 "Note: agent readiness cannot be verified."
 fi
 
 # If KNOT_SYSLOG_PORT is not defined or not 0 then route to agents syslogd port
 if [ -x /usr/local/bin/knot ] && [ "${KNOT_SYSLOG_PORT:-1}" -ne 0 ]; then
   echo "Forwarding logs to knot agent syslogd port ${KNOT_SYSLOG_PORT:-514}"
+  mkdir -p /etc/rsyslog.d
   echo "*.* @127.0.0.1:${KNOT_SYSLOG_PORT:-514}" > /etc/rsyslog.d/99-knotagent.conf
 fi
 

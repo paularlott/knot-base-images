@@ -1,11 +1,9 @@
-# Default Caddyfile
-# https://caddyserver.com/docs/caddyfile
+# Default Caddyfile for FrankenPHP
+# https://frankenphp.dev/docs/config/
 
 {
   admin 127.0.0.1:2019
-  storage file_system {
-	  root /home/caddy/data
-  }
+  frankenphp
   auto_https off
 }
 
@@ -30,5 +28,5 @@ encode zstd gzip
 # Enable the static file server & browser.
 file_server browse
 
-# Serve PHP through php-fpm:
-php_fastcgi unix//run/php/php-fpm.sock
+# Serve PHP through FrankenPHP.
+php_server

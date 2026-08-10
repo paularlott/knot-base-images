@@ -2,7 +2,7 @@
 set -e
 
 # Make KNOT_USER available in called scripts
-export KNOT_USER=redis
+export KNOT_USER=mailpit
 
 # Write the variables to /etc/environment if they are defined
 if [ "${KNOT_USER:-}" ]; then
@@ -86,5 +86,6 @@ if [ -d /home/${KNOT_USER}/.knot-startup.d/ ]; then
   done
 fi
 
-# Run the old entrypoint
-exec /usr/local/bin/docker-entrypoint.sh "$@"
+# Run mailpit as the mailpit user, piping output to syslog (mailpit has no
+# native syslog support) so the knot agent captures the logs.
+exec gosu ${KNOT_USER} /mailpit "$@" 2>&1 | logger -t 'mailpit' -p daemon.info

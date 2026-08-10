@@ -1,9 +1,9 @@
-# Source https://github.com/MariaDB/mariadb-docker/
+# Source https://github.com/docker-library/postgres/
 
 ARG DOCKER_HUB=
-ARG MARIADB_VERSION=10.6
+ARG POSTGRES_VERSION=18
 
-FROM ${DOCKER_HUB}library/mariadb:${MARIADB_VERSION}
+FROM ${DOCKER_HUB}library/postgres:${POSTGRES_VERSION}
 
 ARG TZ='Etc/UTC'
 ARG APT_CACHE
@@ -11,7 +11,8 @@ ARG APT_CACHE
 ENV DEBIAN_FRONTEND=noninteractive \
   TZ=$TZ \
   KNOT_SSH_PORT=2222 \
-  KNOT_SYSLOG_PORT=1514
+  KNOT_SYSLOG_PORT=1514 \
+  PGDATA=/var/lib/postgresql/data
 
 RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
     --mount=type=cache,sharing=private,target=/var/lib/apt \
@@ -32,15 +33,20 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   \
   # make rsyslog work in container
   && sed -i 's/^\(module(load="imklog".*\)$/#\1/' /etc/rsyslog.conf \
-  && sed -i 's/^\(auth,.*\)$/#\1/' /etc/rsyslog.d/50-default.conf \
-  && sed -i 's/^\(\*\.\*;.*\)$/#\1/' /etc/rsyslog.d/50-default.conf
+  && if [ -f /etc/rsyslog.d/50-default.conf ]; then \
+       sed -i 's/^\(auth,.*\)$/#\1/' /etc/rsyslog.d/50-default.conf; \
+       sed -i 's/^\(\*\.\*;.*\)$/#\1/' /etc/rsyslog.d/50-default.conf; \
+     fi \
+  \
+  # relocate the postgres user's home out of the data directory (default is /var/lib/postgresql)
+  && mkdir -p /home/postgres \
+  && chown postgres:postgres /home/postgres \
+  && usermod -d /home/postgres postgres
 
 RUN mkdir -p /etc/knot-startup.d
 
 # Copy files
 COPY knot-entrypoint /usr/local/bin/
-COPY localaccess.sql /docker-entrypoint-initdb.d/
-COPY 99-logging.cnf /etc/mysql/mariadb.conf.d/
 
 ENTRYPOINT ["/usr/local/bin/knot-entrypoint"]
-CMD ["mariadbd"]
+CMD ["postgres"]

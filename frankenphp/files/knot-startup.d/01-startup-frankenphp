@@ -1,0 +1,22 @@
+#!/bin/sh
+set -e
+
+# Giving permission to crontab file and run cron
+chmod 0644 /etc/cron.d/container-crons
+crontab /etc/cron.d/container-crons
+
+# Create public_html directory
+if [ ! -d "/home/${KNOT_USER}/public_html" ]; then
+  logger -p local0.info "Creating public_html directory.."
+  mkdir -p /home/${KNOT_USER}/public_html
+  chown ${KNOT_USER}:${KNOT_USER} /home/${KNOT_USER}/public_html
+fi
+
+# Start FrankenPHP
+logger -p local0.info "Starting FrankenPHP.."
+mkdir -p /home/frankenphp/config /home/frankenphp/data
+XDG_CONFIG_HOME=/home/frankenphp/config XDG_DATA_HOME=/home/frankenphp/data frankenphp start --config /etc/frankenphp/Caddyfile --adapter caddyfile
+
+# Start cron
+logger -p local0.info "Starting cron.."
+cron

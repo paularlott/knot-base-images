@@ -1,9 +1,9 @@
-# Source https://github.com/docker-library/redis/
+# Source https://github.com/axllent/mailpit
 
 ARG DOCKER_HUB=
-ARG REDIS_VERSION=8.10.0
+ARG MAILPIT_VERSION=1.30
 
-FROM ${DOCKER_HUB}library/redis:${REDIS_VERSION}-alpine
+FROM ${DOCKER_HUB}axllent/mailpit:v${MAILPIT_VERSION}
 
 ARG TZ='Etc/UTC'
 
@@ -11,7 +11,7 @@ ENV TZ=$TZ \
   KNOT_SSH_PORT=2222 \
   KNOT_SYSLOG_PORT=1514
 
-RUN apk add --no-cache bash curl libcap rsyslog unzip \
+RUN apk add --no-cache bash curl libcap rsyslog unzip sudo tzdata \
   # gosu - https://github.com/tianon/gosu/releases
   && ARCH=$(uname -m); \
     case "$ARCH" in \
@@ -25,13 +25,18 @@ RUN apk add --no-cache bash curl libcap rsyslog unzip \
   # make rsyslog work in container
   && sed -i 's/^\(module(load="imklog".*\)$/#\1/' /etc/rsyslog.conf \
   && sed -i 's/^\(auth,.*\)$/#\1/' /etc/rsyslog.conf \
-  && sed -i 's/^\(\*\.\*;.*\)$/#\1/' /etc/rsyslog.conf
+  && sed -i 's/^\(\*\.\*;.*\)$/#\1/' /etc/rsyslog.conf \
+  \
+  # create a service user with a real home (upstream image has none)
+  && addgroup -S mailpit \
+  && adduser -S -G mailpit -h /home/mailpit -s /bin/sh -D mailpit \
+  && mkdir -p /home/mailpit /data \
+  && chown mailpit:mailpit /home/mailpit /data
 
 RUN mkdir -p /etc/knot-startup.d
 
 # Copy files
 COPY knot-entrypoint /usr/local/bin/
-COPY redis.conf /etc/redis/redis.conf
 
 ENTRYPOINT ["/usr/local/bin/knot-entrypoint"]
-CMD ["redis-server", "/etc/redis/redis.conf"]
+CMD ["--database", "/data/mailpit.db"]

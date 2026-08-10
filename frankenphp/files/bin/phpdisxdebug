@@ -1,0 +1,9 @@
+#!/bin/sh
+set -e
+
+# Disable xdebug
+echo "Disabling xdebug.."
+sudo mv /usr/local/etc/php/conf.d/zz-xdebug.ini /usr/local/etc/php/conf.d/zz-xdebug.ini.disabled 2>/dev/null || true
+
+# Restart FrankenPHP
+sudo /usr/local/bin/frankenphp-restart
