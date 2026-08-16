@@ -2,6 +2,8 @@
 
 A [VictoriaLogs](https://docs.victoriametrics.com/victorialogs/) image for [knot](https://getknot.dev/) spaces. The upstream `victoriametrics/victoria-logs` image is distroless, so this image lifts the statically-linked `victoria-logs-prod` binary out and rebases it onto Alpine with the knot entrypoint. [vmauth](https://docs.victoriametrics.com/victoriametrics/vmauth/) is bundled to provide HTTP basic auth (username/password) in front of VictoriaLogs. A VictoriaLogs instance running inside a space gets the same agent integration, `rsyslog` logging and startup hooks as every other knot base image.
 
+The image supports running as a **log sink** on knot Pro: setting `KNOT_LOG_SINK_PORT=9428` (off by default) makes the space receive a mirror of the logs of the owner's other spaces in the zone, written straight into VictoriaLogs. The wire format defaults to `vl` (VictoriaLogs jsonline) via `KNOT_LOG_SINK_FORMAT` — no need to set it for this image, but it can be changed (`loki`, `gelf`, `json`) if you front the port with something else. Requires the *Use Log Sinks* permission. See the knot docs on [Log Sinks](https://getknot.dev/docs/spaces/log-sinks).
+
 VictoriaLogs accepts logs over HTTP (Elasticsearch, Loki, JSON and syslog ingest) and queries them with [LogsQL](https://docs.victoriametrics.com/victorialogs/logsql/).
 
 ## Tags
@@ -23,6 +25,18 @@ docker run -d \
 ```
 
 With `VICTORIA_LOGS_USERNAME` / `VICTORIA_LOGS_PASSWORD` set, every request to `:9428` (ingest, query and web UI) is gated by HTTP basic auth via [vmauth](https://docs.victoriametrics.com/victoriametrics/vmauth/). Leave them unset to run without auth (development mode).
+
+To run the space as a knot Pro **log sink** (receiving the logs of the owner's other spaces), enable it explicitly — it is off by default. `KNOT_LOG_SINK_FORMAT` is optional (`vl` is the default and correct for this image):
+
+```bash
+docker run -d \
+  -p 9428:9428 \
+  -e KNOT_SERVER=https://knot.example.com \
+  -e KNOT_LOG_SINK_PORT=9428 \
+  -e KNOT_LOG_SINK_FORMAT=vl \
+  -v vlogs_data:/data \
+  paularlott/knot-victoria-logs:1.52.0
+```
 
 Ingest a log entry (JSON line — note `_stream` must be a JSON object):
 
@@ -89,6 +103,8 @@ The upstream image is `FROM scratch` (no shell, no package manager), so the buil
 | `KNOT_AGENT_ENDPOINT` | _(unset)_ | Agent endpoint reported to the server |
 | `KNOT_SPACEID` | _(unset)_ | Space identifier |
 | `KNOT_SYSLOG_PORT` | `1514` | Syslog forward target (`0` disables forwarding) |
+| `KNOT_LOG_SINK_PORT` | _(unset — off)_ | Advertise the space as a **log sink** (knot Pro): the knot server mirrors the logs of the space owner's other spaces to this port. Off by default — set to `9428` to enable. |
+| `KNOT_LOG_SINK_FORMAT` | `vl` | Format the agent writes mirrored logs in: `vl` (VictoriaLogs jsonline), `loki`, `gelf` or `json` |
 | `VICTORIA_LOGS_USERNAME` | _(unset)_ | Basic-auth username for vmauth; if set with the password, auth is enabled |
 | `VICTORIA_LOGS_PASSWORD` | _(unset)_ | Basic-auth password for vmauth |
 | `VICTORIA_LOGS_RETENTION_PERIOD` | `30d` | How long to keep logs (`-retentionPeriod`). E.g. `7d`, `365d`. |
