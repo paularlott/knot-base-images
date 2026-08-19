@@ -1,6 +1,11 @@
 #!/bin/sh
 set -e
 
+# Respond to SIGTERM/SIGINT: as PID 1 the shell ignores unhandled signals,
+# so a container stop would always wait out the runtime's kill grace before
+# the SIGKILL. Forward the signal to the agent (once started) and exit.
+trap 'if [ -n "${agent_pid:-}" ]; then kill -TERM "$agent_pid" 2>/dev/null; fi; exit 0' TERM INT
+
 # Get the KNOT_USER if not set then set it to knot
 export KNOT_USER=${KNOT_USER:-knot}
 

@@ -1,6 +1,12 @@
 #!/bin/sh
 set -e
 
+# As PID 1 the shell ignores unhandled signals, so a container stop would
+# wait out the runtime's kill grace and end in SIGKILL (crash recovery for a
+# database). Forward SIGTERM/SIGINT to the service (once started), let the
+# syslog logger drain, and exit cleanly.
+trap 'if [ -n "${service_pid:-}" ]; then kill -TERM "$service_pid" 2>/dev/null; fi; wait; exit 0' TERM INT
+
 # Make KNOT_USER available in called scripts
 export KNOT_USER=victoria-logs
 
@@ -125,5 +131,13 @@ else
 fi
 
 # Run victoria-logs as the victoria-logs user, piping output to syslog (it only
-# supports stderr/stdout logging) so the knot agent captures the logs.
-exec gosu ${KNOT_USER} /usr/local/bin/victoria-logs "$@" 2>&1 | logger -t 'victoria-logs' -p daemon.info
+# supports stderr/stdout logging) so the knot agent captures the logs. The
+# fifo keeps the logger draining while victoria-logs runs in the background —
+# its pid feeds the SIGTERM trap above (an exec-pipeline would leave this
+# shell as PID 1 ignoring the stop signal).
+LOGFIFO=/tmp/knot-service-logs.$$
+mkfifo "$LOGFIFO"
+logger -t 'victoria-logs' -p daemon.info < "$LOGFIFO" &
+gosu ${KNOT_USER} /usr/local/bin/victoria-logs "$@" > "$LOGFIFO" 2>&1 &
+service_pid=$!
+wait $service_pid
