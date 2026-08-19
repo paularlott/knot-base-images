@@ -1,6 +1,12 @@
 #!/bin/sh
 set -e
 
+# As PID 1 the shell ignores unhandled signals, so a container stop would
+# wait out the runtime's kill grace and end in SIGKILL (crash recovery for a
+# database). Forward SIGTERM/SIGINT to the service (once started), let the
+# syslog logger drain, and exit cleanly.
+trap 'if [ -n "${service_pid:-}" ]; then kill -TERM "$service_pid" 2>/dev/null; fi; wait; exit 0' TERM INT
+
 # Make KNOT_USER available in called scripts
 export KNOT_USER=mysql
 
@@ -141,7 +147,15 @@ fi
 
 # Run the old entrypoint
 if [ "$@" = 'mysqld' ]; then
-  exec /usr/local/bin/docker-entrypoint.sh "$@" 2>&1 | logger -t 'mysqld' -p daemon.error
+  # The fifo keeps the logger draining while the database runs in the
+  # background; its pid feeds the SIGTERM trap above, so a stop is a clean
+  # shutdown instead of the SIGKILL an exec-pipeline would end in.
+  LOGFIFO=/tmp/knot-service-logs.$$
+  mkfifo "$LOGFIFO"
+  logger -t 'mysqld' -p daemon.error < "$LOGFIFO" &
+  /usr/local/bin/docker-entrypoint.sh "$@" > "$LOGFIFO" 2>&1 &
+  service_pid=$!
+  wait $service_pid
 else
   exec /usr/local/bin/docker-entrypoint.sh "$@"
 fi

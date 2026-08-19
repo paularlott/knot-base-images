@@ -1,6 +1,12 @@
 #!/bin/sh
 set -e
 
+# As PID 1 the shell ignores unhandled signals, so a container stop would
+# wait out the runtime's kill grace and end in SIGKILL (crash recovery for a
+# database). Forward SIGTERM/SIGINT to the service (once started), let the
+# syslog logger drain, and exit cleanly.
+trap 'if [ -n "${service_pid:-}" ]; then kill -TERM "$service_pid" 2>/dev/null; fi; wait; exit 0' TERM INT
+
 # Make KNOT_USER available in called scripts
 export KNOT_USER=mailpit
 
@@ -87,5 +93,13 @@ if [ -d /home/${KNOT_USER}/.knot-startup.d/ ]; then
 fi
 
 # Run mailpit as the mailpit user, piping output to syslog (mailpit has no
-# native syslog support) so the knot agent captures the logs.
-exec gosu ${KNOT_USER} /mailpit "$@" 2>&1 | logger -t 'mailpit' -p daemon.info
+# native syslog support) so the knot agent captures the logs. The fifo keeps
+# the logger draining while mailpit runs in the background — its pid feeds
+# the SIGTERM trap above (an exec-pipeline would leave this shell as PID 1
+# ignoring the stop signal).
+LOGFIFO=/tmp/knot-service-logs.$$
+mkfifo "$LOGFIFO"
+logger -t 'mailpit' -p daemon.info < "$LOGFIFO" &
+gosu ${KNOT_USER} /mailpit "$@" > "$LOGFIFO" 2>&1 &
+service_pid=$!
+wait $service_pid
