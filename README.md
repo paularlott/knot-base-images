@@ -15,6 +15,7 @@ These images are designed first and foremost for **knot spaces**, but they are o
 | Image | Description | Directory |
 |-------|-------------|-----------|
 | [`knot-ubuntu`](ubuntu/README.md) | Base Ubuntu image with the knot toolchain and startup-hook framework. | [`ubuntu/`](ubuntu/) |
+| [`knot-alpine`](alpine/README.md) | Base Alpine image with the knot toolchain and startup-hook framework. | [`alpine/`](alpine/) |
 | [`knot-desktop`](desktop/README.md) | Ubuntu + an XFCE desktop served over the web via KasmVNC. Builds on `knot-ubuntu`. | [`desktop/`](desktop/) |
 | [`knot-caddy`](caddy/README.md) | Caddy web server built with `xcaddy`, including DNS-01 and TLS storage modules. | [`caddy/`](caddy/) |
 | [`knot-php`](php/README.md) | Ubuntu + Caddy + PHP-FPM, Composer and Node.js — serves `~/public_html`. | [`php/`](php/) |
@@ -23,6 +24,7 @@ These images are designed first and foremost for **knot spaces**, but they are o
 | [`knot-go`](go/README.md) | Ubuntu + the Go toolchain — pure runtime image. | [`go/`](go/) |
 | [`knot-python`](python/README.md) | Ubuntu + Python and `uv` — pure runtime image. | [`python/`](python/) |
 | [`knot-node`](node/README.md) | Ubuntu + Node.js LTS and corepack (`pnpm` / `yarn`) — pure runtime image. | [`node/`](node/) |
+| [`knot-scriptling`](scriptling/README.md) | Ubuntu or Alpine + the Scriptling interpreter and CLI — pure runtime image. | [`scriptling/`](scriptling/) |
 | [`knot-mariadb`](mariadb/README.md) | MariaDB with the knot entrypoint, agent integration and syslog logging. | [`mariadb/`](mariadb/) |
 | [`knot-mysql`](mysql/README.md) | MySQL with the knot entrypoint, agent integration and syslog logging. | [`mysql/`](mysql/) |
 | [`knot-postgres`](postgres/README.md) | PostgreSQL with the knot entrypoint, agent integration and syslog logging. | [`postgres/`](postgres/) |
@@ -38,7 +40,9 @@ knot-ubuntu ──┬── knot-desktop
               ├── knot-php ── (uses knot-caddy)
               ├── knot-go
               ├── knot-python
-              └── knot-node
+              ├── knot-node
+              └── knot-scriptling
+knot-alpine ──── knot-scriptling (<version>-alpine tags)
 knot-caddy
 knot-frankenphp   (standalone, official FrankenPHP base)
 knot-frankenscriptling (builds on knot-frankenphp, adds the Scriptling PHP extension)
@@ -103,10 +107,14 @@ Version matrices and the image namespace are configurable through environment va
 | `PHP_VERSIONS` | PHP versions for `knot-php` |
 | `FRANKENPHP_VERSIONS` | PHP versions for `knot-frankenphp` and `knot-frankenscriptling` |
 | `PHP_UBUNTU_BASE_VERSION` | Ubuntu base version for `knot-php` |
-| `UBUNTU_BASE_VERSION` | Ubuntu base version for the runtime images (`knot-go` / `knot-python` / `knot-node`) |
+| `UBUNTU_BASE_VERSION` | Ubuntu base version for the runtime images (`knot-go` / `knot-python` / `knot-node` / `knot-scriptling`) |
 | `GO_VERSIONS` | Go versions for `knot-go` |
 | `PYTHON_VERSIONS` | Python versions for `knot-python` |
 | `NODE_VERSIONS` | Node.js majors for `knot-node` |
+| `SCRIPTLING_VERSION` | Scriptling release tag (for `knot-frankenscriptling`) |
+| `SCRIPTLING_VERSIONS` | Scriptling versions for `knot-scriptling` |
+| `KNOT_ALPINE_VERSIONS` | Alpine versions for `knot-alpine` |
+| `KNOT_ALPINE_BASE_VERSION` | Alpine base version for the `knot-scriptling` alpine variant |
 | `MARIADB_VERSIONS` | MariaDB versions |
 | `MYSQL_VERSIONS` | MySQL versions |
 | `POSTGRES_VERSIONS` | PostgreSQL versions |
@@ -117,9 +125,8 @@ Version matrices and the image namespace are configurable through environment va
 | `ALPINE_VERSION` | Alpine base version (for `knot-victoria-logs`) |
 | `CADDY_VERSION` | Caddy version |
 | `FRANKENPHP_VERSION` | FrankenPHP release |
-| `SCRIPTLING_VERSION` | Scriptling release tag (for `knot-frankenscriptling`) |
 
-Each target is tagged both as `<version>` and `<version>-<BUILD_DATE>` (Valkey additionally gets a `major.minor` tag).
+Each target is tagged as `<version>` and, when `BUILD_DATE` is set, also `<version>-<BUILD_DATE>` (the Makefile sets it automatically; a direct `docker buildx bake` without it produces version-only tags). Valkey, Redis and Scriptling additionally get a rolling `major.minor` tag (for the Scriptling alpine variant: `<major.minor>-alpine`).
 
 ## Contributing
 

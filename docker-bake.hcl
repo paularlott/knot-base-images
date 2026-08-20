@@ -72,6 +72,20 @@ variable "SCRIPTLING_VERSION" {
   default = "v0.20.1"
 }
 
+variable "SCRIPTLING_VERSIONS" {
+  type    = list(string)
+  default = ["0.20.1"]
+}
+
+variable "KNOT_ALPINE_VERSIONS" {
+  type    = list(string)
+  default = ["3.24"]
+}
+
+variable "KNOT_ALPINE_BASE_VERSION" {
+  default = "3.24"
+}
+
 variable "MARIADB_VERSIONS" {
   type    = list(string)
   default = ["12.3"]
@@ -129,6 +143,18 @@ function "major_minor" {
   result = "${split(".", version)[0]}.${split(".", version)[1]}"
 }
 
+# An image's tag list: the plain version tag, plus a `<version>-<BUILD_DATE>`
+# tag only when BUILD_DATE is set. BUILD_DATE is exported by the Makefile;
+# invoking bake directly leaves it empty, which must not produce tags with a
+# dangling trailing dash.
+function "version_tags" {
+  params = [repo, version]
+  result = flatten([
+    "${TAG_BASE}/${repo}:${version}",
+    BUILD_DATE == "" ? [] : ["${TAG_BASE}/${repo}:${version}-${BUILD_DATE}"],
+  ])
+}
+
 target "_common" {
   platforms = ["linux/amd64", "linux/arm64"]
   output    = [{ type = "image", push = true }]
@@ -147,6 +173,7 @@ target "_common" {
 group "default" {
   targets = [
     "knot-ubuntu",
+    "knot-alpine",
     "knot-caddy",
     "knot-php",
     "knot-frankenphp",
@@ -162,6 +189,8 @@ group "default" {
     "knot-go",
     "knot-python",
     "knot-node",
+    "knot-scriptling",
+    "knot-scriptling-alpine",
   ]
 }
 
@@ -189,10 +218,7 @@ target "knot-ubuntu" {
     APT_CACHE     = "${APT_CACHE}"
   }
 
-  tags = [
-    "${TAG_BASE}/knot-ubuntu:${version}",
-    "${TAG_BASE}/knot-ubuntu:${version}-${BUILD_DATE}",
-  ]
+  tags = version_tags("knot-ubuntu", version)
 
   cache-from = [{
     type = "registry"
@@ -201,6 +227,39 @@ target "knot-ubuntu" {
   cache-to = [{
     type              = "registry"
     ref               = "${cache_base()}/knot-ubuntu:buildcache-${version}"
+    mode              = "max"
+    "oci-media-types" = true
+    "image-manifest"  = true
+  }]
+}
+
+target "knot-alpine" {
+  name        = "knot-alpine-${replace(version, ".", "-")}"
+  description = "Base Alpine image with knot startup scripts"
+  matrix      = { version = KNOT_ALPINE_VERSIONS }
+  inherits    = ["_common"]
+  context     = "./alpine"
+
+  labels = {
+    "org.opencontainers.image.title"       = "Knot Alpine"
+    "org.opencontainers.image.description" = "Base Alpine image with knot startup scripts"
+    "org.opencontainers.image.version"     = "${version}"
+  }
+
+  args = {
+    ALPINE_VERSION = "${version}"
+    DOCKER_HUB     = "${DOCKER_HUB}"
+  }
+
+  tags = version_tags("knot-alpine", version)
+
+  cache-from = [{
+    type = "registry"
+    ref  = "${cache_base()}/knot-alpine:buildcache-${version}"
+  }]
+  cache-to = [{
+    type              = "registry"
+    ref               = "${cache_base()}/knot-alpine:buildcache-${version}"
     mode              = "max"
     "oci-media-types" = true
     "image-manifest"  = true
@@ -223,10 +282,7 @@ target "knot-caddy" {
     DOCKER_HUB    = "${DOCKER_HUB}"
   }
 
-  tags = [
-    "${TAG_BASE}/knot-caddy:${CADDY_VERSION}",
-    "${TAG_BASE}/knot-caddy:${CADDY_VERSION}-${BUILD_DATE}",
-  ]
+  tags = version_tags("knot-caddy", CADDY_VERSION)
 
   cache-from = [{
     type = "registry"
@@ -266,10 +322,7 @@ target "knot-ubuntu-desktop" {
     TAG_BASE      = "${TAG_BASE}"
   }
 
-  tags = [
-    "${TAG_BASE}/knot-desktop:${version}",
-    "${TAG_BASE}/knot-desktop:${version}-${BUILD_DATE}",
-  ]
+  tags = version_tags("knot-desktop", version)
 
   cache-from = [{
     type = "registry"
@@ -314,10 +367,7 @@ target "knot-php" {
     PHP_VERSION   = "${php}"
   }
 
-  tags = [
-    "${TAG_BASE}/knot-php:${php}",
-    "${TAG_BASE}/knot-php:${php}-${BUILD_DATE}",
-  ]
+  tags = version_tags("knot-php", php)
 
   cache-from = [{
     type = "registry"
@@ -353,10 +403,7 @@ target "knot-frankenphp" {
     FRANKENPHP_VERSION = "${FRANKENPHP_VERSION}"
   }
 
-  tags = [
-    "${TAG_BASE}/knot-frankenphp:${php}",
-    "${TAG_BASE}/knot-frankenphp:${php}-${BUILD_DATE}",
-  ]
+  tags = version_tags("knot-frankenphp", php)
 
   cache-from = [{
     type = "registry"
@@ -397,10 +444,7 @@ target "knot-frankenscriptling" {
     TAG_BASE           = "${TAG_BASE}"
   }
 
-  tags = [
-    "${TAG_BASE}/knot-frankenscriptling:${php}",
-    "${TAG_BASE}/knot-frankenscriptling:${php}-${BUILD_DATE}",
-  ]
+  tags = version_tags("knot-frankenscriptling", php)
 
   cache-from = [{
     type = "registry"
@@ -434,10 +478,7 @@ target "knot-mariadb" {
     MARIADB_VERSION = "${version}"
   }
 
-  tags = [
-    "${TAG_BASE}/knot-mariadb:${version}",
-    "${TAG_BASE}/knot-mariadb:${version}-${BUILD_DATE}",
-  ]
+  tags = version_tags("knot-mariadb", version)
 
   cache-from = [{
     type = "registry"
@@ -470,10 +511,7 @@ target "knot-mysql" {
     MYSQL_VERSION = "${version}"
   }
 
-  tags = [
-    "${TAG_BASE}/knot-mysql:${version}",
-    "${TAG_BASE}/knot-mysql:${version}-${BUILD_DATE}",
-  ]
+  tags = version_tags("knot-mysql", version)
 
   cache-from = [{
     type = "registry"
@@ -507,10 +545,7 @@ target "knot-postgres" {
     POSTGRES_VERSION = "${version}"
   }
 
-  tags = [
-    "${TAG_BASE}/knot-postgres:${version}",
-    "${TAG_BASE}/knot-postgres:${version}-${BUILD_DATE}",
-  ]
+  tags = version_tags("knot-postgres", version)
 
   cache-from = [{
     type = "registry"
@@ -544,11 +579,10 @@ target "knot-valkey" {
     VALKEY_VERSION = "${version}"
   }
 
-  tags = [
-    "${TAG_BASE}/knot-valkey:${version}",
-    "${TAG_BASE}/knot-valkey:${version}-${BUILD_DATE}",
-    "${TAG_BASE}/knot-valkey:${major_minor(version)}",
-  ]
+  tags = concat(
+    version_tags("knot-valkey", version),
+    ["${TAG_BASE}/knot-valkey:${major_minor(version)}"],
+  )
 
   cache-from = [{
     type = "registry"
@@ -581,11 +615,10 @@ target "knot-redis" {
     REDIS_VERSION = "${version}"
   }
 
-  tags = [
-    "${TAG_BASE}/knot-redis:${version}",
-    "${TAG_BASE}/knot-redis:${version}-${BUILD_DATE}",
-    "${TAG_BASE}/knot-redis:${major_minor(version)}",
-  ]
+  tags = concat(
+    version_tags("knot-redis", version),
+    ["${TAG_BASE}/knot-redis:${major_minor(version)}"],
+  )
 
   cache-from = [{
     type = "registry"
@@ -618,10 +651,7 @@ target "knot-mailpit" {
     MAILPIT_VERSION  = "${version}"
   }
 
-  tags = [
-    "${TAG_BASE}/knot-mailpit:${version}",
-    "${TAG_BASE}/knot-mailpit:${version}-${BUILD_DATE}",
-  ]
+  tags = version_tags("knot-mailpit", version)
 
   cache-from = [{
     type = "registry"
@@ -656,10 +686,7 @@ target "knot-victoria-logs" {
     ALPINE_VERSION          = "${ALPINE_VERSION}"
   }
 
-  tags = [
-    "${TAG_BASE}/knot-victoria-logs:${version}",
-    "${TAG_BASE}/knot-victoria-logs:${version}-${BUILD_DATE}",
-  ]
+  tags = version_tags("knot-victoria-logs", version)
 
   cache-from = [{
     type = "registry"
@@ -700,10 +727,7 @@ target "knot-go" {
     GO_VERSION    = "${version}"
   }
 
-  tags = [
-    "${TAG_BASE}/knot-go:${version}",
-    "${TAG_BASE}/knot-go:${version}-${BUILD_DATE}",
-  ]
+  tags = version_tags("knot-go", version)
 
   cache-from = [{
     type = "registry"
@@ -744,10 +768,7 @@ target "knot-python" {
     PYTHON_VERSION = "${version}"
   }
 
-  tags = [
-    "${TAG_BASE}/knot-python:${version}",
-    "${TAG_BASE}/knot-python:${version}-${BUILD_DATE}",
-  ]
+  tags = version_tags("knot-python", version)
 
   cache-from = [{
     type = "registry"
@@ -788,10 +809,7 @@ target "knot-node" {
     NODE_MAJOR    = "${version}"
   }
 
-  tags = [
-    "${TAG_BASE}/knot-node:${version}",
-    "${TAG_BASE}/knot-node:${version}-${BUILD_DATE}",
-  ]
+  tags = version_tags("knot-node", version)
 
   cache-from = [{
     type = "registry"
@@ -800,6 +818,90 @@ target "knot-node" {
   cache-to = [{
     type              = "registry"
     ref               = "${cache_base()}/knot-node:buildcache-${version}"
+    mode              = "max"
+    "oci-media-types" = true
+    "image-manifest"  = true
+  }]
+}
+
+target "knot-scriptling" {
+  name        = "knot-scriptling-${replace(version, ".", "-")}"
+  description = "Scriptling runtime image"
+  matrix      = { version = SCRIPTLING_VERSIONS }
+  inherits    = ["_common"]
+  context     = "./scriptling"
+
+  labels = {
+    "org.opencontainers.image.title"       = "Knot Scriptling"
+    "org.opencontainers.image.description" = "Scriptling runtime image with knot startup tooling"
+    "org.opencontainers.image.version"     = "${version}"
+  }
+
+  contexts = {
+    "${TAG_BASE}/knot-ubuntu:${UBUNTU_BASE_VERSION}" = "target:knot-ubuntu-${replace(UBUNTU_BASE_VERSION, ".", "-")}"
+  }
+
+  args = {
+    IMAGE_BASE         = "ubuntu"
+    IMAGE_VERSION      = "${UBUNTU_BASE_VERSION}"
+    TAG_BASE           = "${TAG_BASE}"
+    SCRIPTLING_VERSION = "v${version}"
+  }
+
+  tags = concat(
+    version_tags("knot-scriptling", version),
+    ["${TAG_BASE}/knot-scriptling:${major_minor(version)}"],
+  )
+
+  cache-from = [{
+    type = "registry"
+    ref  = "${cache_base()}/knot-scriptling:buildcache-${version}"
+  }]
+  cache-to = [{
+    type              = "registry"
+    ref               = "${cache_base()}/knot-scriptling:buildcache-${version}"
+    mode              = "max"
+    "oci-media-types" = true
+    "image-manifest"  = true
+  }]
+}
+
+target "knot-scriptling-alpine" {
+  name        = "knot-scriptling-alpine-${replace(version, ".", "-")}"
+  description = "Scriptling runtime image (Alpine)"
+  matrix      = { version = SCRIPTLING_VERSIONS }
+  inherits    = ["_common"]
+  context     = "./scriptling"
+  dockerfile  = "Dockerfile.alpine"
+
+  labels = {
+    "org.opencontainers.image.title"       = "Knot Scriptling"
+    "org.opencontainers.image.description" = "Scriptling runtime image (Alpine) with knot startup tooling"
+    "org.opencontainers.image.version"     = "${version}-alpine"
+  }
+
+  contexts = {
+    "${TAG_BASE}/knot-alpine:${KNOT_ALPINE_BASE_VERSION}" = "target:knot-alpine-${replace(KNOT_ALPINE_BASE_VERSION, ".", "-")}"
+  }
+
+  args = {
+    ALPINE_VERSION     = "${KNOT_ALPINE_BASE_VERSION}"
+    TAG_BASE           = "${TAG_BASE}"
+    SCRIPTLING_VERSION = "v${version}"
+  }
+
+  tags = concat(
+    version_tags("knot-scriptling", "${version}-alpine"),
+    ["${TAG_BASE}/knot-scriptling:${major_minor(version)}-alpine"],
+  )
+
+  cache-from = [{
+    type = "registry"
+    ref  = "${cache_base()}/knot-scriptling:buildcache-${version}-alpine"
+  }]
+  cache-to = [{
+    type              = "registry"
+    ref               = "${cache_base()}/knot-scriptling:buildcache-${version}-alpine"
     mode              = "max"
     "oci-media-types" = true
     "image-manifest"  = true

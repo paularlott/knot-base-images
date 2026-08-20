@@ -18,6 +18,9 @@ GO_VERSIONS ?= 1.26
 PYTHON_VERSIONS ?= 3.14
 NODE_VERSIONS ?= 24 26
 FRANKENPHP_VERSIONS ?= 8.4 8.5
+SCRIPTLING_VERSIONS ?= 0.20.2
+KNOT_ALPINE_VERSIONS ?= 3.24
+KNOT_ALPINE_BASE_VERSION ?= 3.24
 MARIADB_VERSIONS ?= 10.11 11.4 11.8 12.3
 MYSQL_VERSIONS ?= 9.7
 POSTGRES_VERSIONS ?= 18
@@ -29,7 +32,7 @@ VMAUTH_VERSION ?= 1.148.0
 ALPINE_VERSION ?= 3.20
 CADDY_VERSION ?= 2.11.4
 FRANKENPHP_VERSION ?= 1.12.7
-SCRIPTLING_VERSION ?= v0.20.1
+SCRIPTLING_VERSION ?= v0.20.2
 
 BUILD_DATE ?= $(shell date -u +'%Y%m%d')
 
@@ -52,10 +55,12 @@ export UBUNTU_BASE_VERSION
 export CADDY_VERSION
 export FRANKENPHP_VERSION
 export SCRIPTLING_VERSION
-export BUILD_DATE
+export KNOT_ALPINE_BASE_VERSION
 export UBUNTU_VERSIONS := $(subst $(space),$(comma),$(UBUNTU_VERSIONS))
 export PHP_VERSIONS := $(subst $(space),$(comma),$(PHP_VERSIONS))
 export FRANKENPHP_VERSIONS := $(subst $(space),$(comma),$(FRANKENPHP_VERSIONS))
+export SCRIPTLING_VERSIONS := $(subst $(space),$(comma),$(SCRIPTLING_VERSIONS))
+export KNOT_ALPINE_VERSIONS := $(subst $(space),$(comma),$(KNOT_ALPINE_VERSIONS))
 export GO_VERSIONS := $(subst $(space),$(comma),$(GO_VERSIONS))
 export PYTHON_VERSIONS := $(subst $(space),$(comma),$(PYTHON_VERSIONS))
 export NODE_VERSIONS := $(subst $(space),$(comma),$(NODE_VERSIONS))
@@ -68,6 +73,7 @@ export MAILPIT_VERSIONS := $(subst $(space),$(comma),$(MAILPIT_VERSIONS))
 export VICTORIA_LOGS_VERSIONS := $(subst $(space),$(comma),$(VICTORIA_LOGS_VERSIONS))
 export VMAUTH_VERSION
 export ALPINE_VERSION
+export BUILD_DATE
 
 # Optional extra flags passed to bake (e.g. make BAKE_FLAGS=--print)
 BAKE_FLAGS ?=
