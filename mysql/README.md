@@ -40,7 +40,7 @@ The image layers the knot entrypoint on top of the official MySQL image. On star
 
 1. Forwards `KNOT_USER` to `mysql`.
 2. If `KNOT_SERVER` is set, downloads and starts the **knot agent** (as `mysql`).
-3. Starts `rsyslog` and forwards logs to the agent's syslog port.
+3. If the agent is running, starts `rsyslog` in forward-only mode and streams logs to the agent's syslog port; otherwise `rsyslog` is not started.
 4. Runs scripts in `/etc/knot-startup.d/` and `~/.knot-startup.d/`.
 5. `exec`s MySQL's original [`docker-entrypoint.sh`](https://github.com/docker-library/mysql) with `mysqld`.
 

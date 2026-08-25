@@ -35,7 +35,7 @@ The image layers the knot entrypoint on top of the official Mailpit image. On st
 
 1. Forces `KNOT_USER` to `mailpit` (a service user created at build time — the upstream image runs as `root`).
 2. If `KNOT_SERVER` is set, downloads and starts the **knot agent** (as `mailpit`).
-3. Starts `rsyslog` and forwards logs to the agent's syslog port.
+3. If the agent is running, starts `rsyslog` in forward-only mode and streams logs to the agent's syslog port; otherwise `rsyslog` is not started.
 4. Runs scripts in `/etc/knot-startup.d/` and `~/.knot-startup.d/`.
 5. `exec`s `/mailpit` as the `mailpit` user, piping its output to syslog so the agent captures it.
 

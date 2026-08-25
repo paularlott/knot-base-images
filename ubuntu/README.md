@@ -27,7 +27,7 @@ docker run -d \
 
 ### Standalone
 
-With no `KNOT_SERVER`, the image still sets up the runtime user, home directory, `rsyslog` and startup hooks, then waits (or runs the command you pass):
+With no `KNOT_SERVER`, the image still sets up the runtime user, home directory and startup hooks, then waits (or runs the command you pass). `rsyslog` is not started in this mode:
 
 ```bash
 # Interactive shell as the runtime user
@@ -44,7 +44,7 @@ The `ENTRYPOINT` is `/usr/local/bin/knot-entrypoint`, which:
 1. Creates the `KNOT_USER` (uid `1000`) if missing, renames the home directory if the user changed, and fixes ownership. The user is granted passwordless `sudo`.
 2. Optionally starts `sshd` on `KNOT_SSH_PORT` when `KNOT_SSHD=native`.
 3. If `KNOT_SERVER` is set, downloads and starts the **knot agent** (granted `CAP_NET_BIND_SERVICE`).
-4. Starts `rsyslog` and forwards all logs to the agent's syslog port (`KNOT_SYSLOG_PORT`).
+4. If the agent is running, starts `rsyslog` in forward-only mode and streams all logs to the agent's syslog port (`KNOT_SYSLOG_PORT`); without the agent, `rsyslog` is not started and nothing is written to local log files.
 5. Runs every script in `/etc/knot-startup.d/` alphabetically, then `~/.knot-startup.d/`.
 6. Waits on the agent (or `exec`s the supplied command as `KNOT_USER`).
 

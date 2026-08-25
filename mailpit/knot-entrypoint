@@ -61,13 +61,16 @@ fi
 
 # If KNOT_SYSLOG_PORT is not defined or not 0 then route to agents syslogd port
 if [ -x /usr/local/bin/knot ] && [ "${KNOT_SYSLOG_PORT:-1}" -ne 0 ]; then
-  echo "Forwarding logs to knot agent syslogd port ${KNOT_SYSLOG_PORT:-514}"
+  echo "Forwarding logs to knot agent syslogd port ${KNOT_SYSLOG_PORT:-1514}"
   mkdir -p /etc/rsyslog.d
-  echo "*.* @127.0.0.1:${KNOT_SYSLOG_PORT:-514}" > /etc/rsyslog.d/99-knotagent.conf
-fi
+  echo "*.* @127.0.0.1:${KNOT_SYSLOG_PORT:-1514}" > /etc/rsyslog.d/99-knotagent.conf
+  echo "stop" >> /etc/rsyslog.d/99-knotagent.conf
 
-echo "Starting rsyslogd.."
-rsyslogd
+  # Only start rsyslogd when forwarding to the knot agent, and forward-only so
+  # that nothing is written to local log files, which would never be rotated
+  echo "Starting rsyslogd.."
+  rsyslogd
+fi
 
 # Make KNOT_USER available in called scripts
 export KNOT_USER

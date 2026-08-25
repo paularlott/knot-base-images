@@ -61,7 +61,7 @@ When a space starts, knot sets environment variables such as `KNOT_SERVER`, `KNO
 
 1. Creates / reuses the runtime user (`KNOT_USER`, uid `1000`) and fixes home ownership.
 2. If `KNOT_SERVER` is set, downloads the architecture-appropriate **knot agent** and starts it (with `CAP_NET_BIND_SERVICE`).
-3. Starts `rsyslog` and forwards logs to the agent's syslog port (`KNOT_SYSLOG_PORT`, default `1514`).
+3. If the agent is running, starts `rsyslog` in forward-only mode and streams all logs to the agent's syslog port (`KNOT_SYSLOG_PORT`, default `1514`); otherwise `rsyslog` is not started and nothing is written to local log files.
 4. Runs every script in `/etc/knot-startup.d/`, then every script in `~/.knot-startup.d/` (user hooks).
 5. `exec`s the image's main process (or the supplied command).
 

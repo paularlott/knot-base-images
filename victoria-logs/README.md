@@ -80,7 +80,7 @@ The upstream image is `FROM scratch` (no shell, no package manager), so the buil
 
 1. Forces `KNOT_USER` to `victoria-logs` (a service user created at build time).
 2. If `KNOT_SERVER` is set, downloads and starts the **knot agent** (as `victoria-logs`).
-3. Starts `rsyslog` and forwards logs to the agent's syslog port.
+3. If the agent is running, starts `rsyslog` in forward-only mode and streams logs to the agent's syslog port; otherwise `rsyslog` is not started.
 4. Runs scripts in `/etc/knot-startup.d/` and `~/.knot-startup.d/`.
 5. If `VICTORIA_LOGS_USERNAME` / `VICTORIA_LOGS_PASSWORD` are set, generates a vmauth config and starts **vmauth** on `:9428` (basic auth) proxying to VictoriaLogs on `127.0.0.1:8428`; otherwise VictoriaLogs listens on `:9428` directly.
 6. `exec`s `victoria-logs` as the `victoria-logs` user, piping its output to syslog so the agent captures it.
