@@ -1,33 +1,8 @@
 # knot-adminer
 
-[Adminer](https://www.adminer.org/) database management on top of [`knot-frankenphp-runtime`](https://hub.docker.com/r/paularlott/knot-frankenphp-runtime) 8.5. Adminer is served by FrankenPHP from a fixed docroot (`/var/www/html`) instead of the user's `public_html`, so the image works as a drop-in database UI container while keeping the knot toolchain — entrypoint, agent integration, `rsyslog` logging and startup hooks, but none of the dev-image tooling (no sshd, git, editors, node or composer).
+[Adminer](https://www.adminer.org/) database management on top of [`knot-frankenphp-runtime`](https://hub.docker.com/r/paularlott/knot-frankenphp-runtime) 8.5. It manages MySQL/MariaDB, PostgreSQL and Redis (plus the other bundled Adminer drivers), serves Adminer from a fixed docroot on port 80, and runs FrankenPHP in the foreground so the container works standalone. It keeps the knot toolchain — entrypoint, agent integration, `rsyslog` logging and startup hooks — but none of the dev-image tooling (no sshd, git, editors, node or composer).
 
-Supported database backends:
-
-- **MySQL / MariaDB** — via `mysqli`/`pdo_mysql` (bundled in the base image)
-- **PostgreSQL** — via `pgsql`/`pdo_pgsql`
-- **Redis / Valkey** — via the Adminer Redis driver plugin (raw RESP protocol over sockets, no PHP extension required)
-- SQLite, MS SQL and Oracle are also available in the all-driver Adminer build
-
-## How it builds
-
-`FROM` the published `knot-frankenphp-runtime:8.5` image, then:
-
-1. Downloads the official all-driver `adminer-<version>.php` release as `/var/www/html/index.php`.
-2. Copies the plugins (see below) and the `adminer.css` theme into the docroot — Adminer 6 auto-loads both `adminer-plugins/` and `adminer.css` when present.
-3. Replaces `/etc/frankenphp/Caddyfile` with one rooted at `/var/www/html`, so the container serves Adminer on port 80.
-4. Sets `CMD ["adminer-server"]` — unlike `knot-frankenphp` (which backgrounds Caddy and stays alive via the knot agent), this image runs FrankenPHP in the foreground as the main process, so the container works standalone. The bundled `01-startup-frankenphp` startup script is replaced accordingly (cron still starts; Caddy is not double-started).
-
-Bundled plugins (loaded via `adminer-plugins.php`):
-
-| Plugin | Purpose |
-|--------|---------|
-| `redis.php` | Official Adminer Redis driver (v6.0.1) with the JUSH syntax-highlighting module inlined for single-file installs |
-| `srvlookup.php` | Resolves database hosts via DNS SRV records |
-| `FasterTablesFilter.php` | Client-side table filter for databases with very many tables |
-| `dark-switcher.php` | Official dark-mode switcher, adapted to the bundled theme: defaults to dark, remembers the choice in localStorage, toggle sits next to the logout block |
-
-`adminer.css` is a custom theme (system fonts, indigo accent, no external assets) with light and dark palettes; Adminer auto-loads it, and sticky table headers come from Adminer 6's built-in CSS.
+Bundled extras: the official Adminer Redis driver, DNS SRV hostname lookups, a fast client-side table filter, and a dark-capable theme (defaults to dark, toggle next to the logout block).
 
 ## Tags
 
@@ -68,6 +43,10 @@ The entrypoint mirrors `knot-ubuntu`, so it supports the common knot variables:
 | `80` | TCP | HTTP (Adminer via FrankenPHP) |
 | `443` | TCP/UDP | HTTPS / HTTP-3 (when enabled) |
 | `2019` | TCP | Caddy admin API |
+
+## Volumes
+
+- **`/home`** — persistent home directory.
 
 ## License
 
