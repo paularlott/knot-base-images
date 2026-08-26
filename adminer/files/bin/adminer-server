@@ -1,0 +1,8 @@
+#!/bin/sh
+set -e
+
+# Run FrankenPHP in the foreground as the container's main process.
+# Caddy state lives outside the user's home so the runtime user's dotfiles
+# are not mixed with caddy config/storage.
+exec env XDG_CONFIG_HOME=/home/frankenphp/config XDG_DATA_HOME=/home/frankenphp/data \
+  frankenphp run --config /etc/frankenphp/Caddyfile --adapter caddyfile

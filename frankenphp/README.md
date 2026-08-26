@@ -1,6 +1,6 @@
 # knot-frankenphp
 
-A **PHP** development image for [knot](https://getknot.dev/) spaces, based on the official [FrankenPHP](https://frankenphp.dev/) image, which runs Caddy and PHP together in a single process. The Caddy/FrankenPHP binary is rebuilt with `xcaddy` to add DNS-01, Mercure, Vulcain, brotli and log-transform modules, and the image is then layered with the knot toolchain, runtime user, `rsyslog`, startup hooks, Composer and Node.js.
+A **PHP** development image for [knot](https://getknot.dev/) spaces, based on [`knot-frankenphp-runtime`](https://hub.docker.com/r/paularlott/knot-frankenphp-runtime), which runs Caddy and PHP together in a single process. The runtime image carries the knot toolchain, the PHP runtime and the custom `xcaddy` module set (DNS-01, Mercure, Vulcain, brotli, log-transform); this image adds the development layer — ssh, git, editors, shells, `rsyslog` utilities, Composer, Node.js, mago and mutagen.
 
 This is the single-process alternative to the `knot-php` image; serve any HTML or PHP file from `~/public_html` on port 80.
 
@@ -27,8 +27,8 @@ Files in the mounted home's `public_html` are served at `http://localhost:8080`.
 
 The image is built in two stages:
 
-1. **Builder** — compiles FrankenPHP with `xcaddy`, adding [`caddy-dns/cloudflare`](https://github.com/caddy-dns/cloudflare), [`mercure`](https://github.com/dunglas/mercure), [`vulcain`](https://github.com/dunglas/vulcain), [`caddy-cbrotli`](https://github.com/dunglas/caddy-cbrotli) and [`transform-encoder`](https://github.com/caddyserver/transform-encoder).
-2. **Runtime** — the official FrankenPHP image plus the knot entrypoint, CLI tooling, `gosu`, locales, `rsyslog`, cron, Node.js and Composer.
+1. **Builder** (in `knot-frankenphp-runtime`) — compiles FrankenPHP with `xcaddy`, adding [`caddy-dns/cloudflare`](https://github.com/caddy-dns/cloudflare), [`mercure`](https://github.com/dunglas/mercure), [`vulcain`](https://github.com/dunglas/vulcain), [`caddy-cbrotli`](https://github.com/dunglas/caddy-cbrotli) and [`transform-encoder`](https://github.com/caddyserver/transform-encoder).
+2. **Runtime** — [`knot-frankenphp-runtime`](https://hub.docker.com/r/paularlott/knot-frankenphp-runtime) (official FrankenPHP image plus the knot entrypoint, extension set, `gosu`, locales, `rsyslog` and cron) plus the dev-tool layer: ssh, git, editors, shells, Node.js, Composer, mago and mutagen.
 
 A startup hook (`/etc/knot-startup.d/01-startup-frankenphp`):
 

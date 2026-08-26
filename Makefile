@@ -27,6 +27,7 @@ POSTGRES_VERSIONS ?= 18
 VALKEY_VERSIONS ?= 9.0.4 9.1.1
 REDIS_VERSIONS ?= 8.10.0
 MAILPIT_VERSIONS ?= 1.30
+ADMINER_VERSIONS ?= 6.0.1
 VICTORIA_LOGS_VERSIONS ?= 1.52.0
 VMAUTH_VERSION ?= 1.148.0
 ALPINE_VERSION ?= 3.20
@@ -70,6 +71,7 @@ export POSTGRES_VERSIONS := $(subst $(space),$(comma),$(POSTGRES_VERSIONS))
 export VALKEY_VERSIONS := $(subst $(space),$(comma),$(VALKEY_VERSIONS))
 export REDIS_VERSIONS := $(subst $(space),$(comma),$(REDIS_VERSIONS))
 export MAILPIT_VERSIONS := $(subst $(space),$(comma),$(MAILPIT_VERSIONS))
+export ADMINER_VERSIONS := $(subst $(space),$(comma),$(ADMINER_VERSIONS))
 export VICTORIA_LOGS_VERSIONS := $(subst $(space),$(comma),$(VICTORIA_LOGS_VERSIONS))
 export VMAUTH_VERSION
 export ALPINE_VERSION

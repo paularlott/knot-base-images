@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+
+# Giving permission to crontab file and run cron
+chmod 0644 /etc/cron.d/container-crons
+crontab /etc/cron.d/container-crons
+
+# Caddy config autosave and storage dirs; the server itself runs in the
+# foreground as the image CMD (adminer-server), so it is not started here.
+mkdir -p /home/frankenphp/config /home/frankenphp/data
+chown -R ${KNOT_USER}:${KNOT_USER} /home/frankenphp

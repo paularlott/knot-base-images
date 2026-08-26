@@ -77,6 +77,11 @@ variable "SCRIPTLING_VERSIONS" {
   default = ["0.20.1"]
 }
 
+variable "ADMINER_VERSIONS" {
+  type    = list(string)
+  default = ["6.0.1"]
+}
+
 variable "KNOT_ALPINE_VERSIONS" {
   type    = list(string)
   default = ["3.24"]
@@ -176,8 +181,10 @@ group "default" {
     "knot-alpine",
     "knot-caddy",
     "knot-php",
+    "knot-frankenphp-runtime",
     "knot-frankenphp",
     "knot-frankenscriptling",
+    "knot-adminer",
     "knot-ubuntu-desktop",
     "knot-valkey",
     "knot-mariadb",
@@ -382,9 +389,45 @@ target "knot-php" {
   }]
 }
 
+target "knot-frankenphp-runtime" {
+  name        = "knot-frankenphp-runtime-${replace(php, ".", "-")}"
+  description = "FrankenPHP runtime image without dev tooling"
+  matrix      = {
+    php = FRANKENPHP_VERSIONS
+  }
+  inherits    = ["_common"]
+  context     = "./frankenphp-runtime"
+
+  labels = {
+    "org.opencontainers.image.title"       = "Knot FrankenPHP Runtime"
+    "org.opencontainers.image.description" = "FrankenPHP runtime with knot startup tooling, no dev tools"
+    "org.opencontainers.image.version"     = "${php}"
+  }
+
+  args = {
+    APT_CACHE          = "${APT_CACHE}"
+    PHP_VERSION        = "${php}"
+    FRANKENPHP_VERSION = "${FRANKENPHP_VERSION}"
+  }
+
+  tags = version_tags("knot-frankenphp-runtime", php)
+
+  cache-from = [{
+    type = "registry"
+    ref  = "${cache_base()}/knot-frankenphp-runtime:buildcache-${php}"
+  }]
+  cache-to = [{
+    type              = "registry"
+    ref               = "${cache_base()}/knot-frankenphp-runtime:buildcache-${php}"
+    mode              = "max"
+    "oci-media-types" = true
+    "image-manifest"  = true
+  }]
+}
+
 target "knot-frankenphp" {
   name        = "knot-frankenphp-${replace(php, ".", "-")}"
-  description = "Ubuntu + FrankenPHP image"
+  description = "FrankenPHP runtime plus development tools"
   matrix      = {
     php = FRANKENPHP_VERSIONS
   }
@@ -393,14 +436,18 @@ target "knot-frankenphp" {
 
   labels = {
     "org.opencontainers.image.title"       = "Knot FrankenPHP"
-    "org.opencontainers.image.description" = "FrankenPHP image with knot startup tooling"
+    "org.opencontainers.image.description" = "FrankenPHP image with knot startup tooling and dev tools"
     "org.opencontainers.image.version"     = "${php}"
   }
 
+  contexts = {
+    "${TAG_BASE}/knot-frankenphp-runtime:${php}" = "target:knot-frankenphp-runtime-${replace(php, ".", "-")}"
+  }
+
   args = {
-    APT_CACHE          = "${APT_CACHE}"
-    PHP_VERSION        = "${php}"
-    FRANKENPHP_VERSION = "${FRANKENPHP_VERSION}"
+    APT_CACHE = "${APT_CACHE}"
+    PHP_VERSION = "${php}"
+    TAG_BASE  = "${TAG_BASE}"
   }
 
   tags = version_tags("knot-frankenphp", php)
@@ -453,6 +500,47 @@ target "knot-frankenscriptling" {
   cache-to = [{
     type              = "registry"
     ref               = "${cache_base()}/knot-frankenscriptling:buildcache-${php}"
+    mode              = "max"
+    "oci-media-types" = true
+    "image-manifest"  = true
+  }]
+}
+
+target "knot-adminer" {
+  name        = "knot-adminer-${replace(version, ".", "-")}"
+  description = "Adminer on knot-frankenphp with Redis, PostgreSQL and MySQL/MariaDB support"
+  matrix      = { version = ADMINER_VERSIONS }
+  inherits    = ["_common"]
+  context     = "./adminer"
+
+  labels = {
+    "org.opencontainers.image.title"       = "Knot Adminer"
+    "org.opencontainers.image.description" = "Adminer database management on knot-frankenphp"
+    "org.opencontainers.image.version"     = "${version}"
+  }
+
+  contexts = {
+    "${TAG_BASE}/knot-frankenphp-runtime:8.5" = "target:knot-frankenphp-runtime-8-5"
+  }
+
+  args = {
+    ADMINER_VERSION = "${version}"
+    TAG_BASE        = "${TAG_BASE}"
+    PHP_VERSION     = "8.5"
+  }
+
+  tags = concat(
+    version_tags("knot-adminer", version),
+    ["${TAG_BASE}/knot-adminer:latest"],
+  )
+
+  cache-from = [{
+    type = "registry"
+    ref  = "${cache_base()}/knot-adminer:buildcache-${version}"
+  }]
+  cache-to = [{
+    type              = "registry"
+    ref               = "${cache_base()}/knot-adminer:buildcache-${version}"
     mode              = "max"
     "oci-media-types" = true
     "image-manifest"  = true

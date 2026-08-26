@@ -1,0 +1,472 @@
+/* Adminer design knot — modern theme for Adminer 6 (system fonts, no external assets).
+   Light/dark is driven by html[data-theme], set by the AdminerDarkSwitcher plugin. */
+
+:root {
+	--k-bg: #f4f6f9;
+	--k-surface: #ffffff;
+	--k-border: #e2e8f0;
+	--k-border-strong: #cbd5e1;
+	--k-text: #0f172a;
+	--k-muted: #64748b;
+	--k-th: #334155;
+	--k-thead-bg: #f8fafc;
+	--k-row-hover: #f1f5f9;
+	--k-row-zebra: #fafbfd;
+	--k-code-bg: #eef2f7;
+	--k-selection: #c7d2fe;
+	--k-scrollbar: #cbd5e1;
+	--k-accent: #4f46e5;
+	--k-accent-hover: #4338ca;
+	--k-accent-soft: #eef2ff;
+	--k-accent-contrast: #ffffff;
+	--k-focus-ring: rgba(79, 70, 229, 0.14);
+	--k-success: #166534;
+	--k-success-bg: #f0fdf4;
+	--k-success-border: #bbf7d0;
+	--k-success-accent: #16a34a;
+	--k-error: #991b1b;
+	--k-error-bg: #fef2f2;
+	--k-error-border: #fecaca;
+	--k-error-accent: #dc2626;
+	--k-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+	--k-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+	--k-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+	--k-shadow-lg: 0 12px 40px -12px rgba(15, 23, 42, 0.18);
+	--k-radius: 8px;
+}
+
+html[data-theme='dark'] {
+	color-scheme: dark;
+	--k-bg: #10151f;
+	--k-surface: #1a2130;
+	--k-border: #2c3a52;
+	--k-border-strong: #3e506e;
+	--k-text: #e2e8f0;
+	--k-muted: #93a3ba;
+	--k-th: #c4d0e0;
+	--k-thead-bg: #1d2637;
+	--k-row-hover: #243046;
+	--k-row-zebra: #1c2434;
+	--k-code-bg: #232e43;
+	--k-selection: #43497e;
+	--k-scrollbar: #3e506e;
+	--k-accent: #818cf8;
+	--k-accent-hover: #a5b4fc;
+	--k-accent-soft: #2a3352;
+	--k-accent-contrast: #10151f;
+	--k-focus-ring: rgba(129, 140, 248, 0.22);
+	--k-success: #86efac;
+	--k-success-bg: #10291b;
+	--k-success-border: #1e4d33;
+	--k-success-accent: #22c55e;
+	--k-error: #fca5a5;
+	--k-error-bg: #2f1214;
+	--k-error-border: #5b2023;
+	--k-error-accent: #ef4444;
+	--k-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+	--k-shadow-lg: 0 12px 40px -12px rgba(0, 0, 0, 0.65);
+}
+
+/* Re-skin Adminer's own variables so every default rule follows the palette */
+html {
+	color-scheme: light;
+	--bg: var(--k-bg);
+	--fg: var(--k-text);
+	--dim: #eef2f7;
+	--lit: #e8edf7;
+}
+html[data-theme='dark'] {
+	--dim: #243046;
+	--lit: #2a3a58;
+}
+
+body {
+	font: 14px/1.55 var(--k-sans);
+	color: var(--k-text);
+	background: var(--k-bg);
+	tab-size: 4;
+	-webkit-font-smoothing: antialiased;
+}
+
+::selection { background: var(--k-selection); }
+a, a:visited { color: var(--k-accent); text-decoration: none; }
+a:link:hover, a:visited:hover { color: var(--k-accent-hover); text-decoration: underline; }
+a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible {
+	outline: 2px solid var(--k-accent);
+	outline-offset: 1px;
+}
+
+/* ---------- Headings ---------- */
+
+h1 { /* the "Adminer x.y" footer branding */
+	font-size: 100%;
+	font-weight: 500;
+	color: var(--k-muted);
+	background: none;
+	border: 0;
+	border-top: 1px solid var(--k-border);
+	margin: 3em 20px 0 0;
+	padding: 1.2em 0.667em 0.5em;
+}
+
+h2 { /* page title */
+	font-size: 1.35rem;
+	font-weight: 650;
+	letter-spacing: -0.01em;
+	color: var(--k-text);
+	background: none;
+	border: 0;
+	margin: 0 0 1.4rem;
+	padding: 0;
+}
+
+h3 { font-size: 1.05rem; font-weight: 600; margin: 1.6em 0 0.4em; }
+
+#h1 { color: var(--k-text); font-style: normal; font-weight: 650; text-decoration: none; }
+.version { color: var(--k-muted); }
+
+/* ---------- Layout: sidebar, breadcrumb, language ---------- */
+
+@media (min-width: 801px) {
+	#menu {
+		position: fixed;
+		top: 0;
+		left: 0;
+		margin: 0;
+		height: 100vh;
+		box-sizing: border-box;
+		padding-top: 3.4em;
+		background: var(--k-surface);
+		border-right: 1px solid var(--k-border);
+		overflow-y: auto;
+		/* above any thead z-index, incl. the old header-scroll plugin's inline 10000 */
+		z-index: 10020;
+	}
+	#breadcrumb {
+		position: fixed;
+		left: 21em;
+		right: 0;
+		top: 0;
+		height: auto;
+		line-height: 2.4em;
+		padding: 0 1.2em;
+		margin: 0;
+		background: var(--k-surface);
+		border-bottom: 1px solid var(--k-border);
+		color: var(--k-muted);
+		font-size: 0.92em;
+		white-space: nowrap;
+		overflow: hidden auto;
+		z-index: 10021;
+	}
+	#breadcrumb a { font-weight: 500; }
+	#content { margin-top: 0; padding-top: 3.4em; }
+	#lang { position: fixed; top: 0.45em; left: 0; z-index: 10022; }
+	.logout { position: fixed; top: 0.45em; right: 1em; z-index: 10023; margin-top: 0; }
+}
+
+#menu p, #logins, #tables {
+	padding: 0.7em 0.9em;
+	border-bottom: 1px solid var(--k-border);
+}
+
+#dbs select { max-width: 100%; }
+
+#logins li, #tables li { list-style: none; }
+#logins a, #tables a, #tables span {
+	background: none;
+	border-radius: 6px;
+	padding: 0.18em 0.5em;
+	margin: 0 -0.5em;
+}
+#logins a:hover, #tables a:hover {
+	background: var(--k-row-hover);
+	text-decoration: none;
+}
+
+#lang {
+	padding: 0.25em 0.9em;
+	font-size: 0.85em;
+	color: var(--k-muted);
+}
+
+.logout {
+	margin-top: 0.6em;
+	display: flex;
+	align-items: center;
+	gap: 0.55em;
+	background: var(--k-surface);
+	border: 1px solid var(--k-border);
+	border-radius: 999px;
+	padding: 0.15em 0.9em;
+	box-shadow: var(--k-shadow);
+	font-weight: 500;
+}
+.logout:hover { border-color: var(--k-accent); box-shadow: none; }
+
+/* ---------- Tables ---------- */
+
+table, td, th, .column { border-color: var(--k-border); }
+
+table { margin: 1em 20px 0 0; font-size: 0.95rem; border-collapse: collapse; }
+
+td, th {
+	border-width: 0 0 1px 0;
+	padding: 0.5em 0.7em;
+}
+td:first-child, th:first-child { border-left-width: 0; }
+table > :first-child > :first-child > td, table > :first-child > :first-child > th { border-top-width: 0; }
+
+th { background: transparent; text-align: left; font-weight: 600; color: var(--k-th); }
+thead { z-index: 1; } /* stay under the fixed sidebar/top bar when scrolling sideways */
+thead th {
+	background: var(--k-thead-bg);
+	font-size: 0.78rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--k-muted);
+	padding: 0.55em 0.7em;
+	border-bottom: 1px solid var(--k-border-strong);
+}
+thead td { background: var(--k-thead-bg); }
+tbody tr:hover td, tbody tr:hover th { background: var(--k-row-hover); }
+
+.odds tbody tr:nth-child(2n) { background: var(--k-row-zebra); }
+.odds tbody tr:nth-child(2n):hover td, .odds tbody tr:nth-child(2n):hover th { background: var(--k-row-hover); }
+
+.function, .number, .datetime { font-variant-numeric: tabular-nums; }
+.time { color: var(--k-muted); }
+.type, .function { color: var(--k-muted); font-size: 0.85em; }
+.view { color: var(--k-muted); }
+
+/* ---------- Forms & controls ---------- */
+
+input, select, textarea {
+	font: inherit;
+	color: var(--k-text);
+	background: var(--k-surface);
+	border: 1px solid var(--k-border-strong);
+	border-radius: 6px;
+	padding: 0.4em 0.6em;
+}
+
+input:focus, select:focus, textarea:focus {
+	outline: none;
+	border-color: var(--k-accent);
+	box-shadow: 0 0 0 3px var(--k-focus-ring);
+}
+
+textarea { line-height: 1.5; }
+
+input[type="checkbox"], input[type="radio"] { accent-color: var(--k-accent); }
+input[type="checkbox"]:focus, input[type="radio"]:focus { box-shadow: none; }
+
+input[type="submit"], button {
+	font: inherit;
+	font-weight: 550;
+	color: var(--k-accent-contrast);
+	background: var(--k-accent);
+	border: 0;
+	border-radius: 6px;
+	padding: 0.45em 1.1em;
+	cursor: pointer;
+	box-shadow: none;
+	transition: background 0.12s ease;
+}
+input[type="submit"]:hover, button:hover { background: var(--k-accent-hover); }
+input[type="submit"]:active, button:active { background: var(--k-accent-hover); transform: translateY(1px); }
+
+button.link { background: none; color: var(--k-accent); padding: 0; border: 0; }
+button.link:hover { color: var(--k-accent-hover); text-decoration: underline; }
+
+input.default { box-shadow: none; }
+input.required, input.maxlength, textarea.maxlength { box-shadow: 0 0 0 3px var(--k-focus-ring); border-color: #f87171; }
+
+#filter-field { width: 100%; margin-bottom: 0.4em; }
+
+select[name="auth[driver]"], select[name="lang"] { min-width: 14em; }
+
+/* ---------- Cards (fieldset) ---------- */
+
+/* inline-block with a shared min-height so Adminer's side-by-side form cards
+   — search/sort/limit on the data page, whole-result/selected action bars —
+   flow in one row and match heights */
+fieldset {
+	display: inline-block;
+	vertical-align: top;
+	min-height: 4.75em;
+	box-sizing: border-box;
+	max-width: 100%;
+	background: var(--k-surface);
+	border: 1px solid var(--k-border);
+	border-radius: var(--k-radius);
+	box-shadow: var(--k-shadow);
+	padding: 0.75em 1em;
+	margin: 0.9em 0.9em 0 0;
+}
+fieldset legend { color: var(--k-muted); font-size: 0.85em; padding: 0 0.4em; }
+
+/* ---------- Feedback ---------- */
+
+.error {
+	color: var(--k-error);
+	background: var(--k-error-bg);
+	border: 1px solid var(--k-error-border);
+	border-left: 3px solid var(--k-error-accent);
+	border-radius: var(--k-radius);
+	padding: 0.65em 1em;
+	margin: 1em 20px 0 0;
+}
+.error b { background: none; font-weight: 650; }
+
+.message {
+	color: var(--k-success);
+	background: var(--k-success-bg);
+	border: 1px solid var(--k-success-border);
+	border-left: 3px solid var(--k-success-accent);
+	border-radius: var(--k-radius);
+	padding: 0.65em 1em;
+	margin: 1em 20px 0 0;
+}
+
+/* ---------- Login card ----------
+   The card is the form itself so the button row (a sibling <p> after the
+   table) sits inside it with padding. Scoped with :not(.nowrap) — the edit
+   forms use `table.layout.nowrap`, the login form a plain `table.layout`. */
+form:has(> table.layout:not(.nowrap)) {
+	margin: 9vh auto 0;
+	width: fit-content;
+	background: var(--k-surface);
+	border: 1px solid var(--k-border);
+	border-radius: 12px;
+	box-shadow: var(--k-shadow-lg);
+	padding: 1.2em 1.6em 1.4em;
+}
+form:has(> table.layout:not(.nowrap)) table.layout {
+	margin: 0;
+	background: none;
+	border: 0;
+	box-shadow: none;
+	padding: 0;
+}
+form:has(> table.layout:not(.nowrap)) > p { margin: 1em 0 0; }
+
+table.layout:not(.nowrap) th { color: var(--k-muted); font-weight: 500; padding: 0.55em 0.9em 0.55em 0; white-space: nowrap; }
+table.layout:not(.nowrap) td, table.layout:not(.nowrap) td:first-child { border: 0; padding: 0.3em 0; }
+table.layout:not(.nowrap) input:not([type="submit"]):not([type="checkbox"]) { width: 22ch; }
+
+/* The whole-result/modify/selected action bar above the sticky footer */
+.footer > div {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: stretch;
+}
+
+/* ---------- Code & syntax ---------- */
+
+code {
+	font-family: var(--k-mono);
+	font-size: 0.86em;
+	background: var(--k-code-bg);
+	border-radius: 4px;
+	padding: 0.1em 0.4em;
+}
+
+pre, .sqlarea, textarea[class*="jush-"] {
+	font: 0.92rem/1.6 var(--k-mono);
+}
+pre { margin: 1em 20px 0 0; }
+.sqlarea { border-radius: var(--k-radius); }
+
+.jush {
+	--php-color: #4f46e5;
+	--string-color: #0f766e;
+	--string-plain-color: #0f766e;
+	--keyword-color: #7c3aed;
+	--identifier-color: #be123c;
+	--value-color: #9333ea;
+	--number-color: #b45309;
+	--attribute-color: #0e7490;
+}
+html[data-theme='dark'] .jush {
+	--text-color: #e2e8f0;
+	--bg-color: #1a2130;
+	--php-color: #818cf8;
+	--string-color: #34d399;
+	--string-plain-color: #34d399;
+	--keyword-color: #a78bfa;
+	--identifier-color: #fb7185;
+	--value-color: #c084fc;
+	--number-color: #fbbf24;
+	--attribute-color: #38bdf8;
+}
+
+/* ---------- Small pieces ---------- */
+
+p { margin: 0.9em 20px 0 0; }
+p.links a { margin-right: 1.2em; }
+
+.icon { background-color: var(--k-accent); border-radius: 4px; }
+.icon:hover { background-color: var(--k-accent-hover); }
+
+#help {
+	background: var(--k-surface);
+	border: 1px solid var(--k-border);
+	border-radius: var(--k-radius);
+	box-shadow: var(--k-shadow-lg);
+	font-family: var(--k-mono);
+	font-size: 0.86em;
+	padding: 0.6em 0.8em;
+}
+
+/* Live region: invisible when idle, a floating pill while an AJAX request runs */
+#ajaxstatus:not(:empty) {
+	background: var(--k-accent);
+	color: var(--k-accent-contrast);
+	border-radius: 6px;
+	font-weight: 500;
+	padding: 0.3em 0.8em;
+	box-shadow: var(--k-shadow-lg);
+}
+
+.char { color: #0f766e; }
+.date { color: #9333ea; }
+.enum { color: #0e7490; }
+.binary { color: #b45309; }
+html[data-theme='dark'] .char { color: #34d399; }
+html[data-theme='dark'] .date { color: #c084fc; }
+html[data-theme='dark'] .enum { color: #38bdf8; }
+html[data-theme='dark'] .binary { color: #fbbf24; }
+
+/* Theme toggle (injected by the AdminerDarkSwitcher plugin). Default position:
+   fixed bottom-right; when logged in the plugin moves it into the logout block
+   next to the username, where it becomes an inline icon button. */
+#theme-toggle {
+	position: fixed;
+	right: 1em;
+	bottom: 1em;
+	z-index: 10024;
+	width: 2.4em;
+	height: 2.4em;
+	padding: 0;
+	background: var(--k-surface);
+	color: var(--k-text);
+	border: 1px solid var(--k-border-strong);
+	border-radius: 999px;
+	box-shadow: var(--k-shadow-lg);
+	line-height: 1;
+}
+#theme-toggle:hover { background: var(--k-surface); color: var(--k-accent); border-color: var(--k-accent); }
+.logout #theme-toggle {
+	position: static;
+	width: 1.7em;
+	height: 1.7em;
+	border-color: transparent;
+	box-shadow: none;
+}
+.logout #theme-toggle:hover { border-color: var(--k-accent); }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--k-scrollbar); border-radius: 8px; border: 2px solid var(--k-bg); }
+::-webkit-scrollbar-track { background: transparent; }

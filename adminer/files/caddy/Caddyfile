@@ -1,0 +1,30 @@
+# Caddyfile for Adminer — fixed docroot, otherwise the same as knot-frankenphp
+{
+  admin 127.0.0.1:2019
+  frankenphp
+  auto_https off
+}
+
+:80
+
+# Log to syslog.
+log {
+  level info
+  output net udp/127.0.0.1:1514 {
+    dial_timeout 10s
+    soft_start
+  }
+  format transform "{common_log}"
+}
+
+# Set site root directory.
+root * /var/www/html
+
+# Enable compression.
+encode zstd gzip
+
+# Enable the static file server (adminer.css).
+file_server
+
+# Serve PHP through FrankenPHP.
+php_server

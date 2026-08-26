@@ -19,7 +19,8 @@ These images are designed first and foremost for **knot spaces**, but they are o
 | [`knot-desktop`](desktop/README.md) | Ubuntu + an XFCE desktop served over the web via KasmVNC. Builds on `knot-ubuntu`. | [`desktop/`](desktop/) |
 | [`knot-caddy`](caddy/README.md) | Caddy web server built with `xcaddy`, including DNS-01 and TLS storage modules. | [`caddy/`](caddy/) |
 | [`knot-php`](php/README.md) | Ubuntu + Caddy + PHP-FPM, Composer and Node.js — serves `~/public_html`. | [`php/`](php/) |
-| [`knot-frankenphp`](frankenphp/README.md) | Ubuntu + FrankenPHP (Caddy + PHP in one process) with Composer and Node.js. | [`frankenphp/`](frankenphp/) |
+| [`knot-frankenphp-runtime`](frankenphp-runtime/README.md) | FrankenPHP (Caddy + PHP in one process) with the knot toolchain but no dev tools — base for appliances. | [`frankenphp-runtime/`](frankenphp-runtime/) |
+| [`knot-frankenphp`](frankenphp/README.md) | `knot-frankenphp-runtime` + dev tools: ssh, git, editors, shells, Composer, Node.js, mago and mutagen. | [`frankenphp/`](frankenphp/) |
 | [`knot-frankenscriptling`](frankenscriptling/README.md) | `knot-frankenphp` + the Scriptling PHP extension. | [`frankenscriptling/`](frankenscriptling/) |
 | [`knot-go`](go/README.md) | Ubuntu + the Go toolchain — pure runtime image. | [`go/`](go/) |
 | [`knot-python`](python/README.md) | Ubuntu + Python and `uv` — pure runtime image. | [`python/`](python/) |
@@ -31,6 +32,7 @@ These images are designed first and foremost for **knot spaces**, but they are o
 | [`knot-valkey`](valkey/README.md) | Valkey (the Redis fork) with the knot entrypoint, agent integration and syslog logging. | [`valkey/`](valkey/) |
 | [`knot-redis`](redis/README.md) | Redis with the knot entrypoint, agent integration and syslog logging. | [`redis/`](redis/) |
 | [`knot-mailpit`](mailpit/README.md) | Mailpit SMTP mail catcher with the knot entrypoint, agent integration and syslog logging. | [`mailpit/`](mailpit/) |
+| [`knot-adminer`](adminer/README.md) | Adminer on knot-frankenphp-runtime — manages MySQL/MariaDB, PostgreSQL and Redis. | [`adminer/`](adminer/) |
 | [`knot-victoria-logs`](victoria-logs/README.md) | VictoriaLogs log database (rebased onto Alpine) with the knot entrypoint, agent integration and syslog logging. | [`victoria-logs/`](victoria-logs/) |
 
 ## Image relationships
@@ -44,8 +46,10 @@ knot-ubuntu ──┬── knot-desktop
               └── knot-scriptling
 knot-alpine ──── knot-scriptling (<version>-alpine tags)
 knot-caddy
-knot-frankenphp   (standalone, official FrankenPHP base)
+knot-frankenphp-runtime (standalone, official FrankenPHP base + knot toolchain, no dev tools)
+knot-frankenphp   (runtime + dev tools: ssh, git, editors, node, composer, mago, mutagen)
 knot-frankenscriptling (builds on knot-frankenphp, adds the Scriptling PHP extension)
+knot-adminer      (builds on knot-frankenphp-runtime 8.5, serves Adminer)
 knot-mariadb      (standalone, official MariaDB base)
 knot-mysql        (standalone, official MySQL base)
 knot-postgres     (standalone, official PostgreSQL base)

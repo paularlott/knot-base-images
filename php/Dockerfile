@@ -23,10 +23,11 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   \
   # Install
   && apt-get update -y \
-  && apt-get install -y dialog \
+  && apt-get install -y dialog mariadb-client postgresql-client \
   && PACKAGES="php${PHP_VERSION}-fpm php${PHP_VERSION}-cli \
     php${PHP_VERSION}-gd php${PHP_VERSION}-pdo php${PHP_VERSION}-pdo-mysql php${PHP_VERSION}-bcmath \
     php${PHP_VERSION}-mbstring php${PHP_VERSION}-exif php${PHP_VERSION}-zip php${PHP_VERSION}-sockets php${PHP_VERSION}-mysqli \
+    php${PHP_VERSION}-pgsql php${PHP_VERSION}-pdo-pgsql \
     php${PHP_VERSION}-iconv php${PHP_VERSION}-gettext php${PHP_VERSION}-curl \
     php${PHP_VERSION}-redis php${PHP_VERSION}-mailparse \
     php${PHP_VERSION}-dev php${PHP_VERSION}-xml php${PHP_VERSION}-xdebug php-pear \
