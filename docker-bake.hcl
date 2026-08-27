@@ -938,7 +938,10 @@ target "knot-scriptling" {
 
   tags = concat(
     version_tags("knot-scriptling", version),
-    ["${TAG_BASE}/knot-scriptling:${major_minor(version)}"],
+    [
+      "${TAG_BASE}/knot-scriptling:${major_minor(version)}",
+      "${TAG_BASE}/knot-scriptling:latest",
+    ],
   )
 
   cache-from = [{
@@ -980,7 +983,10 @@ target "knot-scriptling-alpine" {
 
   tags = concat(
     version_tags("knot-scriptling", "${version}-alpine"),
-    ["${TAG_BASE}/knot-scriptling:${major_minor(version)}-alpine"],
+    [
+      "${TAG_BASE}/knot-scriptling:${major_minor(version)}-alpine",
+      "${TAG_BASE}/knot-scriptling:alpine",
+    ],
   )
 
   cache-from = [{
