@@ -1,6 +1,6 @@
 # knot-scriptling-runtime
 
-A lean [Scriptling](https://github.com/paularlott/scriptling) runtime image for [knot](https://getknot.dev/) spaces: Alpine with the Scriptling interpreter and the knot entrypoint framework, but **no dev tools** — no ssh, git, editors, extra shells, db clients or mutagen. Use [`knot-scriptling`](https://hub.docker.com/r/paularlott/knot-scriptling) when you need the full development toolchain.
+A lean [Scriptling](https://github.com/paularlott/scriptling) runtime image for [knot](https://getknot.dev/) spaces: [`knot-alpine-runtime`](https://hub.docker.com/r/paularlott/knot-alpine-runtime) with the Scriptling interpreter added, and **no dev tools** — no ssh, git, editors, extra shells, db clients or mutagen. Use [`knot-scriptling`](https://hub.docker.com/r/paularlott/knot-scriptling) when you need the full development toolchain.
 
 Scriptling is a minimal, sandboxed, Python-like scripting language for Go — designed for LLM agents to execute code and interact with REST APIs. The image's default command runs the Scriptling HTTP server on `:8080`; pass any other `scriptling` command to use the interpreter, REPL or one-shot scripts instead.
 

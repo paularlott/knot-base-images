@@ -49,19 +49,29 @@ else
 
   # If the home directory exists then create the user without a home otherwise create with home
   if [ -d "/home/${KNOT_USER}" ]; then
-    adduser -D -H -u 1000 -s /bin/bash ${KNOT_USER}
+    useradd ${KNOT_USER} \
+      --uid 1000 \
+      --user-group \
+      --no-create-home \
+      --shell /bin/bash
   else
-    adduser -D -u 1000 -s /bin/bash ${KNOT_USER}
+    useradd ${KNOT_USER} \
+      --uid 1000 \
+      --user-group \
+      --create-home \
+      --shell /bin/bash
 
     mkdir -p /home/${KNOT_USER}/.ssh && chmod 0700 /home/${KNOT_USER}/.ssh && chown -R ${KNOT_USER}:${KNOT_USER} /home/${KNOT_USER}/.ssh
     mkdir -p /home/${KNOT_USER}/.local/lib /home/${KNOT_USER}/.local/bin && chown -R ${KNOT_USER}:${KNOT_USER} /home/${KNOT_USER}/.local
   fi
+
+  usermod -aG ssl-cert $KNOT_USER
 fi
 
-# Check home is owned by the user (always uid/gid 1000); else fix
-if [ "$(stat -c '%u:%g' /home/${KNOT_USER})" != "1000:1000" ]; then
+# Check home is owned by the user; else fix
+if [ $(stat -c '%U:%G' /home/${KNOT_USER}) != "${KNOT_USER}:${KNOT_USER}" ]; then
   echo "Changing file ownership.."
-  chown -R ${KNOT_USER}:${KNOT_USER} /home/${KNOT_USER}
+  chown ${KNOT_USER}:${KNOT_USER} -R /home/${KNOT_USER}
 fi
 
 export HOME=/home/${KNOT_USER}
@@ -71,7 +81,6 @@ cd /home/${KNOT_USER}
 if [ "$KNOT_SSHD" = "native" ] && [ "${KNOT_SSH_PORT:-0}" -ne 0 ]; then
   sed -i "s/#Port 22/Port ${KNOT_SSH_PORT}/" /etc/ssh/sshd_config
   echo "Starting SSH daemon on port ${KNOT_SSH_PORT}..."
-  ssh-keygen -A
   /usr/sbin/sshd
 fi
 
@@ -133,7 +142,7 @@ if [ -d /etc/knot-startup.d/ ]; then
 fi
 
 # If the folder /home/${KNOT_USER}/.knot-startup.d/ exists then run all scripts in it
-if [ -d "/home/${KNOT_USER}/.knot-startup.d/" ]; then
+if [ -d /home/${KNOT_USER}/.knot-startup.d/ ]; then
   for f in /home/${KNOT_USER}/.knot-startup.d/*; do
     if [ -f "$f" ]; then
       logger -p local0.info "Running user startup script $f"
@@ -142,7 +151,7 @@ if [ -d "/home/${KNOT_USER}/.knot-startup.d/" ]; then
   done
 fi
 
-if [ -z "$*" ]; then
+if [ "$#" -eq 0 ]; then
   logger -p local0.info "System started..."
   wait $agent_pid
 else

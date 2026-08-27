@@ -24,7 +24,7 @@ variable "BUILD_DATE" {
 
 variable "UBUNTU_VERSIONS" {
   type    = list(string)
-  default = ["24.04"]
+  default = ["24.04", "26.04"]
 }
 
 variable "PHP_UBUNTU_BASE_VERSION" {
@@ -52,7 +52,7 @@ variable "NODE_VERSIONS" {
 
 variable "PHP_VERSIONS" {
   type    = list(string)
-  default = ["8.5"]
+  default = ["8.3", "8.4", "8.5"]
 }
 
 variable "FRANKENPHP_VERSIONS" {
@@ -65,16 +65,16 @@ variable "CADDY_VERSION" {
 }
 
 variable "FRANKENPHP_VERSION" {
-  default = "1.12.6"
+  default = "1.12.7"
 }
 
 variable "SCRIPTLING_VERSION" {
-  default = "v0.20.1"
+  default = "v0.21.3"
 }
 
 variable "SCRIPTLING_VERSIONS" {
   type    = list(string)
-  default = ["0.20.1"]
+  default = ["0.21.3"]
 }
 
 variable "ADMINER_VERSIONS" {
@@ -93,7 +93,7 @@ variable "KNOT_ALPINE_BASE_VERSION" {
 
 variable "MARIADB_VERSIONS" {
   type    = list(string)
-  default = ["12.3"]
+  default = ["10.11", "11.4", "11.8", "12.3"]
 }
 
 variable "MYSQL_VERSIONS" {
@@ -108,7 +108,7 @@ variable "POSTGRES_VERSIONS" {
 
 variable "VALKEY_VERSIONS" {
   type    = list(string)
-  default = ["9.1.1"]
+  default = ["9.0.4", "9.1.1"]
 }
 
 variable "REDIS_VERSIONS" {
@@ -160,6 +160,32 @@ function "version_tags" {
   ])
 }
 
+# One registry build-cache ref per image, shared by the pull/push pair so
+# they cannot drift apart.
+function "cache_ref" {
+  params = [repo, version]
+  result = "${cache_base()}/${repo}:buildcache-${version}"
+}
+
+function "cache_from" {
+  params = [repo, version]
+  result = [{
+    type = "registry"
+    ref  = cache_ref(repo, version)
+  }]
+}
+
+function "cache_to" {
+  params = [repo, version]
+  result = [{
+    type              = "registry"
+    ref               = cache_ref(repo, version)
+    mode              = "max"
+    "oci-media-types" = true
+    "image-manifest"  = true
+  }]
+}
+
 target "_common" {
   platforms = ["linux/amd64", "linux/arm64"]
   output    = [{ type = "image", push = true }]
@@ -177,7 +203,9 @@ target "_common" {
 
 group "default" {
   targets = [
+    "knot-ubuntu-runtime",
     "knot-ubuntu",
+    "knot-alpine-runtime",
     "knot-alpine",
     "knot-caddy",
     "knot-php",
@@ -207,6 +235,32 @@ group "default" {
 # Targets
 # =============================================================================
 
+target "knot-ubuntu-runtime" {
+  name        = "knot-ubuntu-runtime-${replace(version, ".", "-")}"
+  description = "Minimal Ubuntu base image with the knot toolchain, no dev tools"
+  matrix      = { version = UBUNTU_VERSIONS }
+  inherits    = ["_common"]
+  context     = "./ubuntu-runtime"
+
+  labels = {
+    "org.opencontainers.image.title"       = "Knot Ubuntu Runtime"
+    "org.opencontainers.image.description" = "Minimal Ubuntu base with the knot toolchain, no dev tools"
+    "org.opencontainers.image.version"     = "${version}"
+  }
+
+  args = {
+    IMAGE_BASE    = "ubuntu"
+    IMAGE_VERSION = "${version}"
+    DOCKER_HUB    = "${DOCKER_HUB}"
+    APT_CACHE     = "${APT_CACHE}"
+  }
+
+  tags = version_tags("knot-ubuntu-runtime", version)
+
+  cache-from = cache_from("knot-ubuntu-runtime", "${version}")
+  cache-to   = cache_to("knot-ubuntu-runtime", "${version}")
+}
+
 target "knot-ubuntu" {
   name        = "knot-ubuntu-${replace(version, ".", "-")}"
   description = "Base Ubuntu image with knot startup scripts"
@@ -220,26 +274,46 @@ target "knot-ubuntu" {
     "org.opencontainers.image.version"     = "${version}"
   }
 
+  contexts = {
+    "${TAG_BASE}/knot-ubuntu-runtime:${version}" = "target:knot-ubuntu-runtime-${replace(version, ".", "-")}"
+  }
+
   args = {
     IMAGE_BASE    = "ubuntu"
     IMAGE_VERSION = "${version}"
     DOCKER_HUB    = "${DOCKER_HUB}"
     APT_CACHE     = "${APT_CACHE}"
+    TAG_BASE      = "${TAG_BASE}"
   }
 
   tags = version_tags("knot-ubuntu", version)
 
-  cache-from = [{
-    type = "registry"
-    ref  = "${cache_base()}/knot-ubuntu:buildcache-${version}"
-  }]
-  cache-to = [{
-    type              = "registry"
-    ref               = "${cache_base()}/knot-ubuntu:buildcache-${version}"
-    mode              = "max"
-    "oci-media-types" = true
-    "image-manifest"  = true
-  }]
+  cache-from = cache_from("knot-ubuntu", "${version}")
+  cache-to   = cache_to("knot-ubuntu", "${version}")
+}
+
+target "knot-alpine-runtime" {
+  name        = "knot-alpine-runtime-${replace(version, ".", "-")}"
+  description = "Minimal Alpine base image with the knot toolchain, no dev tools"
+  matrix      = { version = KNOT_ALPINE_VERSIONS }
+  inherits    = ["_common"]
+  context     = "./alpine-runtime"
+
+  labels = {
+    "org.opencontainers.image.title"       = "Knot Alpine Runtime"
+    "org.opencontainers.image.description" = "Minimal Alpine base with the knot toolchain, no dev tools"
+    "org.opencontainers.image.version"     = "${version}"
+  }
+
+  args = {
+    ALPINE_VERSION = "${version}"
+    DOCKER_HUB     = "${DOCKER_HUB}"
+  }
+
+  tags = version_tags("knot-alpine-runtime", version)
+
+  cache-from = cache_from("knot-alpine-runtime", "${version}")
+  cache-to   = cache_to("knot-alpine-runtime", "${version}")
 }
 
 target "knot-alpine" {
@@ -255,24 +329,20 @@ target "knot-alpine" {
     "org.opencontainers.image.version"     = "${version}"
   }
 
+  contexts = {
+    "${TAG_BASE}/knot-alpine-runtime:${version}" = "target:knot-alpine-runtime-${replace(version, ".", "-")}"
+  }
+
   args = {
     ALPINE_VERSION = "${version}"
     DOCKER_HUB     = "${DOCKER_HUB}"
+    TAG_BASE       = "${TAG_BASE}"
   }
 
   tags = version_tags("knot-alpine", version)
 
-  cache-from = [{
-    type = "registry"
-    ref  = "${cache_base()}/knot-alpine:buildcache-${version}"
-  }]
-  cache-to = [{
-    type              = "registry"
-    ref               = "${cache_base()}/knot-alpine:buildcache-${version}"
-    mode              = "max"
-    "oci-media-types" = true
-    "image-manifest"  = true
-  }]
+  cache-from = cache_from("knot-alpine", "${version}")
+  cache-to   = cache_to("knot-alpine", "${version}")
 }
 
 target "knot-caddy" {
@@ -293,17 +363,8 @@ target "knot-caddy" {
 
   tags = version_tags("knot-caddy", CADDY_VERSION)
 
-  cache-from = [{
-    type = "registry"
-    ref  = "${cache_base()}/knot-caddy:buildcache-${CADDY_VERSION}"
-  }]
-  cache-to = [{
-    type              = "registry"
-    ref               = "${cache_base()}/knot-caddy:buildcache-${CADDY_VERSION}"
-    mode              = "max"
-    "oci-media-types" = true
-    "image-manifest"  = true
-  }]
+  cache-from = cache_from("knot-caddy", "${CADDY_VERSION}")
+  cache-to   = cache_to("knot-caddy", "${CADDY_VERSION}")
 }
 
 target "knot-ubuntu-desktop" {
@@ -333,17 +394,8 @@ target "knot-ubuntu-desktop" {
 
   tags = version_tags("knot-desktop", version)
 
-  cache-from = [{
-    type = "registry"
-    ref  = "${cache_base()}/knot-desktop:buildcache-${version}"
-  }]
-  cache-to = [{
-    type              = "registry"
-    ref               = "${cache_base()}/knot-desktop:buildcache-${version}"
-    mode              = "max"
-    "oci-media-types" = true
-    "image-manifest"  = true
-  }]
+  cache-from = cache_from("knot-desktop", "${version}")
+  cache-to   = cache_to("knot-desktop", "${version}")
 }
 
 target "knot-php" {
@@ -378,17 +430,8 @@ target "knot-php" {
 
   tags = version_tags("knot-php", php)
 
-  cache-from = [{
-    type = "registry"
-    ref  = "${cache_base()}/knot-php:buildcache-${php}"
-  }]
-  cache-to = [{
-    type              = "registry"
-    ref               = "${cache_base()}/knot-php:buildcache-${php}"
-    mode              = "max"
-    "oci-media-types" = true
-    "image-manifest"  = true
-  }]
+  cache-from = cache_from("knot-php", "${php}")
+  cache-to   = cache_to("knot-php", "${php}")
 }
 
 target "knot-frankenphp-runtime" {
@@ -414,17 +457,8 @@ target "knot-frankenphp-runtime" {
 
   tags = version_tags("knot-frankenphp-runtime", php)
 
-  cache-from = [{
-    type = "registry"
-    ref  = "${cache_base()}/knot-frankenphp-runtime:buildcache-${php}"
-  }]
-  cache-to = [{
-    type              = "registry"
-    ref               = "${cache_base()}/knot-frankenphp-runtime:buildcache-${php}"
-    mode              = "max"
-    "oci-media-types" = true
-    "image-manifest"  = true
-  }]
+  cache-from = cache_from("knot-frankenphp-runtime", "${php}")
+  cache-to   = cache_to("knot-frankenphp-runtime", "${php}")
 }
 
 target "knot-frankenphp" {
@@ -454,17 +488,8 @@ target "knot-frankenphp" {
 
   tags = version_tags("knot-frankenphp", php)
 
-  cache-from = [{
-    type = "registry"
-    ref  = "${cache_base()}/knot-frankenphp:buildcache-${php}"
-  }]
-  cache-to = [{
-    type              = "registry"
-    ref               = "${cache_base()}/knot-frankenphp:buildcache-${php}"
-    mode              = "max"
-    "oci-media-types" = true
-    "image-manifest"  = true
-  }]
+  cache-from = cache_from("knot-frankenphp", "${php}")
+  cache-to   = cache_to("knot-frankenphp", "${php}")
 }
 
 target "knot-frankenscriptling-runtime" {
@@ -495,17 +520,8 @@ target "knot-frankenscriptling-runtime" {
 
   tags = version_tags("knot-frankenscriptling-runtime", php)
 
-  cache-from = [{
-    type = "registry"
-    ref  = "${cache_base()}/knot-frankenscriptling-runtime:buildcache-${php}"
-  }]
-  cache-to = [{
-    type              = "registry"
-    ref               = "${cache_base()}/knot-frankenscriptling-runtime:buildcache-${php}"
-    mode              = "max"
-    "oci-media-types" = true
-    "image-manifest"  = true
-  }]
+  cache-from = cache_from("knot-frankenscriptling-runtime", "${php}")
+  cache-to   = cache_to("knot-frankenscriptling-runtime", "${php}")
 }
 
 target "knot-frankenscriptling" {
@@ -535,17 +551,8 @@ target "knot-frankenscriptling" {
 
   tags = version_tags("knot-frankenscriptling", php)
 
-  cache-from = [{
-    type = "registry"
-    ref  = "${cache_base()}/knot-frankenscriptling:buildcache-${php}"
-  }]
-  cache-to = [{
-    type              = "registry"
-    ref               = "${cache_base()}/knot-frankenscriptling:buildcache-${php}"
-    mode              = "max"
-    "oci-media-types" = true
-    "image-manifest"  = true
-  }]
+  cache-from = cache_from("knot-frankenscriptling", "${php}")
+  cache-to   = cache_to("knot-frankenscriptling", "${php}")
 }
 
 target "knot-adminer" {
@@ -576,17 +583,8 @@ target "knot-adminer" {
     ["${TAG_BASE}/knot-adminer:latest"],
   )
 
-  cache-from = [{
-    type = "registry"
-    ref  = "${cache_base()}/knot-adminer:buildcache-${version}"
-  }]
-  cache-to = [{
-    type              = "registry"
-    ref               = "${cache_base()}/knot-adminer:buildcache-${version}"
-    mode              = "max"
-    "oci-media-types" = true
-    "image-manifest"  = true
-  }]
+  cache-from = cache_from("knot-adminer", "${version}")
+  cache-to   = cache_to("knot-adminer", "${version}")
 }
 
 target "knot-mariadb" {
@@ -610,17 +608,8 @@ target "knot-mariadb" {
 
   tags = version_tags("knot-mariadb", version)
 
-  cache-from = [{
-    type = "registry"
-    ref  = "${cache_base()}/knot-mariadb:buildcache-${version}"
-  }]
-  cache-to = [{
-    type              = "registry"
-    ref               = "${cache_base()}/knot-mariadb:buildcache-${version}"
-    mode              = "max"
-    "oci-media-types" = true
-    "image-manifest"  = true
-  }]
+  cache-from = cache_from("knot-mariadb", "${version}")
+  cache-to   = cache_to("knot-mariadb", "${version}")
 }
 
 target "knot-mysql" {
@@ -643,17 +632,8 @@ target "knot-mysql" {
 
   tags = version_tags("knot-mysql", version)
 
-  cache-from = [{
-    type = "registry"
-    ref  = "${cache_base()}/knot-mysql:buildcache-${version}"
-  }]
-  cache-to = [{
-    type              = "registry"
-    ref               = "${cache_base()}/knot-mysql:buildcache-${version}"
-    mode              = "max"
-    "oci-media-types" = true
-    "image-manifest"  = true
-  }]
+  cache-from = cache_from("knot-mysql", "${version}")
+  cache-to   = cache_to("knot-mysql", "${version}")
 }
 
 target "knot-postgres" {
@@ -677,17 +657,8 @@ target "knot-postgres" {
 
   tags = version_tags("knot-postgres", version)
 
-  cache-from = [{
-    type = "registry"
-    ref  = "${cache_base()}/knot-postgres:buildcache-${version}"
-  }]
-  cache-to = [{
-    type              = "registry"
-    ref               = "${cache_base()}/knot-postgres:buildcache-${version}"
-    mode              = "max"
-    "oci-media-types" = true
-    "image-manifest"  = true
-  }]
+  cache-from = cache_from("knot-postgres", "${version}")
+  cache-to   = cache_to("knot-postgres", "${version}")
 }
 
 target "knot-valkey" {
@@ -714,17 +685,8 @@ target "knot-valkey" {
     ["${TAG_BASE}/knot-valkey:${major_minor(version)}"],
   )
 
-  cache-from = [{
-    type = "registry"
-    ref  = "${cache_base()}/knot-valkey:buildcache-${version}"
-  }]
-  cache-to = [{
-    type              = "registry"
-    ref               = "${cache_base()}/knot-valkey:buildcache-${version}"
-    mode              = "max"
-    "oci-media-types" = true
-    "image-manifest"  = true
-  }]
+  cache-from = cache_from("knot-valkey", "${version}")
+  cache-to   = cache_to("knot-valkey", "${version}")
 }
 
 target "knot-redis" {
@@ -750,17 +712,8 @@ target "knot-redis" {
     ["${TAG_BASE}/knot-redis:${major_minor(version)}"],
   )
 
-  cache-from = [{
-    type = "registry"
-    ref  = "${cache_base()}/knot-redis:buildcache-${version}"
-  }]
-  cache-to = [{
-    type              = "registry"
-    ref               = "${cache_base()}/knot-redis:buildcache-${version}"
-    mode              = "max"
-    "oci-media-types" = true
-    "image-manifest"  = true
-  }]
+  cache-from = cache_from("knot-redis", "${version}")
+  cache-to   = cache_to("knot-redis", "${version}")
 }
 
 target "knot-mailpit" {
@@ -783,17 +736,8 @@ target "knot-mailpit" {
 
   tags = version_tags("knot-mailpit", version)
 
-  cache-from = [{
-    type = "registry"
-    ref  = "${cache_base()}/knot-mailpit:buildcache-${version}"
-  }]
-  cache-to = [{
-    type              = "registry"
-    ref               = "${cache_base()}/knot-mailpit:buildcache-${version}"
-    mode              = "max"
-    "oci-media-types" = true
-    "image-manifest"  = true
-  }]
+  cache-from = cache_from("knot-mailpit", "${version}")
+  cache-to   = cache_to("knot-mailpit", "${version}")
 }
 
 target "knot-victoria-logs" {
@@ -818,17 +762,8 @@ target "knot-victoria-logs" {
 
   tags = version_tags("knot-victoria-logs", version)
 
-  cache-from = [{
-    type = "registry"
-    ref  = "${cache_base()}/knot-victoria-logs:buildcache-${version}"
-  }]
-  cache-to = [{
-    type              = "registry"
-    ref               = "${cache_base()}/knot-victoria-logs:buildcache-${version}"
-    mode              = "max"
-    "oci-media-types" = true
-    "image-manifest"  = true
-  }]
+  cache-from = cache_from("knot-victoria-logs", "${version}")
+  cache-to   = cache_to("knot-victoria-logs", "${version}")
 }
 
 target "knot-go" {
@@ -859,17 +794,8 @@ target "knot-go" {
 
   tags = version_tags("knot-go", version)
 
-  cache-from = [{
-    type = "registry"
-    ref  = "${cache_base()}/knot-go:buildcache-${version}"
-  }]
-  cache-to = [{
-    type              = "registry"
-    ref               = "${cache_base()}/knot-go:buildcache-${version}"
-    mode              = "max"
-    "oci-media-types" = true
-    "image-manifest"  = true
-  }]
+  cache-from = cache_from("knot-go", "${version}")
+  cache-to   = cache_to("knot-go", "${version}")
 }
 
 target "knot-python" {
@@ -900,17 +826,8 @@ target "knot-python" {
 
   tags = version_tags("knot-python", version)
 
-  cache-from = [{
-    type = "registry"
-    ref  = "${cache_base()}/knot-python:buildcache-${version}"
-  }]
-  cache-to = [{
-    type              = "registry"
-    ref               = "${cache_base()}/knot-python:buildcache-${version}"
-    mode              = "max"
-    "oci-media-types" = true
-    "image-manifest"  = true
-  }]
+  cache-from = cache_from("knot-python", "${version}")
+  cache-to   = cache_to("knot-python", "${version}")
 }
 
 target "knot-node" {
@@ -941,17 +858,8 @@ target "knot-node" {
 
   tags = version_tags("knot-node", version)
 
-  cache-from = [{
-    type = "registry"
-    ref  = "${cache_base()}/knot-node:buildcache-${version}"
-  }]
-  cache-to = [{
-    type              = "registry"
-    ref               = "${cache_base()}/knot-node:buildcache-${version}"
-    mode              = "max"
-    "oci-media-types" = true
-    "image-manifest"  = true
-  }]
+  cache-from = cache_from("knot-node", "${version}")
+  cache-to   = cache_to("knot-node", "${version}")
 }
 
 target "knot-scriptling-runtime" {
@@ -967,10 +875,14 @@ target "knot-scriptling-runtime" {
     "org.opencontainers.image.version"     = "${version}"
   }
 
+  contexts = {
+    "${TAG_BASE}/knot-alpine-runtime:${KNOT_ALPINE_BASE_VERSION}" = "target:knot-alpine-runtime-${replace(KNOT_ALPINE_BASE_VERSION, ".", "-")}"
+  }
+
   args = {
-    DOCKER_HUB         = "${DOCKER_HUB}"
     ALPINE_VERSION     = "${KNOT_ALPINE_BASE_VERSION}"
     SCRIPTLING_VERSION = "v${version}"
+    TAG_BASE           = "${TAG_BASE}"
   }
 
   tags = concat(
@@ -981,17 +893,8 @@ target "knot-scriptling-runtime" {
     ],
   )
 
-  cache-from = [{
-    type = "registry"
-    ref  = "${cache_base()}/knot-scriptling-runtime:buildcache-${version}"
-  }]
-  cache-to = [{
-    type              = "registry"
-    ref               = "${cache_base()}/knot-scriptling-runtime:buildcache-${version}"
-    mode              = "max"
-    "oci-media-types" = true
-    "image-manifest"  = true
-  }]
+  cache-from = cache_from("knot-scriptling-runtime", "${version}")
+  cache-to   = cache_to("knot-scriptling-runtime", "${version}")
 }
 
 target "knot-scriptling" {
@@ -1026,17 +929,8 @@ target "knot-scriptling" {
     ],
   )
 
-  cache-from = [{
-    type = "registry"
-    ref  = "${cache_base()}/knot-scriptling:buildcache-${version}"
-  }]
-  cache-to = [{
-    type              = "registry"
-    ref               = "${cache_base()}/knot-scriptling:buildcache-${version}"
-    mode              = "max"
-    "oci-media-types" = true
-    "image-manifest"  = true
-  }]
+  cache-from = cache_from("knot-scriptling", "${version}")
+  cache-to   = cache_to("knot-scriptling", "${version}")
 }
 
 target "knot-scriptling-alpine" {
@@ -1071,15 +965,6 @@ target "knot-scriptling-alpine" {
     ],
   )
 
-  cache-from = [{
-    type = "registry"
-    ref  = "${cache_base()}/knot-scriptling:buildcache-${version}-alpine"
-  }]
-  cache-to = [{
-    type              = "registry"
-    ref               = "${cache_base()}/knot-scriptling:buildcache-${version}-alpine"
-    mode              = "max"
-    "oci-media-types" = true
-    "image-manifest"  = true
-  }]
+  cache-from = cache_from("knot-scriptling", "${version}-alpine")
+  cache-to   = cache_to("knot-scriptling", "${version}-alpine")
 }

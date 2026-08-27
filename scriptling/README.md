@@ -1,6 +1,6 @@
 # knot-scriptling
 
-A [Scriptling](https://github.com/paularlott/scriptling) runtime image for [knot](https://getknot.dev/) spaces, combining `knot-ubuntu` with the Scriptling interpreter and CLI. Scriptling is a minimal, sandboxed, Python-like scripting language for Go — designed for LLM agents to execute code and interact with REST APIs. It is a pure runtime image — no web server — though the CLI can act as one via `scriptling --server`.
+A [Scriptling](https://github.com/paularlott/scriptling) development image for [knot](https://getknot.dev/) spaces, combining `knot-ubuntu` with the Scriptling interpreter and CLI. Scriptling is a minimal, sandboxed, Python-like scripting language for Go — designed for LLM agents to execute code and interact with REST APIs. It bundles no web server, though the CLI can act as one via `scriptling --server`.
 
 It inherits the full knot entrypoint, runtime user, `rsyslog` logging and startup-hook framework from `knot-ubuntu`.
 

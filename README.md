@@ -10,12 +10,16 @@ The base container images used by [**knot**](https://getknot.dev/) — a tool fo
 
 These images are designed first and foremost for **knot spaces**, but they are ordinary OCI images and work standalone with `docker` / `podman` / Nomad.
 
+Naming convention: images with a **`-runtime`** suffix carry no development tools — they are for running things. The unsuffixed image of the same name is the development variant (runtime + dev tools).
+
 ## Available images
 
 | Image | Description | Directory |
 |-------|-------------|-----------|
-| [`knot-ubuntu`](ubuntu/README.md) | Base Ubuntu image with the knot toolchain and startup-hook framework. | [`ubuntu/`](ubuntu/) |
-| [`knot-alpine`](alpine/README.md) | Base Alpine image with the knot toolchain and startup-hook framework. | [`alpine/`](alpine/) |
+| [`knot-ubuntu-runtime`](ubuntu-runtime/README.md) | Minimal Ubuntu base with the knot toolchain — no dev tools. | [`ubuntu-runtime/`](ubuntu-runtime/) |
+| [`knot-ubuntu`](ubuntu/README.md) | `knot-ubuntu-runtime` + the dev toolchain: ssh, git, editors, shells, db clients, mutagen. | [`ubuntu/`](ubuntu/) |
+| [`knot-alpine-runtime`](alpine-runtime/README.md) | Minimal Alpine base with the knot toolchain — no dev tools. | [`alpine-runtime/`](alpine-runtime/) |
+| [`knot-alpine`](alpine/README.md) | `knot-alpine-runtime` + the dev toolchain — Alpine sibling of `knot-ubuntu`. | [`alpine/`](alpine/) |
 | [`knot-desktop`](desktop/README.md) | Ubuntu + an XFCE desktop served over the web via KasmVNC. Builds on `knot-ubuntu`. | [`desktop/`](desktop/) |
 | [`knot-caddy`](caddy/README.md) | Caddy web server built with `xcaddy`, including DNS-01 and TLS storage modules. | [`caddy/`](caddy/) |
 | [`knot-php`](php/README.md) | Ubuntu + Caddy + PHP-FPM, Composer and Node.js — serves `~/public_html`. | [`php/`](php/) |
@@ -23,10 +27,10 @@ These images are designed first and foremost for **knot spaces**, but they are o
 | [`knot-frankenphp`](frankenphp/README.md) | `knot-frankenphp-runtime` + dev tools: ssh, git, editors, shells, Composer, Node.js, mago and mutagen. | [`frankenphp/`](frankenphp/) |
 | [`knot-frankenscriptling-runtime`](frankenscriptling-runtime/README.md) | `knot-frankenphp-runtime` + the Scriptling PHP extension — no dev tools. | [`frankenscriptling-runtime/`](frankenscriptling-runtime/) |
 | [`knot-frankenscriptling`](frankenscriptling/README.md) | `knot-frankenphp` + the Scriptling PHP extension. | [`frankenscriptling/`](frankenscriptling/) |
-| [`knot-go`](go/README.md) | Ubuntu + the Go toolchain — pure runtime image. | [`go/`](go/) |
-| [`knot-python`](python/README.md) | Ubuntu + Python and `uv` — pure runtime image. | [`python/`](python/) |
-| [`knot-node`](node/README.md) | Ubuntu + Node.js LTS and corepack (`pnpm` / `yarn`) — pure runtime image. | [`node/`](node/) |
-| [`knot-scriptling`](scriptling/README.md) | Ubuntu or Alpine + the Scriptling interpreter and CLI — pure runtime image. | [`scriptling/`](scriptling/) |
+| [`knot-go`](go/README.md) | Ubuntu + the Go toolchain and the full knot dev toolchain. | [`go/`](go/) |
+| [`knot-python`](python/README.md) | Ubuntu + Python, `pip` and `uv`, plus the full knot dev toolchain. | [`python/`](python/) |
+| [`knot-node`](node/README.md) | Ubuntu + Node.js LTS and corepack (`pnpm` / `yarn`), plus the full knot dev toolchain. | [`node/`](node/) |
+| [`knot-scriptling`](scriptling/README.md) | Ubuntu or Alpine + the Scriptling interpreter and CLI, plus the full knot dev toolchain. | [`scriptling/`](scriptling/) |
 | [`knot-scriptling-runtime`](scriptling-runtime/README.md) | Alpine + the Scriptling interpreter and knot toolchain — no dev tools. | [`scriptling-runtime/`](scriptling-runtime/) |
 | [`knot-mariadb`](mariadb/README.md) | MariaDB with the knot entrypoint, agent integration and syslog logging. | [`mariadb/`](mariadb/) |
 | [`knot-mysql`](mysql/README.md) | MySQL with the knot entrypoint, agent integration and syslog logging. | [`mysql/`](mysql/) |
@@ -40,14 +44,14 @@ These images are designed first and foremost for **knot spaces**, but they are o
 ## Image relationships
 
 ```
-knot-ubuntu ──┬── knot-desktop
-              ├── knot-php ── (uses knot-caddy)
-              ├── knot-go
-              ├── knot-python
-              ├── knot-node
-              └── knot-scriptling
-knot-alpine ──── knot-scriptling (<version>-alpine tags)
-knot-scriptling-runtime (standalone, Alpine base + knot toolchain + Scriptling, no dev tools)
+knot-ubuntu-runtime ── knot-ubuntu ──┬── knot-desktop
+                                     ├── knot-php ── (uses knot-caddy)
+                                     ├── knot-go
+                                     ├── knot-python
+                                     ├── knot-node
+                                     └── knot-scriptling
+knot-alpine-runtime ──┬── knot-alpine ─── knot-scriptling (<version>-alpine tags)
+                      └── knot-scriptling-runtime
 knot-caddy
 knot-frankenphp-runtime (standalone, official FrankenPHP base + knot toolchain, no dev tools)
 knot-frankenphp   (runtime + dev tools: ssh, git, editors, node, composer, mago, mutagen)
@@ -111,7 +115,7 @@ Version matrices and the image namespace are configurable through environment va
 | `CACHE_TAG_BASE` | Separate namespace for the build cache |
 | `DOCKER_HUB` | Mirror/pull prefix for upstream images (e.g. a registry cache) |
 | `APT_CACHE` | `http://host:3142` apt proxy used during build |
-| `UBUNTU_VERSIONS` | Ubuntu versions to build |
+| `UBUNTU_VERSIONS` | Ubuntu versions to build (`knot-ubuntu-runtime` / `knot-ubuntu`) |
 | `PHP_VERSIONS` | PHP versions for `knot-php` |
 | `FRANKENPHP_VERSIONS` | PHP versions for the FrankenPHP and FrankenScriptling images |
 | `PHP_UBUNTU_BASE_VERSION` | Ubuntu base version for `knot-php` |
@@ -121,7 +125,7 @@ Version matrices and the image namespace are configurable through environment va
 | `NODE_VERSIONS` | Node.js majors for `knot-node` |
 | `SCRIPTLING_VERSION` | Scriptling release tag (for the FrankenScriptling images) |
 | `SCRIPTLING_VERSIONS` | Scriptling versions for `knot-scriptling` and `knot-scriptling-runtime` |
-| `KNOT_ALPINE_VERSIONS` | Alpine versions for `knot-alpine` |
+| `KNOT_ALPINE_VERSIONS` | Alpine versions to build (`knot-alpine-runtime` / `knot-alpine`) |
 | `KNOT_ALPINE_BASE_VERSION` | Alpine base version for the `knot-scriptling` alpine variant and `knot-scriptling-runtime` |
 | `MARIADB_VERSIONS` | MariaDB versions |
 | `MYSQL_VERSIONS` | MySQL versions |

@@ -151,7 +151,7 @@ if [ -d /home/${KNOT_USER}/.knot-startup.d/ ]; then
   done
 fi
 
-if [ -z "$@" ]; then
+if [ "$#" -eq 0 ]; then
   logger -p local0.info "System started..."
   wait $agent_pid
 else

@@ -1,6 +1,6 @@
 # knot-go
 
-A [Go](https://go.dev/) development image for [knot](https://getknot.dev/) spaces, combining `knot-ubuntu` with the official Go toolchain. It is a pure runtime image — no web server — so you run your own process or compiled binary.
+A [Go](https://go.dev/) development image for [knot](https://getknot.dev/) spaces, combining `knot-ubuntu` with the official Go toolchain. It bundles no web server, so you run your own process or compiled binary.
 
 It inherits the full knot entrypoint, runtime user, `rsyslog` logging and startup-hook framework from `knot-ubuntu`.
 

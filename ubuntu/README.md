@@ -1,8 +1,8 @@
 # knot-ubuntu
 
-Base **Ubuntu** image used by [knot](https://getknot.dev/), a tool for managing cloud and local development environments. It is the foundation that the `knot-desktop`, `knot-php` and other Ubuntu-based knot images build upon, but it is also useful on its own as a general-purpose, fully-tooled development container.
+Base **Ubuntu** image used by [knot](https://getknot.dev/), a tool for managing cloud and local development environments. It is [`knot-ubuntu-runtime`](https://hub.docker.com/r/paularlott/knot-ubuntu-runtime) — the knot entrypoint and startup framework, a runtime user, `rsyslog` logging and `gosu` — plus the full development toolchain: ssh, git, editors, shells, database clients and mutagen. It is the foundation that `knot-desktop`, `knot-php` and other Ubuntu-based knot images build upon, and it is useful on its own as a general-purpose, fully-tooled development container.
 
-The image adds the knot entrypoint and startup framework, a runtime user, `rsyslog` logging, `gosu`, and a broad set of CLI utilities to every container.
+Need just the knot toolchain without the dev tools? Use [`knot-ubuntu-runtime`](https://hub.docker.com/r/paularlott/knot-ubuntu-runtime).
 
 ## Tags
 

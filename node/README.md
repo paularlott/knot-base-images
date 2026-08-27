@@ -1,6 +1,6 @@
 # knot-node
 
-A [Node.js](https://nodejs.org/) development image for [knot](https://getknot.dev/) spaces, combining `knot-ubuntu` with the official Node.js runtime, `npm`, and [corepack](https://nodejs.org/api/corepack.html) (for `pnpm` / `yarn`). It is a pure runtime image — no web server — so you run your own process or app (e.g. `node server.js`, `next dev`).
+A [Node.js](https://nodejs.org/) development image for [knot](https://getknot.dev/) spaces, combining `knot-ubuntu` with the official Node.js runtime, `npm`, and [corepack](https://nodejs.org/api/corepack.html) (for `pnpm` / `yarn`). It bundles no web server, so you run your own process or app (e.g. `node server.js`, `next dev`).
 
 It inherits the full knot entrypoint, runtime user, `rsyslog` logging and startup-hook framework from `knot-ubuntu`.
 

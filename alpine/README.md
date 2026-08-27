@@ -1,6 +1,8 @@
 # knot-alpine
 
-Base **Alpine** image used by [knot](https://getknot.dev/), a tool for managing cloud and local development environments. It is the Alpine sibling of `knot-ubuntu`: the same knot entrypoint and startup framework, a runtime user, `rsyslog` logging, `gosu`, and a broad set of CLI utilities — on a musl base with a much smaller footprint. The `knot-scriptling` alpine variant builds upon it, and it is useful on its own as a general-purpose, fully-tooled development container.
+Base **Alpine** image used by [knot](https://getknot.dev/), a tool for managing cloud and local development environments. It is [`knot-alpine-runtime`](https://hub.docker.com/r/paularlott/knot-alpine-runtime) — the knot entrypoint and startup framework, a runtime user, `rsyslog` logging and `gosu` — plus the full development toolchain on a musl base with a much smaller footprint: the Alpine sibling of `knot-ubuntu`. The `knot-scriptling` alpine variant builds upon it, and it is useful on its own as a general-purpose, fully-tooled development container.
+
+Need just the knot toolchain without the dev tools? Use [`knot-alpine-runtime`](https://hub.docker.com/r/paularlott/knot-alpine-runtime).
 
 ## Tags
 

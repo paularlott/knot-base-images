@@ -1,6 +1,6 @@
 # knot-python
 
-A [Python](https://www.python.org/) development image for [knot](https://getknot.dev/) spaces, combining `knot-ubuntu` with the Python interpreter, `pip`, and the [uv](https://github.com/astral-sh/uv) package manager. It is a pure runtime image — no web server — so you run your own process or app server (e.g. `uvicorn`, `gunicorn`).
+A [Python](https://www.python.org/) development image for [knot](https://getknot.dev/) spaces, combining `knot-ubuntu` with the Python interpreter, `pip`, and the [uv](https://github.com/astral-sh/uv) package manager. It bundles no web server, so you run your own process or app server (e.g. `uvicorn`, `gunicorn`).
 
 It inherits the full knot entrypoint, runtime user, `rsyslog` logging and startup-hook framework from `knot-ubuntu`.
 
