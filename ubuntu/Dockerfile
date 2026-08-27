@@ -12,17 +12,18 @@ ARG APT_CACHE=
 FROM ${TAG_BASE}/knot-${IMAGE_BASE}-runtime:${IMAGE_VERSION}
 
 ARG APT_CACHE
+ARG APT_DEV_PACKAGES
 
 RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
     --mount=type=cache,sharing=private,target=/var/lib/apt \
   if [ -n "$APT_CACHE" ]; then echo "Acquire::HTTP::Proxy \"$APT_CACHE\";" > /etc/apt/apt.conf.d/00proxy; fi \
   && apt-get update -y \
+  # Shared dev CLI set (see APT_DEV_PACKAGES in the bake file) plus the
+  # extras this family needs: rsync, envsubst, Sury/NodeSource repo
+  # prerequisites and the database CLI clients.
   && apt-get install -y \
-    openssh-client openssh-server rsync fish iputils-ping htop iproute2 iftop \
-    git vim wget screen dnsutils gnupg2 \
-    nano tmux bat ripgrep fzf zoxide \
-    make direnv gettext gettext-base valkey-tools jq \
-    software-properties-common lsb-release apt-transport-https \
+    ${APT_DEV_PACKAGES} \
+    rsync gettext software-properties-common lsb-release apt-transport-https \
     mariadb-client postgresql-client \
   \
   # mutagen - https://github.com/mutagen-io/mutagen (latest)

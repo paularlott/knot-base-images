@@ -10,6 +10,7 @@ ARG APT_CACHE=
 FROM ${TAG_BASE}/knot-frankenphp-runtime:${PHP_VERSION}
 
 ARG APT_CACHE
+ARG APT_DEV_PACKAGES
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -17,11 +18,9 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
     --mount=type=cache,sharing=private,target=/var/lib/apt \
   if [ -n "$APT_CACHE" ]; then echo "Acquire::HTTP::Proxy \"$APT_CACHE\";" > /etc/apt/apt.conf.d/00proxy; fi \
   && apt-get update -y \
+  # Shared dev CLI set (see APT_DEV_PACKAGES in the bake file)
   && apt-get install -y \
-    openssh-client openssh-server fish iputils-ping htop iproute2 iftop \
-    git vim wget screen dnsutils gnupg2 \
-    nano tmux bat ripgrep fzf zoxide \
-    make direnv gettext-base valkey-tools jq \
+    ${APT_DEV_PACKAGES} \
   \
   # mago - PHP toolchain - https://github.com/carthage-software/mago (latest)
   && DPKG_ARCH=$(dpkg --print-architecture); \

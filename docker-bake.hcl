@@ -18,6 +18,19 @@ variable "APT_CACHE" {
   default = ""
 }
 
+# The knot runtime essentials and dev CLI set, defined once and consumed by
+# every Debian-family image (ubuntu-runtime, frankenphp-runtime, knot-ubuntu,
+# knot-frankenphp). Per-image extras (db clients, Sury prerequisites, mago,
+# composer, node, …) are appended in the individual Dockerfiles. Alpine images
+# use different package names and keep their own lists.
+variable "APT_RUNTIME_PACKAGES" {
+  default = "tzdata locales procps cron logrotate rsyslog sudo ssl-cert curl unzip uuid-runtime libcap2-bin"
+}
+
+variable "APT_DEV_PACKAGES" {
+  default = "openssh-client openssh-server fish iputils-ping htop iproute2 iftop git vim wget screen dnsutils gnupg2 nano tmux bat ripgrep fzf zoxide make direnv gettext-base valkey-tools jq"
+}
+
 variable "BUILD_DATE" {
   default = ""
 }
@@ -249,10 +262,11 @@ target "knot-ubuntu-runtime" {
   }
 
   args = {
-    IMAGE_BASE    = "ubuntu"
-    IMAGE_VERSION = "${version}"
-    DOCKER_HUB    = "${DOCKER_HUB}"
-    APT_CACHE     = "${APT_CACHE}"
+    IMAGE_BASE           = "ubuntu"
+    IMAGE_VERSION        = "${version}"
+    DOCKER_HUB           = "${DOCKER_HUB}"
+    APT_CACHE            = "${APT_CACHE}"
+    APT_RUNTIME_PACKAGES = "${APT_RUNTIME_PACKAGES}"
   }
 
   tags = version_tags("knot-ubuntu-runtime", version)
@@ -279,11 +293,12 @@ target "knot-ubuntu" {
   }
 
   args = {
-    IMAGE_BASE    = "ubuntu"
-    IMAGE_VERSION = "${version}"
-    DOCKER_HUB    = "${DOCKER_HUB}"
-    APT_CACHE     = "${APT_CACHE}"
-    TAG_BASE      = "${TAG_BASE}"
+    IMAGE_BASE        = "ubuntu"
+    IMAGE_VERSION     = "${version}"
+    DOCKER_HUB        = "${DOCKER_HUB}"
+    APT_CACHE         = "${APT_CACHE}"
+    TAG_BASE          = "${TAG_BASE}"
+    APT_DEV_PACKAGES  = "${APT_DEV_PACKAGES}"
   }
 
   tags = version_tags("knot-ubuntu", version)
@@ -450,9 +465,10 @@ target "knot-frankenphp-runtime" {
   }
 
   args = {
-    APT_CACHE          = "${APT_CACHE}"
-    PHP_VERSION        = "${php}"
-    FRANKENPHP_VERSION = "${FRANKENPHP_VERSION}"
+    APT_CACHE            = "${APT_CACHE}"
+    PHP_VERSION          = "${php}"
+    FRANKENPHP_VERSION   = "${FRANKENPHP_VERSION}"
+    APT_RUNTIME_PACKAGES = "${APT_RUNTIME_PACKAGES}"
   }
 
   tags = version_tags("knot-frankenphp-runtime", php)
@@ -481,9 +497,10 @@ target "knot-frankenphp" {
   }
 
   args = {
-    APT_CACHE = "${APT_CACHE}"
-    PHP_VERSION = "${php}"
-    TAG_BASE  = "${TAG_BASE}"
+    APT_CACHE        = "${APT_CACHE}"
+    PHP_VERSION      = "${php}"
+    TAG_BASE         = "${TAG_BASE}"
+    APT_DEV_PACKAGES = "${APT_DEV_PACKAGES}"
   }
 
   tags = version_tags("knot-frankenphp", php)

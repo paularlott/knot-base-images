@@ -37,6 +37,7 @@ RUN pecl install xdebug \
 FROM dunglas/frankenphp:${FRANKENPHP_VERSION}-php${PHP_VERSION}
 
 ARG APT_CACHE
+ARG APT_RUNTIME_PACKAGES
 
 ENV DEBIAN_FRONTEND=noninteractive \
   LANG=en_US.UTF-8 \
@@ -52,12 +53,13 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   if [ -n "$APT_CACHE" ]; then echo "Acquire::HTTP::Proxy \"$APT_CACHE\";" > /etc/apt/apt.conf.d/00proxy; fi \
   && apt-get update -y \
   && apt-get dist-upgrade -y \
-  # Runtime essentials: what the knot entrypoint needs (curl+funzip for the
-  # agent download, uuidgen, gosu, setcap, crontab, rsyslogd, logger), sudo
-  # and the database CLI clients. No editors, shells, ssh or build tooling.
+  # Runtime essentials (shared list, see APT_RUNTIME_PACKAGES in the bake
+  # file): what the knot entrypoint needs (curl+funzip for the agent download,
+  # uuidgen, gosu, setcap, crontab, rsyslogd, logger), sudo — plus the
+  # database CLI clients for appliance use. No editors, shells, ssh or build
+  # tooling.
   && apt-get install -y \
-    tzdata locales procps cron logrotate rsyslog sudo ssl-cert \
-    curl unzip uuid-runtime libcap2-bin \
+    ${APT_RUNTIME_PACKAGES} \
     mariadb-client postgresql-client \
   \
   # gosu - https://github.com/tianon/gosu/releases (latest)

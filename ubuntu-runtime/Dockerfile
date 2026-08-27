@@ -15,6 +15,7 @@ ARG LANG='en_US.UTF-8'
 ARG LANGUAGE='en_US:en'
 ARG LC_ALL='en_US.UTF-8'
 ARG APT_CACHE
+ARG APT_RUNTIME_PACKAGES
 ARG TZ='Etc/UTC'
 ARG TERM='xterm-256color'
 
@@ -32,10 +33,10 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   if [ -n "$APT_CACHE" ]; then echo "Acquire::HTTP::Proxy \"$APT_CACHE\";" > /etc/apt/apt.conf.d/00proxy; fi \
   && apt-get update -y \
   && apt-get dist-upgrade -y \
-  # Runtime essentials only — no ssh, git, editors, shells or db clients
+  # Runtime essentials only (shared list, see APT_RUNTIME_PACKAGES in the
+  # bake file) — no ssh, git, editors, shells or db clients
   && apt-get install -y \
-    tzdata locales procps cron logrotate rsyslog sudo ssl-cert \
-    curl unzip uuid-runtime libcap2-bin \
+    ${APT_RUNTIME_PACKAGES} \
   \
   # gosu - https://github.com/tianon/gosu/releases (latest)
   && ARCH=$(uname -m); \
