@@ -21,6 +21,7 @@ These images are designed first and foremost for **knot spaces**, but they are o
 | [`knot-php`](php/README.md) | Ubuntu + Caddy + PHP-FPM, Composer and Node.js — serves `~/public_html`. | [`php/`](php/) |
 | [`knot-frankenphp-runtime`](frankenphp-runtime/README.md) | FrankenPHP (Caddy + PHP in one process) with the knot toolchain but no dev tools — base for appliances. | [`frankenphp-runtime/`](frankenphp-runtime/) |
 | [`knot-frankenphp`](frankenphp/README.md) | `knot-frankenphp-runtime` + dev tools: ssh, git, editors, shells, Composer, Node.js, mago and mutagen. | [`frankenphp/`](frankenphp/) |
+| [`knot-frankenscriptling-runtime`](frankenscriptling-runtime/README.md) | `knot-frankenphp-runtime` + the Scriptling PHP extension — no dev tools. | [`frankenscriptling-runtime/`](frankenscriptling-runtime/) |
 | [`knot-frankenscriptling`](frankenscriptling/README.md) | `knot-frankenphp` + the Scriptling PHP extension. | [`frankenscriptling/`](frankenscriptling/) |
 | [`knot-go`](go/README.md) | Ubuntu + the Go toolchain — pure runtime image. | [`go/`](go/) |
 | [`knot-python`](python/README.md) | Ubuntu + Python and `uv` — pure runtime image. | [`python/`](python/) |
@@ -48,7 +49,8 @@ knot-alpine ──── knot-scriptling (<version>-alpine tags)
 knot-caddy
 knot-frankenphp-runtime (standalone, official FrankenPHP base + knot toolchain, no dev tools)
 knot-frankenphp   (runtime + dev tools: ssh, git, editors, node, composer, mago, mutagen)
-knot-frankenscriptling (builds on knot-frankenphp, adds the Scriptling PHP extension)
+knot-frankenscriptling-runtime (frankenphp-runtime + the Scriptling-enabled FrankenPHP binary)
+knot-frankenscriptling (frankenphp + the Scriptling-enabled FrankenPHP binary)
 knot-adminer      (builds on knot-frankenphp-runtime 8.5, serves Adminer)
 knot-mariadb      (standalone, official MariaDB base)
 knot-mysql        (standalone, official MySQL base)
@@ -109,13 +111,13 @@ Version matrices and the image namespace are configurable through environment va
 | `APT_CACHE` | `http://host:3142` apt proxy used during build |
 | `UBUNTU_VERSIONS` | Ubuntu versions to build |
 | `PHP_VERSIONS` | PHP versions for `knot-php` |
-| `FRANKENPHP_VERSIONS` | PHP versions for `knot-frankenphp` and `knot-frankenscriptling` |
+| `FRANKENPHP_VERSIONS` | PHP versions for the FrankenPHP and FrankenScriptling images |
 | `PHP_UBUNTU_BASE_VERSION` | Ubuntu base version for `knot-php` |
 | `UBUNTU_BASE_VERSION` | Ubuntu base version for the runtime images (`knot-go` / `knot-python` / `knot-node` / `knot-scriptling`) |
 | `GO_VERSIONS` | Go versions for `knot-go` |
 | `PYTHON_VERSIONS` | Python versions for `knot-python` |
 | `NODE_VERSIONS` | Node.js majors for `knot-node` |
-| `SCRIPTLING_VERSION` | Scriptling release tag (for `knot-frankenscriptling`) |
+| `SCRIPTLING_VERSION` | Scriptling release tag (for the FrankenScriptling images) |
 | `SCRIPTLING_VERSIONS` | Scriptling versions for `knot-scriptling` |
 | `KNOT_ALPINE_VERSIONS` | Alpine versions for `knot-alpine` |
 | `KNOT_ALPINE_BASE_VERSION` | Alpine base version for the `knot-scriptling` alpine variant |

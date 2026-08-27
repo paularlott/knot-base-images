@@ -183,6 +183,7 @@ group "default" {
     "knot-php",
     "knot-frankenphp-runtime",
     "knot-frankenphp",
+    "knot-frankenscriptling-runtime",
     "knot-frankenscriptling",
     "knot-adminer",
     "knot-ubuntu-desktop",
@@ -465,9 +466,50 @@ target "knot-frankenphp" {
   }]
 }
 
+target "knot-frankenscriptling-runtime" {
+  name        = "knot-frankenscriptling-runtime-${replace(php, ".", "-")}"
+  description = "FrankenPHP with the Scriptling PHP extension, without dev tooling"
+  matrix      = {
+    php = FRANKENPHP_VERSIONS
+  }
+  inherits    = ["_common"]
+  context     = "./frankenscriptling-runtime"
+
+  labels = {
+    "org.opencontainers.image.title"       = "Knot FrankenScriptling Runtime"
+    "org.opencontainers.image.description" = "FrankenPHP runtime with the Scriptling PHP extension, no dev tools"
+    "org.opencontainers.image.version"     = "${php}"
+  }
+
+  contexts = {
+    "${TAG_BASE}/knot-frankenphp-runtime:${php}" = "target:knot-frankenphp-runtime-${replace(php, ".", "-")}"
+  }
+
+  args = {
+    FRANKENPHP_VERSION = "${FRANKENPHP_VERSION}"
+    PHP_VERSION        = "${php}"
+    SCRIPTLING_VERSION = "${SCRIPTLING_VERSION}"
+    TAG_BASE           = "${TAG_BASE}"
+  }
+
+  tags = version_tags("knot-frankenscriptling-runtime", php)
+
+  cache-from = [{
+    type = "registry"
+    ref  = "${cache_base()}/knot-frankenscriptling-runtime:buildcache-${php}"
+  }]
+  cache-to = [{
+    type              = "registry"
+    ref               = "${cache_base()}/knot-frankenscriptling-runtime:buildcache-${php}"
+    mode              = "max"
+    "oci-media-types" = true
+    "image-manifest"  = true
+  }]
+}
+
 target "knot-frankenscriptling" {
   name        = "knot-frankenscriptling-${replace(php, ".", "-")}"
-  description = "FrankenPHP with the Scriptling PHP extension"
+  description = "FrankenPHP with the Scriptling PHP extension plus development tools"
   matrix      = {
     php = FRANKENPHP_VERSIONS
   }
@@ -476,19 +518,18 @@ target "knot-frankenscriptling" {
 
   labels = {
     "org.opencontainers.image.title"       = "Knot FrankenScriptling"
-    "org.opencontainers.image.description" = "FrankenPHP with the Scriptling PHP extension"
+    "org.opencontainers.image.description" = "FrankenPHP with the Scriptling PHP extension and dev tools"
     "org.opencontainers.image.version"     = "${php}"
   }
 
   contexts = {
-    "${TAG_BASE}/knot-frankenphp:${php}" = "target:knot-frankenphp-${replace(php, ".", "-")}"
+    "${TAG_BASE}/knot-frankenphp:${php}"                = "target:knot-frankenphp-${replace(php, ".", "-")}"
+    "${TAG_BASE}/knot-frankenscriptling-runtime:${php}" = "target:knot-frankenscriptling-runtime-${replace(php, ".", "-")}"
   }
 
   args = {
-    FRANKENPHP_VERSION = "${FRANKENPHP_VERSION}"
-    PHP_VERSION        = "${php}"
-    SCRIPTLING_VERSION = "${SCRIPTLING_VERSION}"
-    TAG_BASE           = "${TAG_BASE}"
+    PHP_VERSION = "${php}"
+    TAG_BASE    = "${TAG_BASE}"
   }
 
   tags = version_tags("knot-frankenscriptling", php)

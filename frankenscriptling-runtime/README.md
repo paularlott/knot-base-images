@@ -1,6 +1,6 @@
-# knot-frankenscriptling
+# knot-frankenscriptling-runtime
 
-A **PHP** development image for [knot](https://getknot.dev/) spaces, based on [`knot-frankenphp`](https://hub.docker.com/r/paularlott/knot-frankenphp), with the FrankenPHP/Caddy binary replaced by the Scriptling-enabled build from [`knot-frankenscriptling-runtime`](https://hub.docker.com/r/paularlott/knot-frankenscriptling-runtime). It carries the full dev layer — ssh, git, editors, shells, Composer, Node.js, mago and mutagen — plus the same Caddy module set (DNS-01, Mercure, Vulcain, brotli, log-transform) and the Scriptling extension.
+[FrankenPHP](https://frankenphp.dev/) (Caddy + PHP in a single process) with the [Scriptling](https://github.com/paularlott/scriptling) PHP extension and the knot toolchain but **no development tools** — no ssh, git, editors, Node.js or Composer. It is [`knot-frankenphp-runtime`](https://hub.docker.com/r/paularlott/knot-frankenphp-runtime) with the FrankenPHP/Caddy binary rebuilt to additionally include the Scriptling extension, and it is the base for [`knot-frankenscriptling`](https://hub.docker.com/r/paularlott/knot-frankenscriptling) (which adds the dev layer).
 
 This exposes the [`Scriptling`](https://github.com/paularlott/scriptling) class to PHP, so applications can embed the Scriptling scripting/agent runtime directly:
 
@@ -8,14 +8,24 @@ This exposes the [`Scriptling`](https://github.com/paularlott/scriptling) class 
 $vm = new Scriptling();
 $vm->setVar('name', 'world');
 echo $vm->eval('name');           // -> "world"
-echo $vm->getScriptlingVersion(); // e.g. 0.20.1
+echo $vm->getScriptlingVersion(); // e.g. 0.21.3
 ```
 
-Serve any HTML or PHP file from `~/public_html` on port 80, exactly like `knot-frankenphp`.
+Serve any HTML or PHP file from `~/public_html` on port 80, exactly like `knot-frankenphp-runtime`. Without `KNOT_SERVER` there is no long-running foreground process, so run it with a command (or the knot agent) like any knot image.
+
+## How it works
+
+A startup hook (`/etc/knot-startup.d/01-startup-frankenphp`):
+
+1. Installs `/etc/cron.d/container-crons` and starts `cron`.
+2. Creates `~/public_html` if missing.
+3. Starts **FrankenPHP** with the bundled `/etc/frankenphp/Caddyfile`, which serves `~/public_html` via `php_server`, logs to syslog, and runs the admin API on `127.0.0.1:2019`.
 
 ## Tags
 
-All tags are multi-arch (`linux/amd64`, `linux/arm64`); see [Docker Hub](https://hub.docker.com/r/paularlott/knot-frankenscriptling/tags) for the current list. Each release is also tagged `<version>-<BUILD_DATE>`.
+All tags are multi-arch (`linux/amd64`, `linux/arm64`); see [Docker Hub](https://hub.docker.com/r/paularlott/knot-frankenscriptling-runtime/tags) for the current list.
+
+Each release is also tagged `<version>-<BUILD_DATE>`.
 
 ## Usage
 
@@ -25,7 +35,7 @@ docker run -d \
   -e KNOT_SERVER=https://knot.example.com \
   -e KNOT_USER=alice \
   -v knot_home:/home \
-  paularlott/knot-frankenscriptling:8.5
+  paularlott/knot-frankenscriptling-runtime:8.5
 ```
 
 ## Environment variables
@@ -39,7 +49,7 @@ The entrypoint mirrors `knot-ubuntu`, so it supports the common knot variables:
 | `KNOT_AGENT_ENDPOINT` | _(unset)_ | Agent endpoint reported to the server |
 | `KNOT_SPACEID` | _(unset)_ | Space identifier |
 | `KNOT_SERVICE_PASSWORD` | _(auto-generated UUID)_ | Shared service password |
-| `KNOT_SSHD` | _(unset)_ | Set to `native` to start `sshd` |
+| `KNOT_SSHD` | _(unset)_ | Set to `native` to start `sshd` (not installed in this image; use `knot-frankenscriptling`) |
 | `KNOT_SSH_PORT` | `2222` | Port for the SSH daemon |
 | `KNOT_SYSLOG_PORT` | `1514` | Syslog forward target (`0` disables forwarding) |
 | `TZ` | `Etc/UTC` | Timezone (also sets `date.timezone`) |

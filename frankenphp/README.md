@@ -25,11 +25,6 @@ Files in the mounted home's `public_html` are served at `http://localhost:8080`.
 
 ## How it works
 
-The image is built in two stages:
-
-1. **Builder** (in `knot-frankenphp-runtime`) — compiles FrankenPHP with `xcaddy`, adding [`caddy-dns/cloudflare`](https://github.com/caddy-dns/cloudflare), [`mercure`](https://github.com/dunglas/mercure), [`vulcain`](https://github.com/dunglas/vulcain), [`caddy-cbrotli`](https://github.com/dunglas/caddy-cbrotli) and [`transform-encoder`](https://github.com/caddyserver/transform-encoder).
-2. **Runtime** — [`knot-frankenphp-runtime`](https://hub.docker.com/r/paularlott/knot-frankenphp-runtime) (official FrankenPHP image plus the knot entrypoint, extension set, `gosu`, locales, `rsyslog` and cron) plus the dev-tool layer: ssh, git, editors, shells, Node.js, Composer, mago and mutagen.
-
 A startup hook (`/etc/knot-startup.d/01-startup-frankenphp`):
 
 1. Installs `/etc/cron.d/container-crons` and starts `cron`.

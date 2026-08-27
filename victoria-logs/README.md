@@ -76,7 +76,7 @@ curl 'http://localhost:8428/select/logsql/query?query=*'
 
 ## How it works
 
-The upstream image is `FROM scratch` (no shell, no package manager), so the build copies the static `victoria-logs-prod` binary (and the `vmauth-prod` auth proxy) into an Alpine base that carries the knot toolchain. On startup the entrypoint:
+On startup the entrypoint:
 
 1. Forces `KNOT_USER` to `victoria-logs` (a service user created at build time).
 2. If `KNOT_SERVER` is set, downloads and starts the **knot agent** (as `victoria-logs`).

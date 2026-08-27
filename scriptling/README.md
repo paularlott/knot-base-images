@@ -42,11 +42,11 @@ scriptling --server 0.0.0.0:8080 --mcp-exec-script
 
 ## How it works
 
-Builds on `knot-ubuntu:26.04`. The static Scriptling release binary for the target architecture is downloaded from [paularlott/scriptling](https://github.com/paularlott/scriptling/releases) and installed as `/usr/local/bin/scriptling`. No interpreter dependencies are required — the binary is self-contained.
+Builds on `knot-ubuntu:26.04`. Scriptling is installed as the self-contained static binary `/usr/local/bin/scriptling` — no interpreter dependencies are required.
 
 ## Alpine variant
 
-`Dockerfile.alpine` builds the `<version>-alpine` tags on top of [`knot-alpine`](../alpine/README.md) — the Alpine sibling of `knot-ubuntu` with the same tooling mapped to Alpine packages (git, vim, fish, tmux, ripgrep, bat, fzf, zoxide, jq, make, ssh, mariadb-client, postgresql-client, valkey-cli, rsyslog, gosu, mutagen, …) — adding only the static Scriptling binary, which works on musl. See the [knot-alpine README](../alpine/README.md) for the Ubuntu↔Alpine package mapping and entrypoint differences.
+The `<version>-alpine` tags are the [`knot-alpine`](../alpine/README.md) sibling — the same tooling as `knot-ubuntu` mapped to Alpine packages (git, vim, fish, tmux, ripgrep, bat, fzf, zoxide, jq, make, ssh, mariadb-client, postgresql-client, valkey-cli, rsyslog, gosu, mutagen, …) — plus the static Scriptling binary, which works on musl. See the [knot-alpine README](../alpine/README.md) for the Ubuntu↔Alpine package mapping and entrypoint differences.
 
 ## Environment variables
 
