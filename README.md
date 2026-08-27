@@ -27,6 +27,7 @@ These images are designed first and foremost for **knot spaces**, but they are o
 | [`knot-python`](python/README.md) | Ubuntu + Python and `uv` — pure runtime image. | [`python/`](python/) |
 | [`knot-node`](node/README.md) | Ubuntu + Node.js LTS and corepack (`pnpm` / `yarn`) — pure runtime image. | [`node/`](node/) |
 | [`knot-scriptling`](scriptling/README.md) | Ubuntu or Alpine + the Scriptling interpreter and CLI — pure runtime image. | [`scriptling/`](scriptling/) |
+| [`knot-scriptling-runtime`](scriptling-runtime/README.md) | Alpine + the Scriptling interpreter and knot toolchain — no dev tools. | [`scriptling-runtime/`](scriptling-runtime/) |
 | [`knot-mariadb`](mariadb/README.md) | MariaDB with the knot entrypoint, agent integration and syslog logging. | [`mariadb/`](mariadb/) |
 | [`knot-mysql`](mysql/README.md) | MySQL with the knot entrypoint, agent integration and syslog logging. | [`mysql/`](mysql/) |
 | [`knot-postgres`](postgres/README.md) | PostgreSQL with the knot entrypoint, agent integration and syslog logging. | [`postgres/`](postgres/) |
@@ -46,6 +47,7 @@ knot-ubuntu ──┬── knot-desktop
               ├── knot-node
               └── knot-scriptling
 knot-alpine ──── knot-scriptling (<version>-alpine tags)
+knot-scriptling-runtime (standalone, Alpine base + knot toolchain + Scriptling, no dev tools)
 knot-caddy
 knot-frankenphp-runtime (standalone, official FrankenPHP base + knot toolchain, no dev tools)
 knot-frankenphp   (runtime + dev tools: ssh, git, editors, node, composer, mago, mutagen)
@@ -118,9 +120,9 @@ Version matrices and the image namespace are configurable through environment va
 | `PYTHON_VERSIONS` | Python versions for `knot-python` |
 | `NODE_VERSIONS` | Node.js majors for `knot-node` |
 | `SCRIPTLING_VERSION` | Scriptling release tag (for the FrankenScriptling images) |
-| `SCRIPTLING_VERSIONS` | Scriptling versions for `knot-scriptling` |
+| `SCRIPTLING_VERSIONS` | Scriptling versions for `knot-scriptling` and `knot-scriptling-runtime` |
 | `KNOT_ALPINE_VERSIONS` | Alpine versions for `knot-alpine` |
-| `KNOT_ALPINE_BASE_VERSION` | Alpine base version for the `knot-scriptling` alpine variant |
+| `KNOT_ALPINE_BASE_VERSION` | Alpine base version for the `knot-scriptling` alpine variant and `knot-scriptling-runtime` |
 | `MARIADB_VERSIONS` | MariaDB versions |
 | `MYSQL_VERSIONS` | MySQL versions |
 | `POSTGRES_VERSIONS` | PostgreSQL versions |

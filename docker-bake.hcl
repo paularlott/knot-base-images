@@ -197,6 +197,7 @@ group "default" {
     "knot-go",
     "knot-python",
     "knot-node",
+    "knot-scriptling-runtime",
     "knot-scriptling",
     "knot-scriptling-alpine",
   ]
@@ -947,6 +948,46 @@ target "knot-node" {
   cache-to = [{
     type              = "registry"
     ref               = "${cache_base()}/knot-node:buildcache-${version}"
+    mode              = "max"
+    "oci-media-types" = true
+    "image-manifest"  = true
+  }]
+}
+
+target "knot-scriptling-runtime" {
+  name        = "knot-scriptling-runtime-${replace(version, ".", "-")}"
+  description = "Scriptling runtime image (Alpine, no dev tooling)"
+  matrix      = { version = SCRIPTLING_VERSIONS }
+  inherits    = ["_common"]
+  context     = "./scriptling-runtime"
+
+  labels = {
+    "org.opencontainers.image.title"       = "Knot Scriptling Runtime"
+    "org.opencontainers.image.description" = "Scriptling runtime with knot startup tooling, no dev tools"
+    "org.opencontainers.image.version"     = "${version}"
+  }
+
+  args = {
+    DOCKER_HUB         = "${DOCKER_HUB}"
+    ALPINE_VERSION     = "${KNOT_ALPINE_BASE_VERSION}"
+    SCRIPTLING_VERSION = "v${version}"
+  }
+
+  tags = concat(
+    version_tags("knot-scriptling-runtime", version),
+    [
+      "${TAG_BASE}/knot-scriptling-runtime:${major_minor(version)}",
+      "${TAG_BASE}/knot-scriptling-runtime:latest",
+    ],
+  )
+
+  cache-from = [{
+    type = "registry"
+    ref  = "${cache_base()}/knot-scriptling-runtime:buildcache-${version}"
+  }]
+  cache-to = [{
+    type              = "registry"
+    ref               = "${cache_base()}/knot-scriptling-runtime:buildcache-${version}"
     mode              = "max"
     "oci-media-types" = true
     "image-manifest"  = true

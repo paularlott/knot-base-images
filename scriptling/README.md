@@ -6,6 +6,8 @@ It inherits the full knot entrypoint, runtime user, `rsyslog` logging and startu
 
 An **Alpine variant** (`<version>-alpine` tags) provides the same toolchain on an Alpine base for a smaller footprint — see [below](#alpine-variant).
 
+Need just the interpreter without the dev toolchain? Use [`knot-scriptling-runtime`](https://hub.docker.com/r/paularlott/knot-scriptling-runtime) — Alpine with the knot entrypoint and the Scriptling binary, nothing else.
+
 ## Tags
 
 All tags are multi-arch (`linux/amd64`, `linux/arm64`); see [Docker Hub](https://hub.docker.com/r/paularlott/knot-scriptling/tags) for the current list.
