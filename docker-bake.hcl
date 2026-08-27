@@ -82,12 +82,12 @@ variable "FRANKENPHP_VERSION" {
 }
 
 variable "SCRIPTLING_VERSION" {
-  default = "v0.21.3"
+  default = "v0.21.4"
 }
 
 variable "SCRIPTLING_VERSIONS" {
   type    = list(string)
-  default = ["0.21.3"]
+  default = ["0.21.4"]
 }
 
 variable "ADMINER_VERSIONS" {
