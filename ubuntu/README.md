@@ -8,7 +8,7 @@ Need just the knot toolchain without the dev tools? Use [`knot-ubuntu-runtime`](
 
 All tags are multi-arch (`linux/amd64`, `linux/arm64`); see [Docker Hub](https://hub.docker.com/r/paularlott/knot-ubuntu/tags) for the current list.
 
-Each release is also tagged `<version>-<BUILD_DATE>` (e.g. `24.04-20260101`).
+Each release is also tagged `<version>-<BUILD_DATE>` (e.g. `26.04-20260101`).
 
 ## Usage
 

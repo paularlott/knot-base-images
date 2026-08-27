@@ -37,11 +37,11 @@ variable "BUILD_DATE" {
 
 variable "UBUNTU_VERSIONS" {
   type    = list(string)
-  default = ["24.04", "26.04"]
+  default = ["26.04"]
 }
 
 variable "PHP_UBUNTU_BASE_VERSION" {
-  default = "24.04"
+  default = "26.04"
 }
 
 variable "UBUNTU_BASE_VERSION" {
