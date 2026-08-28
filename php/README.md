@@ -40,7 +40,7 @@ A startup hook (`/etc/knot-startup.d/01-startup-php`) starts:
 
 ### Preinstalled PHP extensions
 
-`gd`, `pdo`, `pdo-mysql`, `mysqli`, `bcmath`, `mbstring`, `exif`, `zip`, `sockets`, `iconv`, `gettext`, `curl`, `redis`, `mailparse`, `xml`, `dev`, `pear`, plus `opcache` (PHP 8.3/8.4). Also bundled:
+`gd`, `pdo`, `pdo-mysql`, `mysqli`, `bcmath`, `mbstring`, `exif`, `zip`, `sockets`, `iconv`, `gettext`, `curl`, `redis`, `mailparse`, `xml`, `dev`, `pear`, plus `opcache` (PHP 8.4). Also bundled:
 
 - **[Xdebug](https://xdebug.org/)** — toggled with the `phpenxdebug` / `phpdisxdebug` helper scripts.
 - **[php-spx](https://github.com/NoiseByNorthwest/php-spx)** — a low-overhead sampling profiler.

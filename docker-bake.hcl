@@ -65,12 +65,12 @@ variable "NODE_VERSIONS" {
 
 variable "PHP_VERSIONS" {
   type    = list(string)
-  default = ["8.3", "8.4", "8.5"]
+  default = ["8.4", "8.5"]
 }
 
 variable "FRANKENPHP_VERSIONS" {
   type    = list(string)
-  default = ["8.4", "8.5"]
+  default = ["8.5"]
 }
 
 variable "CADDY_VERSION" {

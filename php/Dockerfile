@@ -32,7 +32,7 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
     php${PHP_VERSION}-redis php${PHP_VERSION}-mailparse \
     php${PHP_VERSION}-dev php${PHP_VERSION}-xml php${PHP_VERSION}-xdebug php-pear \
     libzip-dev" \
-  && if [ "$PHP_VERSION" = "8.3" ] || [ "$PHP_VERSION" = "8.4" ]; then PACKAGES="$PACKAGES php${PHP_VERSION}-opcache"; fi \
+  && if [ "$PHP_VERSION" = "8.4" ]; then PACKAGES="$PACKAGES php${PHP_VERSION}-opcache"; fi \
   && apt-get install -y $PACKAGES \
   && mkdir -p /run/php/ \
   && chown -R www-data:www-data /run/php \
