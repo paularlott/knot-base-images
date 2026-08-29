@@ -44,5 +44,15 @@ RUN mkdir -p /etc/knot-startup.d
 COPY knot-entrypoint /usr/local/bin/
 COPY localaccess.sql /docker-entrypoint-initdb.d/
 
+# localaccess.sql blanks root's password while the temporary init server is
+# still running, but docker_temp_server_stop then tries to shut that server
+# down with MYSQL_ROOT_PASSWORD — access denied, initialisation aborts. Shut
+# down without a password first (root over the unix socket after localaccess
+# ran), falling back to the password for setups that restored one.
+RUN sed -i \
+  's|mysqladmin --defaults-extra-file=<( _mysql_passfile ) shutdown -uroot --socket="${SOCKET}"|( mysqladmin --defaults-extra-file=<( _mysql_passfile --dont-use-mysql-root-password ) shutdown -uroot --socket="${SOCKET}" 2>/dev/null \|\| mysqladmin --defaults-extra-file=<( _mysql_passfile ) shutdown -uroot --socket="${SOCKET}" )|' \
+  /usr/local/bin/docker-entrypoint.sh \
+  && grep -q -- '--dont-use-mysql-root-password ) shutdown' /usr/local/bin/docker-entrypoint.sh
+
 ENTRYPOINT ["/usr/local/bin/knot-entrypoint"]
 CMD ["mysqld"]

@@ -94,6 +94,7 @@ if [ "$@" = 'postgres' ]; then
   # background; its pid feeds the SIGTERM trap above, so a stop is a clean
   # shutdown instead of the SIGKILL an exec-pipeline would end in.
   LOGFIFO=/tmp/knot-service-logs.$$
+  rm -f "$LOGFIFO"
   mkfifo "$LOGFIFO"
   logger -t 'postgres' -p daemon.error < "$LOGFIFO" &
   /usr/local/bin/docker-entrypoint.sh "$@" > "$LOGFIFO" 2>&1 &
