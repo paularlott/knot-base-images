@@ -17,7 +17,7 @@ RUN ARCH=$(uname -m); \
       'aarch64') slarch="arm64";; \
       *) echo >&2 "error: unsupported architecture: '$ARCH'"; exit 1 ;; \
     esac; \
-    curl -fsSL "https://github.com/paularlott/scriptling/releases/download/${SCRIPTLING_VERSION}/scriptling-linux-${slarch}.zip" -o /tmp/scriptling.zip \
+    curl -fsSL "https://github.com/paularlott/scriptling/releases/download/${SCRIPTLING_VERSION}/scriptling-full-linux-${slarch}.zip" -o /tmp/scriptling.zip \
     && unzip -q /tmp/scriptling.zip -d /tmp/scriptling \
     && install -m 0755 /tmp/scriptling/scriptling /usr/local/bin/scriptling \
     && rm -rf /tmp/scriptling /tmp/scriptling.zip \
