@@ -105,6 +105,13 @@ make print
 
 # List all bake targets
 make list
+
+# Copy the built images from TAG_BASE to COPY_TAG_BASE without rebuilding
+# (uses skopeo; requires the images to exist in TAG_BASE already)
+make copy
+
+# Copy only specific bake targets
+make copy TARGETS="knot-php knot-go"
 ```
 
 Version matrices and the image namespace are configurable through environment variables or the `.env` file (see `docker-bake.hcl` for the full list). Notable variables:
@@ -113,6 +120,7 @@ Version matrices and the image namespace are configurable through environment va
 |----------|---------|
 | `TAG_BASE` | Image registry namespace / prefix |
 | `CACHE_TAG_BASE` | Separate namespace for the build cache |
+| `COPY_TAG_BASE` | Destination namespace for `make copy` (defaults to `docker.io/paularlott`) |
 | `DOCKER_HUB` | Mirror/pull prefix for upstream images (e.g. a registry cache) |
 | `APT_CACHE` | `http://host:3142` apt proxy used during build |
 | `UBUNTU_VERSIONS` | Ubuntu versions to build (`knot-ubuntu-runtime` / `knot-ubuntu`) |
@@ -139,6 +147,8 @@ Version matrices and the image namespace are configurable through environment va
 | `FRANKENPHP_VERSION` | FrankenPHP release |
 
 Each target is tagged as `<version>` and, when `BUILD_DATE` is set, also `<version>-<BUILD_DATE>` (the Makefile sets it automatically; a direct `docker buildx bake` without it produces version-only tags). Valkey, Redis and Scriptling additionally get a rolling `major.minor` tag (for the Scriptling alpine variant: `<major.minor>-alpine`).
+
+Builds push straight to `TAG_BASE`. To publish the same images to a second namespace — e.g. building against a local registry and then releasing to Docker Hub — run `make copy` afterwards: it resolves the full tag list from the bake configuration, then pulls each image from `TAG_BASE` and pushes it to `COPY_TAG_BASE` through the docker daemon, so everything is only ever built once. Using the daemon means the same credentials and login as `docker push` apply. The daemon must run the containerd image store (Docker Desktop: Settings → General → "Use containerd for pulling and storing images") so that multi-platform tags can be pulled and re-pushed intact. Tags that are not present in the source registry are skipped with a warning — e.g. the `<version>-<BUILD_DATE>` tags when the images were built on a different day; pass `BUILD_DATE=<yyyymmdd>` to mirror those too. Tags whose destination manifest already matches the source are reported as up to date and skipped, keeping reruns cheap. Each tag is retried with a backoff (`COPY_RETRIES` attempts, `COPY_BACKOFF` seconds apart, default 3 × 30s) to ride out transient registry errors, and a failed tag doesn't stop the remaining copies.
 
 ## Contributing
 
