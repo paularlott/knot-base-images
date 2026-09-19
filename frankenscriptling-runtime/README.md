@@ -1,6 +1,10 @@
 # knot-frankenscriptling-runtime
 
-[FrankenPHP](https://frankenphp.dev/) (Caddy + PHP in a single process) with the [Scriptling](https://github.com/paularlott/scriptling) PHP extension and the knot toolchain but **no development tools** — no ssh, git, editors, Node.js or Composer. It is [`knot-frankenphp-runtime`](https://hub.docker.com/r/paularlott/knot-frankenphp-runtime) with the FrankenPHP/Caddy binary rebuilt to additionally include the Scriptling extension, and it is the base for [`knot-frankenscriptling`](https://hub.docker.com/r/paularlott/knot-frankenscriptling) (which adds the dev layer).
+[FrankenPHP](https://frankenphp.dev/) (Caddy + PHP in a single process) with the [Scriptling](https://github.com/paularlott/scriptling) PHP extension and the knot toolchain but **no development tools** — no ssh, git, editors, Node.js or Composer. It is [`knot-frankenphp-runtime`](https://hub.docker.com/r/paularlott/knot-frankenphp-runtime) with its FrankenPHP/Caddy binary swapped for the Scriptling-enabled one published by [`paularlott/frankenscriptling`](https://hub.docker.com/r/paularlott/frankenscriptling) — including that repo's filesystem/network security-policy gating for Scriptling's libraries (see its `docs/security-policy.md`) — and it is the base for [`knot-frankenscriptling`](https://hub.docker.com/r/paularlott/knot-frankenscriptling) (which adds the dev layer).
+
+## Build
+
+The Scriptling+FrankenPHP binary is built and published by the standalone [`paularlott/frankenscriptling`](https://github.com/paularlott/frankenscriptling) repo, not here — this image just pulls it (`FRANKENSCRIPTLING_REGISTRY`/`FRANKENSCRIPTLING_TAG` build args). `FRANKENSCRIPTLING_REGISTRY` follows `TAG_BASE` by default, same idiom as `CACHE_TAG_BASE` — a `.env` pointing everything else at a local/private mirror pulls frankenscriptling from there too, with no extra variable to keep in sync; override it independently to pull frankenscriptling from somewhere else. Bumping the Scriptling/FrankenPHP version here means bumping `FRANKENSCRIPTLING_TAG` to a tag that repo has already published, not rebuilding from source.
 
 This exposes the [`Scriptling`](https://github.com/paularlott/scriptling) class to PHP, so applications can embed the Scriptling scripting/agent runtime directly:
 

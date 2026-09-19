@@ -48,7 +48,14 @@ VMAUTH_VERSION ?= 1.148.0
 ALPINE_VERSION ?= 3.20
 CADDY_VERSION ?= 2.11.4
 FRANKENPHP_VERSION ?= 1.12.7
-SCRIPTLING_VERSION ?= v0.25.1
+
+# knot-frankenscriptling-runtime pulls its binary from the standalone
+# paularlott/frankenscriptling repo instead of building from source. Follows
+# TAG_BASE by default (same idiom as CACHE_TAG_BASE) so a .env pointing
+# everything else at a local/private mirror pulls frankenscriptling from
+# there too; override independently if it should come from somewhere else.
+FRANKENSCRIPTLING_REGISTRY ?= $(TAG_BASE)
+FRANKENSCRIPTLING_TAG ?= 0.25.2-php8.5
 
 BUILD_DATE ?= $(shell date -u +'%Y%m%d')
 
@@ -70,7 +77,8 @@ export PHP_UBUNTU_BASE_VERSION
 export UBUNTU_BASE_VERSION
 export CADDY_VERSION
 export FRANKENPHP_VERSION
-export SCRIPTLING_VERSION
+export FRANKENSCRIPTLING_REGISTRY
+export FRANKENSCRIPTLING_TAG
 export KNOT_ALPINE_BASE_VERSION
 export UBUNTU_VERSIONS := $(subst $(space),$(comma),$(UBUNTU_VERSIONS))
 export PHP_VERSIONS := $(subst $(space),$(comma),$(PHP_VERSIONS))

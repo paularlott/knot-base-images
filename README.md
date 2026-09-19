@@ -55,7 +55,7 @@ knot-alpine-runtime ──┬── knot-alpine ─── knot-scriptling (<vers
 knot-caddy
 knot-frankenphp-runtime (standalone, official FrankenPHP base + knot toolchain, no dev tools)
 knot-frankenphp   (runtime + dev tools: ssh, git, editors, node, composer, mago, mutagen)
-knot-frankenscriptling-runtime (frankenphp-runtime + the Scriptling-enabled FrankenPHP binary)
+knot-frankenscriptling-runtime (frankenphp-runtime + the Scriptling-enabled FrankenPHP binary, pulled from paularlott/frankenscriptling)
 knot-frankenscriptling (frankenphp + the Scriptling-enabled FrankenPHP binary)
 knot-adminer      (builds on knot-frankenphp-runtime 8.5, serves Adminer)
 knot-mariadb      (standalone, official MariaDB base)
@@ -131,8 +131,9 @@ Version matrices and the image namespace are configurable through environment va
 | `GO_VERSIONS` | Go versions for `knot-go` |
 | `PYTHON_VERSIONS` | Python versions for `knot-python` |
 | `NODE_VERSIONS` | Node.js majors for `knot-node` |
-| `SCRIPTLING_VERSION` | Scriptling release tag (for the FrankenScriptling images) |
 | `SCRIPTLING_VERSIONS` | Scriptling versions for `knot-scriptling` and `knot-scriptling-runtime` |
+| `FRANKENSCRIPTLING_REGISTRY` | Registry/namespace `knot-frankenscriptling-runtime` pulls its binary from — follows `TAG_BASE` by default (so a `.env` pointing everything else at a local/private mirror pulls [`frankenscriptling`](https://github.com/paularlott/frankenscriptling) from there too), override independently to pull it from somewhere else |
+| `FRANKENSCRIPTLING_TAG` | Tag of the `paularlott/frankenscriptling` image to pull — bump this to pick up a new Scriptling/FrankenPHP release; that repo owns its own version pins |
 | `KNOT_ALPINE_VERSIONS` | Alpine versions to build (`knot-alpine-runtime` / `knot-alpine`) |
 | `KNOT_ALPINE_BASE_VERSION` | Alpine base version for the `knot-scriptling` alpine variant and `knot-scriptling-runtime` |
 | `MARIADB_VERSIONS` | MariaDB versions |

@@ -11,6 +11,8 @@ COPY --from=caddy:builder /usr/bin/xcaddy /usr/bin/xcaddy
 
 ARG FRANKENPHP_VERSION
 
+ENV GOTOOLCHAIN=auto
+
 RUN CGO_ENABLED=1 \
     XCADDY_GO_BUILD_FLAGS="-ldflags '-w -s' -tags nobadger,nomysql,nopgx" \
     CGO_CFLAGS="-D_GNU_SOURCE $(php-config --includes)" \

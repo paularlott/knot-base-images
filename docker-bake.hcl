@@ -81,13 +81,25 @@ variable "FRANKENPHP_VERSION" {
   default = "1.12.7"
 }
 
-variable "SCRIPTLING_VERSION" {
-  default = "v0.24.0"
-}
-
 variable "SCRIPTLING_VERSIONS" {
   type    = list(string)
   default = ["0.24.0"]
+}
+
+# knot-frankenscriptling-runtime pulls its Scriptling+FrankenPHP binary from
+# the standalone paularlott/frankenscriptling repo rather than building it
+# from source — that repo owns SCRIPTLING_VERSION/FRANKENPHP_VERSION for its
+# own build. Empty means "follow TAG_BASE" (see frankenscriptling_registry()
+# below), same fallback idiom as CACHE_TAG_BASE/cache_base() — so a .env that
+# points TAG_BASE at a local/private mirror pulls frankenscriptling from
+# there too by default, with no extra var to keep in sync. Set explicitly to
+# pull frankenscriptling from somewhere else regardless of TAG_BASE.
+variable "FRANKENSCRIPTLING_REGISTRY" {
+  default = ""
+}
+
+variable "FRANKENSCRIPTLING_TAG" {
+  default = "0.25.2-php8.5"
 }
 
 variable "ADMINER_VERSIONS" {
@@ -154,6 +166,11 @@ variable "ALPINE_VERSION" {
 function "cache_base" {
   params = []
   result = CACHE_TAG_BASE == "" ? TAG_BASE : CACHE_TAG_BASE
+}
+
+function "frankenscriptling_registry" {
+  params = []
+  result = FRANKENSCRIPTLING_REGISTRY == "" ? TAG_BASE : FRANKENSCRIPTLING_REGISTRY
 }
 
 function "major_minor" {
@@ -529,10 +546,10 @@ target "knot-frankenscriptling-runtime" {
   }
 
   args = {
-    FRANKENPHP_VERSION = "${FRANKENPHP_VERSION}"
-    PHP_VERSION        = "${php}"
-    SCRIPTLING_VERSION = "${SCRIPTLING_VERSION}"
-    TAG_BASE           = "${TAG_BASE}"
+    FRANKENSCRIPTLING_REGISTRY = frankenscriptling_registry()
+    FRANKENSCRIPTLING_TAG      = "${FRANKENSCRIPTLING_TAG}"
+    PHP_VERSION                = "${php}"
+    TAG_BASE                   = "${TAG_BASE}"
   }
 
   tags = version_tags("knot-frankenscriptling-runtime", php)
