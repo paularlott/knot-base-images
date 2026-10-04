@@ -33,7 +33,7 @@ GO_VERSIONS ?= 1.27
 PYTHON_VERSIONS ?= 3.14
 NODE_VERSIONS ?= 24 26
 FRANKENPHP_VERSIONS ?= 8.5
-SCRIPTLING_VERSIONS ?= 0.27.1
+SCRIPTLING_VERSIONS ?= 0.28.0
 KNOT_ALPINE_VERSIONS ?= 3.24
 KNOT_ALPINE_BASE_VERSION ?= 3.24
 MARIADB_VERSIONS ?= 10.11 11.4 11.8 12.3
@@ -47,7 +47,7 @@ VICTORIA_LOGS_VERSIONS ?= 1.52.0
 VMAUTH_VERSION ?= 1.148.0
 ALPINE_VERSION ?= 3.20
 CADDY_VERSION ?= 2.11.4
-FRANKENPHP_VERSION ?= 1.12.7
+FRANKENPHP_VERSION ?= 1.13.0
 
 # knot-frankenscriptling-runtime pulls its binary from the standalone
 # paularlott/frankenscriptling repo instead of building from source. Follows
@@ -55,7 +55,7 @@ FRANKENPHP_VERSION ?= 1.12.7
 # everything else at a local/private mirror pulls frankenscriptling from
 # there too; override independently if it should come from somewhere else.
 FRANKENSCRIPTLING_REGISTRY ?= $(TAG_BASE)
-FRANKENSCRIPTLING_TAG ?= 0.27.1-php8.5
+FRANKENSCRIPTLING_TAG ?= 0.28.0-php8.5
 
 BUILD_DATE ?= $(shell date -u +'%Y%m%d')
 
