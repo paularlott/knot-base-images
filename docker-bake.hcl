@@ -78,12 +78,12 @@ variable "CADDY_VERSION" {
 }
 
 variable "FRANKENPHP_VERSION" {
-  default = "1.12.7"
+  default = "1.13.0"
 }
 
 variable "SCRIPTLING_VERSIONS" {
   type    = list(string)
-  default = ["0.24.0"]
+  default = ["0.29.0"]
 }
 
 # knot-frankenscriptling-runtime pulls its Scriptling+FrankenPHP binary from
