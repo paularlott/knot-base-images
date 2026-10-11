@@ -50,7 +50,7 @@ variable "UBUNTU_BASE_VERSION" {
 
 variable "GO_VERSIONS" {
   type    = list(string)
-  default = ["1.26"]
+  default = ["1.27"]
 }
 
 variable "PYTHON_VERSIONS" {
@@ -83,7 +83,7 @@ variable "FRANKENPHP_VERSION" {
 
 variable "SCRIPTLING_VERSIONS" {
   type    = list(string)
-  default = ["0.29.0"]
+  default = ["0.30.1"]
 }
 
 # knot-frankenscriptling-runtime pulls its Scriptling+FrankenPHP binary from
@@ -99,7 +99,7 @@ variable "FRANKENSCRIPTLING_REGISTRY" {
 }
 
 variable "FRANKENSCRIPTLING_TAG" {
-  default = "0.25.2-php8.5"
+  default = "0.30.1-php8.5"
 }
 
 variable "ADMINER_VERSIONS" {

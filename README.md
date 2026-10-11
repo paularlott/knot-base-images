@@ -96,7 +96,7 @@ Builds are driven by [`docker buildx bake`](https://docs.docker.com/build/bake/)
 make
 
 # Build a single target (dots are replaced with dashes)
-make knot-ubuntu-24-04
+make knot-ubuntu-26-04
 make knot-php-8-4
 make knot-valkey-9-1-1
 
@@ -107,7 +107,7 @@ make print
 make list
 
 # Copy the built images from TAG_BASE to COPY_TAG_BASE without rebuilding
-# (uses skopeo; requires the images to exist in TAG_BASE already)
+# (through the docker daemon; requires the images to exist in TAG_BASE already)
 make copy
 
 # Copy only specific bake targets
