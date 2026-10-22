@@ -47,7 +47,7 @@ VICTORIA_LOGS_VERSIONS ?= 1.52.0
 VMAUTH_VERSION ?= 1.148.0
 ALPINE_VERSION ?= 3.20
 CADDY_VERSION ?= 2.11.4
-FRANKENPHP_VERSION ?= 1.13.0
+FRANKENPHP_VERSION ?= 1.13.2
 
 # knot-frankenscriptling-runtime pulls its binary from the standalone
 # paularlott/frankenscriptling repo instead of building from source. Follows
