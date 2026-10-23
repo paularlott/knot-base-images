@@ -25,8 +25,8 @@ Naming convention: images with a **`-runtime`** suffix carry no development tool
 | [`knot-php`](php/README.md) | Ubuntu + Caddy + PHP-FPM, Composer and Node.js — serves `~/public_html`. | [`php/`](php/) |
 | [`knot-frankenphp-runtime`](frankenphp-runtime/README.md) | FrankenPHP (Caddy + PHP in one process) with the knot toolchain but no dev tools — base for appliances. | [`frankenphp-runtime/`](frankenphp-runtime/) |
 | [`knot-frankenphp`](frankenphp/README.md) | `knot-frankenphp-runtime` + dev tools: ssh, git, editors, shells, Composer, Node.js, mago and mutagen. | [`frankenphp/`](frankenphp/) |
-| [`knot-frankenscriptling-runtime`](frankenscriptling-runtime/README.md) | `knot-frankenphp-runtime` + the Scriptling PHP extension — no dev tools. | [`frankenscriptling-runtime/`](frankenscriptling-runtime/) |
-| [`knot-frankenscriptling`](frankenscriptling/README.md) | `knot-frankenphp` + the Scriptling PHP extension. | [`frankenscriptling/`](frankenscriptling/) |
+| [`knot-frankenscriptling-runtime`](frankenscriptling-runtime/README.md) | The `knot-frankenphp-runtime` layer on [`paularlott/frankenscriptling`](https://github.com/paularlott/frankenscriptling) (FrankenPHP + the Scriptling PHP extension) — no dev tools. | [`frankenphp-runtime/`](frankenphp-runtime/) (target `frankenscriptling`) |
+| [`knot-frankenscriptling`](frankenscriptling/README.md) | The `knot-frankenphp` dev layer on `knot-frankenscriptling-runtime`. | [`frankenphp/`](frankenphp/) |
 | [`knot-go`](go/README.md) | Ubuntu + the Go toolchain and the full knot dev toolchain. | [`go/`](go/) |
 | [`knot-python`](python/README.md) | Ubuntu + Python, `pip` and `uv`, plus the full knot dev toolchain. | [`python/`](python/) |
 | [`knot-node`](node/README.md) | Ubuntu + Node.js LTS and corepack (`pnpm` / `yarn`), plus the full knot dev toolchain. | [`node/`](node/) |
@@ -55,8 +55,8 @@ knot-alpine-runtime ──┬── knot-alpine ─── knot-scriptling (<vers
 knot-caddy
 knot-frankenphp-runtime (standalone, official FrankenPHP base + knot toolchain, no dev tools)
 knot-frankenphp   (runtime + dev tools: ssh, git, editors, node, composer, mago, mutagen)
-knot-frankenscriptling-runtime (frankenphp-runtime + the Scriptling-enabled FrankenPHP binary, pulled from paularlott/frankenscriptling)
-knot-frankenscriptling (frankenphp + the Scriptling-enabled FrankenPHP binary)
+knot-frankenscriptling-runtime (the frankenphp-runtime knot layer on paularlott/frankenscriptling)
+knot-frankenscriptling (frankenscriptling-runtime + the frankenphp dev tools layer)
 knot-adminer      (builds on knot-frankenphp-runtime 8.5, serves Adminer)
 knot-mariadb      (standalone, official MariaDB base)
 knot-mysql        (standalone, official MySQL base)
@@ -114,7 +114,7 @@ make copy
 make copy TARGETS="knot-php knot-go"
 ```
 
-Version matrices and the image namespace are configurable through environment variables or the `.env` file (see `docker-bake.hcl` for the full list). Notable variables:
+Version matrices and the image namespace are set in the `Makefile` and can be overridden through environment variables or the `.env` file. Always build through `make`: `docker-bake.hcl` has no defaults of its own and a bare `docker buildx bake` fails. Notable variables:
 
 | Variable | Purpose |
 |----------|---------|
@@ -125,15 +125,14 @@ Version matrices and the image namespace are configurable through environment va
 | `APT_CACHE` | `http://host:3142` apt proxy used during build |
 | `UBUNTU_VERSIONS` | Ubuntu versions to build (`knot-ubuntu-runtime` / `knot-ubuntu`) |
 | `PHP_VERSIONS` | PHP versions for `knot-php` |
-| `FRANKENPHP_VERSIONS` | PHP versions for the FrankenPHP and FrankenScriptling images |
+| `FRANKENPHP_VERSIONS` | PHP lines for `knot-frankenphp-runtime` / `knot-frankenphp` (e.g. `8.5 8.6`): each builds on `dunglas/frankenphp:php<x.y>`, the newest FrankenPHP release for that line, and is tagged `<x.y>`. `knot-adminer` uses the last (newest) entry |
 | `PHP_UBUNTU_BASE_VERSION` | Ubuntu base version for `knot-php` |
 | `UBUNTU_BASE_VERSION` | Ubuntu base version for the runtime images (`knot-go` / `knot-python` / `knot-node` / `knot-scriptling`) |
 | `GO_VERSIONS` | Go versions for `knot-go` |
 | `PYTHON_VERSIONS` | Python versions for `knot-python` |
 | `NODE_VERSIONS` | Node.js majors for `knot-node` |
 | `SCRIPTLING_VERSIONS` | Scriptling versions for `knot-scriptling` and `knot-scriptling-runtime` |
-| `FRANKENSCRIPTLING_REGISTRY` | Registry/namespace `knot-frankenscriptling-runtime` pulls its binary from — follows `TAG_BASE` by default (so a `.env` pointing everything else at a local/private mirror pulls [`frankenscriptling`](https://github.com/paularlott/frankenscriptling) from there too), override independently to pull it from somewhere else |
-| `FRANKENSCRIPTLING_TAG` | Tag of the `paularlott/frankenscriptling` image to pull — bump this to pick up a new Scriptling/FrankenPHP release; that repo owns its own version pins |
+| `FRANKENSCRIPTLING_VERSIONS` | PHP lines for `knot-frankenscriptling-runtime` / `knot-frankenscriptling`: each builds on `$TAG_BASE/frankenscriptling:php<x.y>` (the newest [`frankenscriptling`](https://github.com/paularlott/frankenscriptling) release for that line) and is tagged `<x.y>` |
 | `KNOT_ALPINE_VERSIONS` | Alpine versions to build (`knot-alpine-runtime` / `knot-alpine`) |
 | `KNOT_ALPINE_BASE_VERSION` | Alpine base version for the `knot-scriptling` alpine variant and `knot-scriptling-runtime` |
 | `MARIADB_VERSIONS` | MariaDB versions |
@@ -145,7 +144,6 @@ Version matrices and the image namespace are configurable through environment va
 | `VICTORIA_LOGS_VERSIONS` | VictoriaLogs versions |
 | `ALPINE_VERSION` | Alpine base version (for `knot-victoria-logs`) |
 | `CADDY_VERSION` | Caddy version |
-| `FRANKENPHP_VERSION` | FrankenPHP release |
 
 Each target is tagged as `<version>` and, when `BUILD_DATE` is set, also `<version>-<BUILD_DATE>` (the Makefile sets it automatically; a direct `docker buildx bake` without it produces version-only tags). Valkey, Redis and Scriptling additionally get a rolling `major.minor` tag (for the Scriptling alpine variant: `<major.minor>-alpine`).
 

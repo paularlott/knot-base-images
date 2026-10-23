@@ -1,6 +1,6 @@
 # knot-frankenscriptling
 
-A **PHP** development image for [knot](https://getknot.dev/) spaces, based on [`knot-frankenphp`](https://hub.docker.com/r/paularlott/knot-frankenphp), with the FrankenPHP/Caddy binary replaced by the Scriptling-enabled build from [`knot-frankenscriptling-runtime`](https://hub.docker.com/r/paularlott/knot-frankenscriptling-runtime). It carries the full dev layer — ssh, git, editors, shells, Composer, Node.js, mago and mutagen — plus the same Caddy module set (DNS-01, Mercure, Vulcain, brotli, log-transform) and the Scriptling extension.
+A **PHP** development image for [knot](https://getknot.dev/) spaces, built from the [`knot-frankenphp`](https://hub.docker.com/r/paularlott/knot-frankenphp) dev layer ([`frankenphp/`](../frankenphp/)) on [`knot-frankenscriptling-runtime`](https://hub.docker.com/r/paularlott/knot-frankenscriptling-runtime), which carries the Scriptling-enabled FrankenPHP from [`paularlott/frankenscriptling`](https://github.com/paularlott/frankenscriptling). It carries the full dev layer — ssh, git, editors, shells, Composer, Node.js, mago and mutagen — plus the same Caddy module set (DNS-01, Mercure, Vulcain, brotli, log-transform) and the Scriptling extension.
 
 This exposes the [`Scriptling`](https://github.com/paularlott/scriptling) class to PHP, so applications can embed the Scriptling scripting/agent runtime directly:
 

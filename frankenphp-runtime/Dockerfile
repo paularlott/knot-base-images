@@ -1,42 +1,54 @@
-ARG FRANKENPHP_VERSION=1.13.0
 ARG PHP_VERSION=8.5
 ARG APT_CACHE=
 
+# The image the knot runtime layer goes on: upstream FrankenPHP for
+# knot-frankenphp-runtime (target `frankenphp`), paularlott/frankenscriptling
+# for knot-frankenscriptling-runtime (target `frankenscriptling`). Both track
+# the newest release for the PHP line (php<x.y> tags).
+ARG BASE_IMAGE=dunglas/frankenphp:php${PHP_VERSION}
+
 # =============================================================================
-# Stage 1: Build FrankenPHP with custom Caddy modules
+# Build FrankenPHP with custom Caddy modules (target `frankenphp` only;
+# frankenscriptling ships its own binary)
 # =============================================================================
-FROM dunglas/frankenphp:${FRANKENPHP_VERSION}-builder-php${PHP_VERSION} AS builder
+FROM dunglas/frankenphp:builder-php${PHP_VERSION} AS builder
 
 COPY --from=caddy:builder /usr/bin/xcaddy /usr/bin/xcaddy
 
-ARG FRANKENPHP_VERSION
-
 ENV GOTOOLCHAIN=auto
 
-RUN CGO_ENABLED=1 \
+# Build the FrankenPHP release the builder image carries (it reports
+# "FrankenPHP v1.13.3 PHP ..."), so the binary matches the runtime base.
+RUN FRANKENPHP_VERSION=$(frankenphp version | awk '{print $2}') \
+    && CGO_ENABLED=1 \
     XCADDY_GO_BUILD_FLAGS="-ldflags '-w -s' -tags nobadger,nomysql,nopgx" \
     CGO_CFLAGS="-D_GNU_SOURCE $(php-config --includes)" \
     CGO_LDFLAGS="$(php-config --ldflags) $(php-config --libs)" \
     xcaddy build \
         --output /usr/local/bin/frankenphp \
-        --with github.com/dunglas/frankenphp/caddy@v${FRANKENPHP_VERSION} \
+        --with github.com/dunglas/frankenphp/caddy@${FRANKENPHP_VERSION} \
         --with github.com/dunglas/mercure/caddy@latest \
         --with github.com/dunglas/vulcain/caddy@latest \
         --with github.com/dunglas/caddy-cbrotli@latest \
         --with github.com/caddy-dns/cloudflare@latest \
         --with github.com/caddyserver/transform-encoder@latest
 
-# Build PHP extension: Xdebug
+# =============================================================================
+# Build PHP extension: Xdebug (its own stage so the frankenscriptling target
+# doesn't build FrankenPHP)
+# =============================================================================
+FROM dunglas/frankenphp:builder-php${PHP_VERSION} AS xdebug
+
 RUN pecl install xdebug \
     && mkdir -p /tmp/exts \
     && cp "$(php-config --extension-dir)/xdebug.so" /tmp/exts/
 
 # =============================================================================
-# Stage 2: Runtime — FrankenPHP with the knot toolchain but no dev tools.
+# Runtime — FrankenPHP with the knot toolchain but no dev tools.
 # knot-frankenphp (the dev image) builds on this; appliances like knot-adminer
 # use it directly.
 # =============================================================================
-FROM dunglas/frankenphp:${FRANKENPHP_VERSION}-php${PHP_VERSION}
+FROM ${BASE_IMAGE} AS runtime
 
 ARG APT_CACHE
 ARG APT_RUNTIME_PACKAGES
@@ -71,7 +83,7 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   \
   # PHP extensions — mirror the module set from the knot-php image.
   # Base image already provides mbstring, curl, iconv, pdo, xml/dom, sodium,
-  # sqlite, zlib and pear/pecl; xdebug is built in stage 1.
+  # sqlite, zlib and pear/pecl; xdebug is built in its own stage.
   && install-php-extensions \
     bcmath exif gd gettext mailparse mysqli opcache \
     pdo_mysql pdo_pgsql pgsql redis sockets spx zip \
@@ -93,11 +105,8 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   \
   && if [ -n "$APT_CACHE" ]; then rm -f /etc/apt/apt.conf.d/00proxy; fi
 
-# Replace the FrankenPHP binary with our custom build (includes transform-encoder etc.)
-COPY --from=builder /usr/local/bin/frankenphp /usr/local/bin/frankenphp
-
-# PHP extension: Xdebug (built in stage 1)
-COPY --from=builder /tmp/exts/ /tmp/exts/
+# PHP extension: Xdebug (built in its own stage)
+COPY --from=xdebug /tmp/exts/ /tmp/exts/
 RUN EXT_DIR=$(php-config --extension-dir) \
     && mv /tmp/exts/xdebug.so "$EXT_DIR/" \
     && rm -rf /tmp/exts
@@ -114,3 +123,17 @@ COPY files/php-mods/xdebug.ini /usr/local/etc/php/conf.d/zz-xdebug.ini.disabled
 VOLUME /home
 
 ENTRYPOINT ["/usr/local/bin/knot-entrypoint"]
+
+# =============================================================================
+# knot-frankenscriptling-runtime: the base image already carries the
+# Scriptling-enabled FrankenPHP binary (and its matching libphp).
+# =============================================================================
+FROM runtime AS frankenscriptling
+
+# =============================================================================
+# knot-frankenphp-runtime: replace the FrankenPHP binary with our custom build
+# (includes transform-encoder etc.)
+# =============================================================================
+FROM runtime AS frankenphp
+
+COPY --from=builder /usr/local/bin/frankenphp /usr/local/bin/frankenphp

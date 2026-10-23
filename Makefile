@@ -32,8 +32,6 @@ PHP_VERSIONS ?= 8.4 8.5
 GO_VERSIONS ?= 1.27
 PYTHON_VERSIONS ?= 3.14
 NODE_VERSIONS ?= 24 26
-FRANKENPHP_VERSIONS ?= 8.5
-SCRIPTLING_VERSIONS ?= 0.32.0
 KNOT_ALPINE_VERSIONS ?= 3.24
 KNOT_ALPINE_BASE_VERSION ?= 3.24
 MARIADB_VERSIONS ?= 10.11 11.4 11.8 12.3
@@ -42,26 +40,21 @@ POSTGRES_VERSIONS ?= 18
 VALKEY_VERSIONS ?= 9.0.6 9.1.2
 REDIS_VERSIONS ?= 8.10.0
 MAILPIT_VERSIONS ?= 1.30
-ADMINER_VERSIONS ?= 6.0.1
+ADMINER_VERSIONS ?= 6.1.2
 VICTORIA_LOGS_VERSIONS ?= 1.52.0
 VMAUTH_VERSION ?= 1.148.0
 ALPINE_VERSION ?= 3.20
 CADDY_VERSION ?= 2.11.4
-FRANKENPHP_VERSION ?= 1.13.2
-
-# knot-frankenscriptling-runtime pulls its binary from the standalone
-# paularlott/frankenscriptling repo instead of building from source. Follows
-# TAG_BASE by default (same idiom as CACHE_TAG_BASE) so a .env pointing
-# everything else at a local/private mirror pulls frankenscriptling from
-# there too; override independently if it should come from somewhere else.
-FRANKENSCRIPTLING_REGISTRY ?= $(TAG_BASE)
-FRANKENSCRIPTLING_TAG ?= 0.32.0-php8.5
+FRANKENPHP_VERSIONS ?= 8.5
+SCRIPTLING_VERSIONS ?= 0.33.0
+FRANKENSCRIPTLING_VERSIONS ?= 8.5
 
 BUILD_DATE ?= $(shell date -u +'%Y%m%d')
 
 # =============================================================================
 # Internal helpers — bake parses list-typed env vars as CSV, so we convert
-# Make's space-separated lists before exporting.
+# Make's space-separated lists before exporting (`override` so this also
+# applies to lists given on the make command line).
 # =============================================================================
 
 empty :=
@@ -75,26 +68,41 @@ export APT_CACHE
 export PHP_UBUNTU_BASE_VERSION
 export UBUNTU_BASE_VERSION
 export CADDY_VERSION
-export FRANKENPHP_VERSION
-export FRANKENSCRIPTLING_REGISTRY
-export FRANKENSCRIPTLING_TAG
 export KNOT_ALPINE_BASE_VERSION
-export UBUNTU_VERSIONS := $(subst $(space),$(comma),$(UBUNTU_VERSIONS))
-export PHP_VERSIONS := $(subst $(space),$(comma),$(PHP_VERSIONS))
-export FRANKENPHP_VERSIONS := $(subst $(space),$(comma),$(FRANKENPHP_VERSIONS))
-export SCRIPTLING_VERSIONS := $(subst $(space),$(comma),$(SCRIPTLING_VERSIONS))
-export KNOT_ALPINE_VERSIONS := $(subst $(space),$(comma),$(KNOT_ALPINE_VERSIONS))
-export GO_VERSIONS := $(subst $(space),$(comma),$(GO_VERSIONS))
-export PYTHON_VERSIONS := $(subst $(space),$(comma),$(PYTHON_VERSIONS))
-export NODE_VERSIONS := $(subst $(space),$(comma),$(NODE_VERSIONS))
-export MARIADB_VERSIONS := $(subst $(space),$(comma),$(MARIADB_VERSIONS))
-export MYSQL_VERSIONS := $(subst $(space),$(comma),$(MYSQL_VERSIONS))
-export POSTGRES_VERSIONS := $(subst $(space),$(comma),$(POSTGRES_VERSIONS))
-export VALKEY_VERSIONS := $(subst $(space),$(comma),$(VALKEY_VERSIONS))
-export REDIS_VERSIONS := $(subst $(space),$(comma),$(REDIS_VERSIONS))
-export MAILPIT_VERSIONS := $(subst $(space),$(comma),$(MAILPIT_VERSIONS))
-export ADMINER_VERSIONS := $(subst $(space),$(comma),$(ADMINER_VERSIONS))
-export VICTORIA_LOGS_VERSIONS := $(subst $(space),$(comma),$(VICTORIA_LOGS_VERSIONS))
+override UBUNTU_VERSIONS := $(subst $(space),$(comma),$(UBUNTU_VERSIONS))
+export UBUNTU_VERSIONS
+override PHP_VERSIONS := $(subst $(space),$(comma),$(PHP_VERSIONS))
+export PHP_VERSIONS
+override FRANKENPHP_VERSIONS := $(subst $(space),$(comma),$(FRANKENPHP_VERSIONS))
+export FRANKENPHP_VERSIONS
+override FRANKENSCRIPTLING_VERSIONS := $(subst $(space),$(comma),$(FRANKENSCRIPTLING_VERSIONS))
+export FRANKENSCRIPTLING_VERSIONS
+override SCRIPTLING_VERSIONS := $(subst $(space),$(comma),$(SCRIPTLING_VERSIONS))
+export SCRIPTLING_VERSIONS
+override KNOT_ALPINE_VERSIONS := $(subst $(space),$(comma),$(KNOT_ALPINE_VERSIONS))
+export KNOT_ALPINE_VERSIONS
+override GO_VERSIONS := $(subst $(space),$(comma),$(GO_VERSIONS))
+export GO_VERSIONS
+override PYTHON_VERSIONS := $(subst $(space),$(comma),$(PYTHON_VERSIONS))
+export PYTHON_VERSIONS
+override NODE_VERSIONS := $(subst $(space),$(comma),$(NODE_VERSIONS))
+export NODE_VERSIONS
+override MARIADB_VERSIONS := $(subst $(space),$(comma),$(MARIADB_VERSIONS))
+export MARIADB_VERSIONS
+override MYSQL_VERSIONS := $(subst $(space),$(comma),$(MYSQL_VERSIONS))
+export MYSQL_VERSIONS
+override POSTGRES_VERSIONS := $(subst $(space),$(comma),$(POSTGRES_VERSIONS))
+export POSTGRES_VERSIONS
+override VALKEY_VERSIONS := $(subst $(space),$(comma),$(VALKEY_VERSIONS))
+export VALKEY_VERSIONS
+override REDIS_VERSIONS := $(subst $(space),$(comma),$(REDIS_VERSIONS))
+export REDIS_VERSIONS
+override MAILPIT_VERSIONS := $(subst $(space),$(comma),$(MAILPIT_VERSIONS))
+export MAILPIT_VERSIONS
+override ADMINER_VERSIONS := $(subst $(space),$(comma),$(ADMINER_VERSIONS))
+export ADMINER_VERSIONS
+override VICTORIA_LOGS_VERSIONS := $(subst $(space),$(comma),$(VICTORIA_LOGS_VERSIONS))
+export VICTORIA_LOGS_VERSIONS
 export VMAUTH_VERSION
 export ALPINE_VERSION
 export BUILD_DATE

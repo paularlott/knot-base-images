@@ -1,13 +1,17 @@
 ARG TAG_BASE=paularlott
 ARG PHP_VERSION=8.5
 ARG APT_CACHE=
+# The runtime image this dev layer goes on: knot-frankenphp-runtime for
+# knot-frankenphp, knot-frankenscriptling-runtime for knot-frankenscriptling.
+ARG RUNTIME_IMAGE=knot-frankenphp-runtime
 
 # =============================================================================
-# knot-frankenphp: the knot-frankenphp-runtime image plus development tools
-# (ssh, git, editors, shells, node, composer, mago, mutagen). The PHP runtime,
-# extensions, Caddy config and knot entrypoint all come from the runtime image.
+# knot-frankenphp / knot-frankenscriptling: the runtime image plus development
+# tools (ssh, git, editors, shells, node, composer, mago, mutagen). The PHP
+# runtime, extensions, Caddy config and knot entrypoint all come from the
+# runtime image.
 # =============================================================================
-FROM ${TAG_BASE}/knot-frankenphp-runtime:${PHP_VERSION}
+FROM ${TAG_BASE}/${RUNTIME_IMAGE}:${PHP_VERSION}
 
 ARG APT_CACHE
 ARG APT_DEV_PACKAGES

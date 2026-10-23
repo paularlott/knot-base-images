@@ -1,22 +1,20 @@
 # =============================================================================
-# Variables (overridable via environment variables; see Makefile for defaults)
+# Variables: no defaults here on purpose. The Makefile is the one place that
+# sets versions and registries and exports them; a bare `docker buildx bake`
+# fails with the messages below instead of silently building stale versions.
 # =============================================================================
-
 variable "TAG_BASE" {
-  default = "paularlott"
+  validation {
+    condition     = TAG_BASE != ""
+    error_message = "TAG_BASE is not set: build through the Makefile, which exports it."
+  }
 }
 
-variable "CACHE_TAG_BASE" {
-  default = ""
-}
-
-variable "DOCKER_HUB" {
-  default = ""
-}
-
-variable "APT_CACHE" {
-  default = ""
-}
+# Optional: empty means not used (CACHE_TAG_BASE falls back to TAG_BASE).
+variable "CACHE_TAG_BASE" {}
+variable "DOCKER_HUB" {}
+variable "APT_CACHE" {}
+variable "BUILD_DATE" {}
 
 # The knot runtime essentials and dev CLI set, defined once and consumed by
 # every Debian-family image (ubuntu-runtime, frankenphp-runtime, knot-ubuntu,
@@ -31,132 +29,185 @@ variable "APT_DEV_PACKAGES" {
   default = "openssh-client openssh-server fish iputils-ping htop iproute2 iftop git vim wget screen dnsutils gnupg2 nano tmux bat ripgrep fzf zoxide make direnv gettext-base valkey-tools jq"
 }
 
-variable "BUILD_DATE" {
-  default = ""
-}
-
-variable "UBUNTU_VERSIONS" {
-  type    = list(string)
-  default = ["26.04"]
-}
-
 variable "PHP_UBUNTU_BASE_VERSION" {
-  default = "26.04"
+  validation {
+    condition     = PHP_UBUNTU_BASE_VERSION != ""
+    error_message = "PHP_UBUNTU_BASE_VERSION is not set: build through the Makefile, which exports it."
+  }
 }
 
 variable "UBUNTU_BASE_VERSION" {
-  default = "26.04"
-}
-
-variable "GO_VERSIONS" {
-  type    = list(string)
-  default = ["1.27"]
-}
-
-variable "PYTHON_VERSIONS" {
-  type    = list(string)
-  default = ["3.14"]
-}
-
-variable "NODE_VERSIONS" {
-  type    = list(string)
-  default = ["24", "26"]
-}
-
-variable "PHP_VERSIONS" {
-  type    = list(string)
-  default = ["8.4", "8.5"]
-}
-
-variable "FRANKENPHP_VERSIONS" {
-  type    = list(string)
-  default = ["8.5"]
+  validation {
+    condition     = UBUNTU_BASE_VERSION != ""
+    error_message = "UBUNTU_BASE_VERSION is not set: build through the Makefile, which exports it."
+  }
 }
 
 variable "CADDY_VERSION" {
-  default = "2.11.4"
-}
-
-variable "FRANKENPHP_VERSION" {
-  default = "1.13.0"
-}
-
-variable "SCRIPTLING_VERSIONS" {
-  type    = list(string)
-  default = ["0.30.1"]
-}
-
-# knot-frankenscriptling-runtime pulls its Scriptling+FrankenPHP binary from
-# the standalone paularlott/frankenscriptling repo rather than building it
-# from source — that repo owns SCRIPTLING_VERSION/FRANKENPHP_VERSION for its
-# own build. Empty means "follow TAG_BASE" (see frankenscriptling_registry()
-# below), same fallback idiom as CACHE_TAG_BASE/cache_base() — so a .env that
-# points TAG_BASE at a local/private mirror pulls frankenscriptling from
-# there too by default, with no extra var to keep in sync. Set explicitly to
-# pull frankenscriptling from somewhere else regardless of TAG_BASE.
-variable "FRANKENSCRIPTLING_REGISTRY" {
-  default = ""
-}
-
-variable "FRANKENSCRIPTLING_TAG" {
-  default = "0.30.1-php8.5"
-}
-
-variable "ADMINER_VERSIONS" {
-  type    = list(string)
-  default = ["6.0.1"]
-}
-
-variable "KNOT_ALPINE_VERSIONS" {
-  type    = list(string)
-  default = ["3.24"]
+  validation {
+    condition     = CADDY_VERSION != ""
+    error_message = "CADDY_VERSION is not set: build through the Makefile, which exports it."
+  }
 }
 
 variable "KNOT_ALPINE_BASE_VERSION" {
-  default = "3.24"
-}
-
-variable "MARIADB_VERSIONS" {
-  type    = list(string)
-  default = ["10.11", "11.4", "11.8", "12.3"]
-}
-
-variable "MYSQL_VERSIONS" {
-  type    = list(string)
-  default = ["9.7"]
-}
-
-variable "POSTGRES_VERSIONS" {
-  type    = list(string)
-  default = ["18"]
-}
-
-variable "VALKEY_VERSIONS" {
-  type    = list(string)
-  default = ["9.0.4", "9.1.1"]
-}
-
-variable "REDIS_VERSIONS" {
-  type    = list(string)
-  default = ["8.10.0"]
-}
-
-variable "MAILPIT_VERSIONS" {
-  type    = list(string)
-  default = ["1.30"]
-}
-
-variable "VICTORIA_LOGS_VERSIONS" {
-  type    = list(string)
-  default = ["1.52.0"]
+  validation {
+    condition     = KNOT_ALPINE_BASE_VERSION != ""
+    error_message = "KNOT_ALPINE_BASE_VERSION is not set: build through the Makefile, which exports it."
+  }
 }
 
 variable "VMAUTH_VERSION" {
-  default = "1.148.0"
+  validation {
+    condition     = VMAUTH_VERSION != ""
+    error_message = "VMAUTH_VERSION is not set: build through the Makefile, which exports it."
+  }
 }
 
 variable "ALPINE_VERSION" {
-  default = "3.20"
+  validation {
+    condition     = ALPINE_VERSION != ""
+    error_message = "ALPINE_VERSION is not set: build through the Makefile, which exports it."
+  }
+}
+
+# FRANKENPHP_VERSIONS and FRANKENSCRIPTLING_VERSIONS are PHP lines (8.5, …):
+# the images build on dunglas/frankenphp:php<x.y> and
+# ${TAG_BASE}/frankenscriptling:php<x.y> and are tagged <x.y>.
+variable "UBUNTU_VERSIONS" {
+  type = list(string)
+  validation {
+    condition     = length(UBUNTU_VERSIONS) > 0
+    error_message = "UBUNTU_VERSIONS is not set: build through the Makefile, which exports it as a comma-separated list."
+  }
+}
+
+variable "GO_VERSIONS" {
+  type = list(string)
+  validation {
+    condition     = length(GO_VERSIONS) > 0
+    error_message = "GO_VERSIONS is not set: build through the Makefile, which exports it as a comma-separated list."
+  }
+}
+
+variable "PYTHON_VERSIONS" {
+  type = list(string)
+  validation {
+    condition     = length(PYTHON_VERSIONS) > 0
+    error_message = "PYTHON_VERSIONS is not set: build through the Makefile, which exports it as a comma-separated list."
+  }
+}
+
+variable "NODE_VERSIONS" {
+  type = list(string)
+  validation {
+    condition     = length(NODE_VERSIONS) > 0
+    error_message = "NODE_VERSIONS is not set: build through the Makefile, which exports it as a comma-separated list."
+  }
+}
+
+variable "PHP_VERSIONS" {
+  type = list(string)
+  validation {
+    condition     = length(PHP_VERSIONS) > 0
+    error_message = "PHP_VERSIONS is not set: build through the Makefile, which exports it as a comma-separated list."
+  }
+}
+
+variable "FRANKENPHP_VERSIONS" {
+  type = list(string)
+  validation {
+    condition     = length(FRANKENPHP_VERSIONS) > 0
+    error_message = "FRANKENPHP_VERSIONS is not set: build through the Makefile, which exports it as a comma-separated list."
+  }
+}
+
+variable "SCRIPTLING_VERSIONS" {
+  type = list(string)
+  validation {
+    condition     = length(SCRIPTLING_VERSIONS) > 0
+    error_message = "SCRIPTLING_VERSIONS is not set: build through the Makefile, which exports it as a comma-separated list."
+  }
+}
+
+variable "FRANKENSCRIPTLING_VERSIONS" {
+  type = list(string)
+  validation {
+    condition     = length(FRANKENSCRIPTLING_VERSIONS) > 0
+    error_message = "FRANKENSCRIPTLING_VERSIONS is not set: build through the Makefile, which exports it as a comma-separated list."
+  }
+}
+
+variable "ADMINER_VERSIONS" {
+  type = list(string)
+  validation {
+    condition     = length(ADMINER_VERSIONS) > 0
+    error_message = "ADMINER_VERSIONS is not set: build through the Makefile, which exports it as a comma-separated list."
+  }
+}
+
+variable "KNOT_ALPINE_VERSIONS" {
+  type = list(string)
+  validation {
+    condition     = length(KNOT_ALPINE_VERSIONS) > 0
+    error_message = "KNOT_ALPINE_VERSIONS is not set: build through the Makefile, which exports it as a comma-separated list."
+  }
+}
+
+variable "MARIADB_VERSIONS" {
+  type = list(string)
+  validation {
+    condition     = length(MARIADB_VERSIONS) > 0
+    error_message = "MARIADB_VERSIONS is not set: build through the Makefile, which exports it as a comma-separated list."
+  }
+}
+
+variable "MYSQL_VERSIONS" {
+  type = list(string)
+  validation {
+    condition     = length(MYSQL_VERSIONS) > 0
+    error_message = "MYSQL_VERSIONS is not set: build through the Makefile, which exports it as a comma-separated list."
+  }
+}
+
+variable "POSTGRES_VERSIONS" {
+  type = list(string)
+  validation {
+    condition     = length(POSTGRES_VERSIONS) > 0
+    error_message = "POSTGRES_VERSIONS is not set: build through the Makefile, which exports it as a comma-separated list."
+  }
+}
+
+variable "VALKEY_VERSIONS" {
+  type = list(string)
+  validation {
+    condition     = length(VALKEY_VERSIONS) > 0
+    error_message = "VALKEY_VERSIONS is not set: build through the Makefile, which exports it as a comma-separated list."
+  }
+}
+
+variable "REDIS_VERSIONS" {
+  type = list(string)
+  validation {
+    condition     = length(REDIS_VERSIONS) > 0
+    error_message = "REDIS_VERSIONS is not set: build through the Makefile, which exports it as a comma-separated list."
+  }
+}
+
+variable "MAILPIT_VERSIONS" {
+  type = list(string)
+  validation {
+    condition     = length(MAILPIT_VERSIONS) > 0
+    error_message = "MAILPIT_VERSIONS is not set: build through the Makefile, which exports it as a comma-separated list."
+  }
+}
+
+variable "VICTORIA_LOGS_VERSIONS" {
+  type = list(string)
+  validation {
+    condition     = length(VICTORIA_LOGS_VERSIONS) > 0
+    error_message = "VICTORIA_LOGS_VERSIONS is not set: build through the Makefile, which exports it as a comma-separated list."
+  }
 }
 
 # =============================================================================
@@ -168,9 +219,11 @@ function "cache_base" {
   result = CACHE_TAG_BASE == "" ? TAG_BASE : CACHE_TAG_BASE
 }
 
-function "frankenscriptling_registry" {
+# The newest PHP line in FRANKENPHP_VERSIONS (listed oldest first), for images
+# that only build on one, such as knot-adminer.
+function "frankenphp_latest" {
   params = []
-  result = FRANKENSCRIPTLING_REGISTRY == "" ? TAG_BASE : FRANKENSCRIPTLING_REGISTRY
+  result = FRANKENPHP_VERSIONS[length(FRANKENPHP_VERSIONS) - 1]
 }
 
 function "major_minor" {
@@ -474,6 +527,7 @@ target "knot-frankenphp-runtime" {
   }
   inherits    = ["_common"]
   context     = "./frankenphp-runtime"
+  target      = "frankenphp"
 
   labels = {
     "org.opencontainers.image.title"       = "Knot FrankenPHP Runtime"
@@ -484,7 +538,6 @@ target "knot-frankenphp-runtime" {
   args = {
     APT_CACHE            = "${APT_CACHE}"
     PHP_VERSION          = "${php}"
-    FRANKENPHP_VERSION   = "${FRANKENPHP_VERSION}"
     APT_RUNTIME_PACKAGES = "${APT_RUNTIME_PACKAGES}"
   }
 
@@ -530,10 +583,12 @@ target "knot-frankenscriptling-runtime" {
   name        = "knot-frankenscriptling-runtime-${replace(php, ".", "-")}"
   description = "FrankenPHP with the Scriptling PHP extension, without dev tooling"
   matrix      = {
-    php = FRANKENPHP_VERSIONS
+    php = FRANKENSCRIPTLING_VERSIONS
   }
   inherits    = ["_common"]
-  context     = "./frankenscriptling-runtime"
+  # The knot-frankenphp-runtime Dockerfile, on the frankenscriptling image
+  context     = "./frankenphp-runtime"
+  target      = "frankenscriptling"
 
   labels = {
     "org.opencontainers.image.title"       = "Knot FrankenScriptling Runtime"
@@ -541,15 +596,11 @@ target "knot-frankenscriptling-runtime" {
     "org.opencontainers.image.version"     = "${php}"
   }
 
-  contexts = {
-    "${TAG_BASE}/knot-frankenphp-runtime:${php}" = "target:knot-frankenphp-runtime-${replace(php, ".", "-")}"
-  }
-
   args = {
-    FRANKENSCRIPTLING_REGISTRY = frankenscriptling_registry()
-    FRANKENSCRIPTLING_TAG      = "${FRANKENSCRIPTLING_TAG}"
-    PHP_VERSION                = "${php}"
-    TAG_BASE                   = "${TAG_BASE}"
+    APT_CACHE            = "${APT_CACHE}"
+    PHP_VERSION          = "${php}"
+    APT_RUNTIME_PACKAGES = "${APT_RUNTIME_PACKAGES}"
+    BASE_IMAGE           = "${TAG_BASE}/frankenscriptling:php${php}"
   }
 
   tags = version_tags("knot-frankenscriptling-runtime", php)
@@ -562,10 +613,11 @@ target "knot-frankenscriptling" {
   name        = "knot-frankenscriptling-${replace(php, ".", "-")}"
   description = "FrankenPHP with the Scriptling PHP extension plus development tools"
   matrix      = {
-    php = FRANKENPHP_VERSIONS
+    php = FRANKENSCRIPTLING_VERSIONS
   }
   inherits    = ["_common"]
-  context     = "./frankenscriptling"
+  # The knot-frankenphp (dev layer) Dockerfile, on knot-frankenscriptling-runtime
+  context     = "./frankenphp"
 
   labels = {
     "org.opencontainers.image.title"       = "Knot FrankenScriptling"
@@ -574,13 +626,15 @@ target "knot-frankenscriptling" {
   }
 
   contexts = {
-    "${TAG_BASE}/knot-frankenphp:${php}"                = "target:knot-frankenphp-${replace(php, ".", "-")}"
     "${TAG_BASE}/knot-frankenscriptling-runtime:${php}" = "target:knot-frankenscriptling-runtime-${replace(php, ".", "-")}"
   }
 
   args = {
-    PHP_VERSION = "${php}"
-    TAG_BASE    = "${TAG_BASE}"
+    APT_CACHE        = "${APT_CACHE}"
+    PHP_VERSION      = "${php}"
+    TAG_BASE         = "${TAG_BASE}"
+    APT_DEV_PACKAGES = "${APT_DEV_PACKAGES}"
+    RUNTIME_IMAGE    = "knot-frankenscriptling-runtime"
   }
 
   tags = version_tags("knot-frankenscriptling", php)
@@ -603,13 +657,13 @@ target "knot-adminer" {
   }
 
   contexts = {
-    "${TAG_BASE}/knot-frankenphp-runtime:8.5" = "target:knot-frankenphp-runtime-8-5"
+    "${TAG_BASE}/knot-frankenphp-runtime:${frankenphp_latest()}" = "target:knot-frankenphp-runtime-${replace(frankenphp_latest(), ".", "-")}"
   }
 
   args = {
     ADMINER_VERSION = "${version}"
     TAG_BASE        = "${TAG_BASE}"
-    PHP_VERSION     = "8.5"
+    PHP_VERSION     = "${frankenphp_latest()}"
   }
 
   tags = concat(
