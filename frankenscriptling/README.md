@@ -21,15 +21,16 @@ Serve any HTML or PHP file from `~/public_html` on port 80, exactly like `knot-f
 
 The image ships with bcmath, exif, gd, gettext, mailparse, mysqli, opcache, pdo_mysql, pdo_pgsql, pgsql, redis, sockets, spx and zip, plus xdebug (installed, off by default).
 
-The PHP build toolchain (`$PHPIZE_DEPS`: gcc, make, autoconf, …) is included, so extensions can be added the usual ways and the compilers stay in place afterwards:
+There is no C compiler in the image: frankenscriptling leaves the build toolchain out to stay small. Adding extensions still works the usual way — `install-php-extensions` and `docker-php-ext-configure` / `-install` / `-enable` install the toolchain while they build and remove it afterwards, as on the official Alpine PHP images:
 
 ```bash
 sudo install-php-extensions intl imagick
 sudo docker-php-ext-install calendar
-sudo pecl install apcu
 ```
 
-The toolchain is the main difference from [`knot-frankenscriptling-runtime`](https://hub.docker.com/r/paularlott/knot-frankenscriptling-runtime), which leaves it out to stay small (about 720MB) and brings it in only while `install-php-extensions` / `docker-php-ext-*` build an extension.
+A bare `pecl install` needs the toolchain first (`sudo apt-get install -y $PHPIZE_DEPS`); `install-php-extensions` handles PECL extensions too. Likewise, if an `npm install` has to build a native module with `node-gyp`, install a compiler first: `sudo apt-get install -y build-essential` (`make` is already included).
+
+Only `/home` persists in a knot space, so packages and extensions added at runtime last until the space restarts; add permanent ones in an image built on this one.
 
 ## Tags
 

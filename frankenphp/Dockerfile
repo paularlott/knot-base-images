@@ -22,13 +22,9 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
     --mount=type=cache,sharing=private,target=/var/lib/apt/lists \
   if [ -n "$APT_CACHE" ]; then echo "Acquire::HTTP::Proxy \"$APT_CACHE\";" > /etc/apt/apt.conf.d/00proxy; fi \
   && apt-get update -y \
-  # Shared dev CLI set (see APT_DEV_PACKAGES in the bake file), plus the PHP
-  # build toolchain ($PHPIZE_DEPS) so developers can pecl install / phpize
-  # directly. The frankenscriptling runtime leaves it out; installed here it
-  # stays, as install-php-extensions only removes a toolchain it added itself.
+  # Shared dev CLI set (see APT_DEV_PACKAGES in the bake file)
   && apt-get install -y \
     ${APT_DEV_PACKAGES} \
-    ${PHPIZE_DEPS} \
   \
   # mago - PHP toolchain - https://github.com/carthage-software/mago (latest)
   && DPKG_ARCH=$(dpkg --print-architecture); \
