@@ -90,3 +90,15 @@ COPY --from=caddy /usr/bin/caddy /usr/bin/caddy
 COPY --from=caddy  /usr/share/caddy/index.html  /usr/share/caddy/index.html
 
 RUN sed -i "s/8\.2/${PHP_VERSION}/g" /etc/php/${PHP_VERSION}/fpm/pool.d/docker.conf
+
+# CVE-2026-115560: disable session upload progress tracking. In conf.d as
+# zz-security.ini so it loads after every other ini file and an image's own
+# php.ini or a mounted custom.ini cannot turn it back on. Covers the official
+# image layout ($PHP_INI_DIR) and Debian/Ubuntu PHP packages (/etc/php).
+RUN set -e; written=0; \
+    for d in "${PHP_INI_DIR:-/usr/local/etc/php}/conf.d" /etc/php/*/*/conf.d; do \
+      [ -d "$d" ] || continue; \
+      printf '%s\n' '; CVE-2026-115560' 'session.upload_progress.enabled = 0' > "$d/zz-security.ini"; \
+      written=$((written + 1)); \
+    done; \
+    [ "$written" -gt 0 ]
