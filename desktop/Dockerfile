@@ -67,8 +67,8 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
     *) echo >&2 "warning: no native KasmVNC build for '$CODENAME', falling back to noble"; CODENAME="noble";; \
   esac; \
   case "$ARCH" in \
-    'x86_64')  url="https://github.com/kasmtech/KasmVNC/releases/download/v${KASMVNC_VERSION}/kasmvncserver_${CODENAME}_${KASMVNC_VERSION}_amd64.deb";; \
-    'aarch64') url="https://github.com/kasmtech/KasmVNC/releases/download/v${KASMVNC_VERSION}/kasmvncserver_${CODENAME}_${KASMVNC_VERSION}_arm64.deb";; \
+    'x86_64')  url="https://github.com/kasmtech/KasmVNC/releases/download/v${KASMVNC_VERSION}/kasmvncserver_ubuntu_${CODENAME}_${KASMVNC_VERSION}_amd64.deb";; \
+    'aarch64') url="https://github.com/kasmtech/KasmVNC/releases/download/v${KASMVNC_VERSION}/kasmvncserver_ubuntu_${CODENAME}_${KASMVNC_VERSION}_arm64.deb";; \
     *) echo >&2 "error: unsupported architecture: '$ARCH'"; exit 1 ;; \
   esac; \
   echo "Installing KasmVNC ${KASMVNC_VERSION} (${CODENAME})"; \
