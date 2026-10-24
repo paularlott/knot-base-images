@@ -34,16 +34,6 @@ RUN FRANKENPHP_VERSION=$(frankenphp version | awk '{print $2}') \
         --with github.com/caddyserver/transform-encoder@latest
 
 # =============================================================================
-# Build PHP extension: Xdebug (its own stage so the frankenscriptling target
-# doesn't build FrankenPHP)
-# =============================================================================
-FROM dunglas/frankenphp:builder-php${PHP_VERSION} AS xdebug
-
-RUN pecl install xdebug \
-    && mkdir -p /tmp/exts \
-    && cp "$(php-config --extension-dir)/xdebug.so" /tmp/exts/
-
-# =============================================================================
 # Runtime — FrankenPHP with the knot toolchain but no dev tools.
 # knot-frankenphp (the dev image) builds on this; appliances like knot-adminer
 # use it directly.
@@ -63,7 +53,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
   KNOT_SYSLOG_PORT=1514
 
 RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
-    --mount=type=cache,sharing=private,target=/var/lib/apt \
+    --mount=type=cache,sharing=private,target=/var/lib/apt/lists \
   if [ -n "$APT_CACHE" ]; then echo "Acquire::HTTP::Proxy \"$APT_CACHE\";" > /etc/apt/apt.conf.d/00proxy; fi \
   && apt-get update -y \
   && apt-get dist-upgrade -y \
@@ -83,16 +73,25 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   \
   # PHP extensions — mirror the module set from the knot-php image.
   # Base image already provides mbstring, curl, iconv, pdo, xml/dom, sodium,
-  # sqlite, zlib and pear/pecl; xdebug is built in its own stage.
+  # sqlite, zlib and pear/pecl. On the frankenscriptling base, which has no
+  # compiler, install-php-extensions brings in the toolchain and removes it
+  # again. xdebug ships disabled: its zz-xdebug.ini.disabled is enabled by
+  # phpenxdebug.
   && install-php-extensions \
     bcmath exif gd gettext mailparse mysqli opcache \
-    pdo_mysql pdo_pgsql pgsql redis sockets spx zip \
+    pdo_mysql pdo_pgsql pgsql redis sockets spx zip xdebug \
+  && rm -f "$PHP_INI_DIR/conf.d/docker-php-ext-xdebug.ini" \
   \
   # Locale
   && echo "LC_ALL=en_US.UTF-8" >> /etc/environment \
   && echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
   && echo "LANG=en_US.UTF-8" > /etc/locale.conf \
   && dpkg-reconfigure --frontend=noninteractive locales \
+  \
+  # Keep the PHP build variables under sudo, so `sudo install-php-extensions`
+  # / `sudo docker-php-ext-*` find the ini directory and toolchain list
+  && echo 'Defaults env_keep += "PHP_INI_DIR PHPIZE_DEPS"' > /etc/sudoers.d/php-build-env \
+  && chmod 0440 /etc/sudoers.d/php-build-env \
   \
   # rsyslog for container
   && sed -i 's/^\(module(load="imklog".*\)$/#\1/' /etc/rsyslog.conf \
@@ -104,12 +103,6 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   && sed -i 's/^\(\*\.\*;.*\)$/#\1/' /etc/rsyslog.d/50-default.conf \
   \
   && if [ -n "$APT_CACHE" ]; then rm -f /etc/apt/apt.conf.d/00proxy; fi
-
-# PHP extension: Xdebug (built in its own stage)
-COPY --from=xdebug /tmp/exts/ /tmp/exts/
-RUN EXT_DIR=$(php-config --extension-dir) \
-    && mv /tmp/exts/xdebug.so "$EXT_DIR/" \
-    && rm -rf /tmp/exts
 
 # Knot entrypoint and startup scripts
 COPY files/bin/* /usr/local/bin/

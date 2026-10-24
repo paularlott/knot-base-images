@@ -6,6 +6,18 @@
 
 Built from [`frankenphp-runtime/`](../frankenphp-runtime/) (target `frankenscriptling`) with the [`paularlott/frankenscriptling`](https://github.com/paularlott/frankenscriptling) image as its base, so the Scriptling-enabled binary and libphp always come from the same release. Each PHP line in `FRANKENSCRIPTLING_VERSIONS` (e.g. `8.5`) builds on `$TAG_BASE/frankenscriptling:php<x.y>`, the newest frankenscriptling release for that line, and is tagged `<x.y>`. Picking up a new Scriptling/FrankenPHP release means releasing frankenscriptling and rebuilding here, not changing a version pin.
 
+## PHP extensions
+
+The image ships with bcmath, exif, gd, gettext, mailparse, mysqli, opcache, pdo_mysql, pdo_pgsql, pgsql, redis, sockets, spx and zip, plus xdebug (installed, off by default — `phpenxdebug` / `phpdisxdebug` toggle it).
+
+frankenscriptling leaves the C compiler out to stay small (this image is about half the size of the same knot layer on upstream FrankenPHP). Adding extensions still works the usual way: `install-php-extensions` and `docker-php-ext-configure` / `-install` / `-enable` install the build toolchain while they build and remove it afterwards, as on the official Alpine PHP images:
+
+```bash
+sudo install-php-extensions intl imagick
+```
+
+A bare `pecl install` needs the toolchain first (`sudo apt-get install -y $PHPIZE_DEPS`); `install-php-extensions` handles PECL extensions too.
+
 This exposes the [`Scriptling`](https://github.com/paularlott/scriptling) class to PHP, so applications can embed the Scriptling scripting/agent runtime directly:
 
 ```php
