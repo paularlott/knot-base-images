@@ -129,6 +129,7 @@ Version matrices and the image namespace are set in the `Makefile` and can be ov
 | `PHP_UBUNTU_BASE_VERSION` | Ubuntu base version for `knot-php` |
 | `UBUNTU_BASE_VERSION` | Ubuntu base version for the runtime images (`knot-go` / `knot-python` / `knot-node` / `knot-scriptling`) |
 | `GO_VERSIONS` | Go versions for `knot-go` |
+| `GO_BUILD_VERSION` | Go toolchain the images are built with (`knot-caddy`, the FrankenPHP builder), pinned via `GOTOOLCHAIN` |
 | `PYTHON_VERSIONS` | Python versions for `knot-python` |
 | `NODE_VERSIONS` | Node.js majors for `knot-node` |
 | `SCRIPTLING_VERSIONS` | Scriptling versions for `knot-scriptling` and `knot-scriptling-runtime` |

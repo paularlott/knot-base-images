@@ -82,6 +82,14 @@ variable "UBUNTU_VERSIONS" {
   }
 }
 
+# Go toolchain the images build with (knot-caddy, the FrankenPHP builder).
+variable "GO_BUILD_VERSION" {
+  validation {
+    condition     = GO_BUILD_VERSION != ""
+    error_message = "GO_BUILD_VERSION is not set: build through the Makefile, which exports it."
+  }
+}
+
 variable "GO_VERSIONS" {
   type = list(string)
   validation {
@@ -442,8 +450,9 @@ target "knot-caddy" {
   }
 
   args = {
-    IMAGE_VERSION = "${CADDY_VERSION}"
-    DOCKER_HUB    = "${DOCKER_HUB}"
+    IMAGE_VERSION    = "${CADDY_VERSION}"
+    DOCKER_HUB       = "${DOCKER_HUB}"
+    GO_BUILD_VERSION = "${GO_BUILD_VERSION}"
   }
 
   tags = version_tags("knot-caddy", CADDY_VERSION)
@@ -539,6 +548,7 @@ target "knot-frankenphp-runtime" {
     APT_CACHE            = "${APT_CACHE}"
     PHP_VERSION          = "${php}"
     APT_RUNTIME_PACKAGES = "${APT_RUNTIME_PACKAGES}"
+    GO_BUILD_VERSION     = "${GO_BUILD_VERSION}"
   }
 
   tags = version_tags("knot-frankenphp-runtime", php)
@@ -600,6 +610,7 @@ target "knot-frankenscriptling-runtime" {
     APT_CACHE            = "${APT_CACHE}"
     PHP_VERSION          = "${php}"
     APT_RUNTIME_PACKAGES = "${APT_RUNTIME_PACKAGES}"
+    GO_BUILD_VERSION     = "${GO_BUILD_VERSION}"
     BASE_IMAGE           = "${TAG_BASE}/frankenscriptling:php${php}"
   }
 

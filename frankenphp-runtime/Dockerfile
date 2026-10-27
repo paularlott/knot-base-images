@@ -15,7 +15,10 @@ FROM dunglas/frankenphp:builder-php${PHP_VERSION} AS builder
 
 COPY --from=caddy:builder /usr/bin/xcaddy /usr/bin/xcaddy
 
-ENV GOTOOLCHAIN=auto
+# Exactly this Go (the builder image ships it); fails rather than switching
+# toolchains if a module needs newer
+ARG GO_BUILD_VERSION=1.27.3
+ENV GOTOOLCHAIN=go${GO_BUILD_VERSION}
 
 # Build the FrankenPHP release the builder image carries (it reports
 # "FrankenPHP v1.13.3 PHP ..."), so the binary matches the runtime base.

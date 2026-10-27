@@ -30,6 +30,9 @@ PHP_UBUNTU_BASE_VERSION ?= 26.04
 UBUNTU_BASE_VERSION ?= 26.04
 PHP_VERSIONS ?= 8.4 8.5
 GO_VERSIONS ?= 1.27
+# Go toolchain the images build with (knot-caddy, the FrankenPHP builder);
+# GO_VERSIONS above is the Go line knot-go ships to developers.
+GO_BUILD_VERSION ?= 1.27.3
 PYTHON_VERSIONS ?= 3.14
 NODE_VERSIONS ?= 24 26
 KNOT_ALPINE_VERSIONS ?= 3.24
@@ -68,6 +71,7 @@ export APT_CACHE
 export PHP_UBUNTU_BASE_VERSION
 export UBUNTU_BASE_VERSION
 export CADDY_VERSION
+export GO_BUILD_VERSION
 export KNOT_ALPINE_BASE_VERSION
 override UBUNTU_VERSIONS := $(subst $(space),$(comma),$(UBUNTU_VERSIONS))
 export UBUNTU_VERSIONS
