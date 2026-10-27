@@ -53,7 +53,12 @@ ENV DEBIAN_FRONTEND=noninteractive \
   TZ=Etc/UTC \
   TERM=xterm-256color \
   KNOT_SSH_PORT=2222 \
-  KNOT_SYSLOG_PORT=1514
+  KNOT_SYSLOG_PORT=1514 \
+  # Blank the base image's XDG_CONFIG_HOME=/config / XDG_DATA_HOME=/data so
+  # user tools (also under docker exec) use the user's own dirs; FrankenPHP is
+  # started with explicit XDG paths
+  XDG_CONFIG_HOME= \
+  XDG_DATA_HOME=
 
 RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
     --mount=type=cache,sharing=private,target=/var/lib/apt/lists \

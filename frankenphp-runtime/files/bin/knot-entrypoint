@@ -6,6 +6,12 @@ set -e
 # the SIGKILL. Forward the signal to the agent (once started) and exit.
 trap 'if [ -n "${agent_pid:-}" ]; then kill -TERM "$agent_pid" 2>/dev/null; fi; exit 0' TERM INT
 
+# The FrankenPHP base image points XDG_CONFIG_HOME/XDG_DATA_HOME at /config and
+# /data (owned by www-data). Drop them so the agent, startup scripts and user
+# tools (gh, Composer, ...) use the user's ~/.config and ~/.local/share;
+# FrankenPHP is always started with its own explicit XDG paths.
+unset XDG_CONFIG_HOME XDG_DATA_HOME
+
 # Get the KNOT_USER if not set then set it to knot
 export KNOT_USER=${KNOT_USER:-knot}
 
