@@ -12,7 +12,7 @@ ARG ALPINE_VERSION=3.24
 FROM ${TAG_BASE}/knot-alpine-runtime:${ALPINE_VERSION}
 
 RUN apk add --no-cache \
-    openssh rsync fish iputils htop iproute2 iftop screen \
+    openssh rsync fish zsh iputils htop iproute2 iftop screen \
     git vim nano tmux wget \
     gettext bind-tools gnupg jq make direnv \
     mariadb-client postgresql-client valkey-cli \
@@ -30,3 +30,9 @@ RUN apk add --no-cache \
     tar -xzf /tmp/mutagen.tgz -C /tmp mutagen; \
     install -m 0755 /tmp/mutagen /usr/local/bin/mutagen; \
     rm -rf /tmp/mutagen /tmp/mutagen.tgz
+
+# zsh keeps no history unless told to, and runs a first-use wizard on a home
+# with no zsh startup files; see the comments in these files.
+COPY files/zsh-history.zsh /tmp/zsh-history.zsh
+COPY files/00-zsh-defaults /etc/knot-startup.d/00-zsh-defaults
+RUN mkdir -p /etc/zsh && cat /tmp/zsh-history.zsh >> /etc/zsh/zshrc && rm /tmp/zsh-history.zsh

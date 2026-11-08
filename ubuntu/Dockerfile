@@ -42,3 +42,9 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   # sshd
   && mkdir -p /run/sshd \
   && if [ -n "$APT_CACHE" ]; then rm -f /etc/apt/apt.conf.d/00proxy; fi
+
+# zsh keeps no history unless told to, and runs a first-use wizard on a home
+# with no zsh startup files; see the comments in these files.
+COPY files/zsh-history.zsh /tmp/zsh-history.zsh
+COPY files/00-zsh-defaults /etc/knot-startup.d/00-zsh-defaults
+RUN mkdir -p /etc/zsh && cat /tmp/zsh-history.zsh >> /etc/zsh/zshrc && rm /tmp/zsh-history.zsh

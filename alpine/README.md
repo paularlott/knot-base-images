@@ -59,7 +59,7 @@ See the [knot startup-scripts docs](https://getknot.dev/docs/spaces/startup-scri
 
 ## Bundled tools
 
-The `knot-ubuntu` tooling mapped to Alpine packages: git, vim, nano, fish, tmux, screen, htop, ripgrep, bat, fzf, zoxide, direnv, jq, make, curl, wget, rsync, unzip, gnupg, openssh (client + server), iproute2, iftop, iputils, bind-tools (`dig` / `nslookup`), mariadb-client, postgresql-client, valkey-cli, cronie, logrotate, rsyslog — plus `gosu` and [mutagen](https://github.com/mutagen-io/mutagen). Notable differences from `knot-ubuntu`:
+The `knot-ubuntu` tooling mapped to Alpine packages: git, vim, nano, fish, zsh, tmux, screen, htop, ripgrep, bat, fzf, zoxide, direnv, jq, make, curl, wget, rsync, unzip, gnupg, openssh (client + server), iproute2, iftop, iputils, bind-tools (`dig` / `nslookup`), mariadb-client, postgresql-client, valkey-cli, cronie, logrotate, rsyslog — plus `gosu` and [mutagen](https://github.com/mutagen-io/mutagen). Notable differences from `knot-ubuntu`:
 
 | Ubuntu | knot-alpine |
 |--------|-------------|

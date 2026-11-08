@@ -26,7 +26,7 @@ variable "APT_RUNTIME_PACKAGES" {
 }
 
 variable "APT_DEV_PACKAGES" {
-  default = "openssh-client openssh-server fish iputils-ping htop iproute2 iftop git vim wget screen dnsutils gnupg2 nano tmux bat ripgrep fzf zoxide make direnv gettext-base valkey-tools jq"
+  default = "openssh-client openssh-server fish zsh iputils-ping htop iproute2 iftop git vim wget screen dnsutils gnupg2 nano tmux bat ripgrep fzf zoxide make direnv gettext-base valkey-tools jq"
 }
 
 variable "PHP_UBUNTU_BASE_VERSION" {
