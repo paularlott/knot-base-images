@@ -32,7 +32,7 @@ PHP_VERSIONS ?= 8.4 8.5
 GO_VERSIONS ?= 1.27
 # Go toolchain the images build with (knot-caddy, the FrankenPHP builder);
 # GO_VERSIONS above is the Go line knot-go ships to developers.
-GO_BUILD_VERSION ?= 1.27.3
+GO_BUILD_VERSION ?= 1.27.4
 PYTHON_VERSIONS ?= 3.14
 NODE_VERSIONS ?= 24 26
 KNOT_ALPINE_VERSIONS ?= 3.24
@@ -42,14 +42,14 @@ MYSQL_VERSIONS ?= 9.7
 POSTGRES_VERSIONS ?= 18
 VALKEY_VERSIONS ?= 9.0.6 9.1.2
 REDIS_VERSIONS ?= 8.10.0
-MAILPIT_VERSIONS ?= 1.30
-ADMINER_VERSIONS ?= 6.1.2
-VICTORIA_LOGS_VERSIONS ?= 1.52.0
-VMAUTH_VERSION ?= 1.148.0
+MAILPIT_VERSIONS ?= 1.34.0
+ADMINER_VERSIONS ?= 6.3.0
+VICTORIA_LOGS_VERSIONS ?= 1.54.0
+VMAUTH_VERSION ?= 1.156.0
 ALPINE_VERSION ?= 3.20
 CADDY_VERSION ?= 2.11.4
 FRANKENPHP_VERSIONS ?= 8.5
-SCRIPTLING_VERSIONS ?= 0.40.1
+SCRIPTLING_VERSIONS ?= 0.41.1
 FRANKENSCRIPTLING_VERSIONS ?= 8.5
 
 BUILD_DATE ?= $(shell date -u +'%Y%m%d')
@@ -120,6 +120,11 @@ BAKE_FLAGS ?=
 ## Build all targets (uses docker buildx bake for parallel builds)
 all:
 	docker buildx bake $(BAKE_FLAGS)
+
+.PHONY: update
+## Bump SCRIPTLING_VERSIONS to the latest Scriptling release and rewrite this Makefile to match (needs python3 and network access)
+update:
+	./update-versions
 
 .PHONY: print
 ## Print the resolved bake configuration without building

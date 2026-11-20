@@ -1,5 +1,5 @@
 ARG TAG_BASE=paularlott
-ARG PHP_VERSION=8.5
+ARG PHP_VERSION=unset
 ARG APT_CACHE=
 # The runtime image this dev layer goes on: knot-frankenphp-runtime for
 # knot-frankenphp, knot-frankenscriptling-runtime for knot-frankenscriptling.

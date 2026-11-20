@@ -1,6 +1,6 @@
 ARG TAG_BASE=paularlott
-ARG ALPINE_VERSION=3.24
-ARG SCRIPTLING_VERSION=v0.24.0
+ARG ALPINE_VERSION=unset
+ARG SCRIPTLING_VERSION=unset
 
 # =============================================================================
 # knot-scriptling-runtime: knot-alpine-runtime with the Scriptling interpreter

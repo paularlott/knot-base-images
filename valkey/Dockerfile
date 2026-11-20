@@ -1,7 +1,7 @@
 # Source https://github.com/valkey-io/valkey-container/
 
 ARG DOCKER_HUB=
-ARG VALKEY_VERSION=8.0.0
+ARG VALKEY_VERSION=unset
 
 FROM ${DOCKER_HUB}valkey/valkey:${VALKEY_VERSION}-alpine
 

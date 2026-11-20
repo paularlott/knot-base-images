@@ -21,7 +21,7 @@ docker run -d \
   -e VICTORIA_LOGS_PASSWORD=changeme \
   -e KNOT_SERVER=https://knot.example.com \
   -v vlogs_data:/data \
-  paularlott/knot-victoria-logs:1.52.0
+  paularlott/knot-victoria-logs:1.54.0
 ```
 
 With `VICTORIA_LOGS_USERNAME` / `VICTORIA_LOGS_PASSWORD` set, every request to `:9428` (ingest, query and web UI) is gated by HTTP basic auth via [vmauth](https://docs.victoriametrics.com/victoriametrics/vmauth/). Leave them unset to run without auth (development mode).
@@ -35,7 +35,7 @@ docker run -d \
   -e KNOT_LOG_SINK_PORT=9428 \
   -e KNOT_LOG_SINK_FORMAT=vl \
   -v vlogs_data:/data \
-  paularlott/knot-victoria-logs:1.52.0
+  paularlott/knot-victoria-logs:1.54.0
 ```
 
 Ingest a log entry (JSON line — note `_stream` must be a JSON object):

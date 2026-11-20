@@ -1,4 +1,4 @@
-ARG PHP_VERSION=8.5
+ARG PHP_VERSION=unset
 ARG APT_CACHE=
 
 # The image the knot runtime layer goes on: upstream FrankenPHP for
@@ -17,7 +17,7 @@ COPY --from=caddy:builder /usr/bin/xcaddy /usr/bin/xcaddy
 
 # Exactly this Go (the builder image ships it); fails rather than switching
 # toolchains if a module needs newer
-ARG GO_BUILD_VERSION=1.27.3
+ARG GO_BUILD_VERSION=unset
 ENV GOTOOLCHAIN=go${GO_BUILD_VERSION}
 
 # Build the FrankenPHP release the builder image carries (it reports

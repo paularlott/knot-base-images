@@ -1,7 +1,7 @@
 # Source https://github.com/docker-library/mysql/
 
 ARG DOCKER_HUB=
-ARG MYSQL_VERSION=9.7
+ARG MYSQL_VERSION=unset
 
 FROM ${DOCKER_HUB}library/mysql:${MYSQL_VERSION}
 

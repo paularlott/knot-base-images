@@ -1,7 +1,7 @@
 # Source https://github.com/vrana/adminer
 ARG TAG_BASE=paularlott
-ARG PHP_VERSION=8.5
-ARG ADMINER_VERSION=6.0.1
+ARG PHP_VERSION=unset
+ARG ADMINER_VERSION=unset
 
 FROM ${TAG_BASE}/knot-frankenphp-runtime:${PHP_VERSION}
 

@@ -1,7 +1,7 @@
 # Source https://github.com/docker-library/redis/
 
 ARG DOCKER_HUB=
-ARG REDIS_VERSION=8.10.0
+ARG REDIS_VERSION=unset
 
 FROM ${DOCKER_HUB}library/redis:${REDIS_VERSION}-alpine
 

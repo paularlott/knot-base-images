@@ -1,5 +1,5 @@
 ARG DOCKER_HUB=
-ARG ALPINE_VERSION=3.24
+ARG ALPINE_VERSION=unset
 
 # =============================================================================
 # knot-alpine-runtime: minimal Alpine with the knot entrypoint framework and

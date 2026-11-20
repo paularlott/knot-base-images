@@ -1,0 +1,79 @@
+#!/usr/bin/env python3
+"""Bump SCRIPTLING_VERSIONS in the Makefile to the latest Scriptling release.
+
+Run via `make update`. Writes the Makefile in place; nothing is built or
+committed. Needs network access and the Python standard library only.
+
+Scriptling has no parallel-maintained release lines (unlike, say, PHP's
+8.4.x/8.5.x), so SCRIPTLING_VERSIONS — a list only because bake's matrix
+mechanism needs one — is collapsed to a single entry: the latest release.
+If it ever carries more than one version, treat that as deliberate and
+check before running this.
+
+FRANKENPHP_VERSIONS and FRANKENSCRIPTLING_VERSIONS are PHP major.minor
+lines (e.g. "8.5"), not pinned releases — they build on
+dunglas/frankenphp:php<x.y> and $TAG_BASE/frankenscriptling:php<x.y>,
+which float to the newest patch on their own. There's nothing to bump
+there, so this script leaves them alone.
+"""
+import json
+import re
+import sys
+import urllib.error
+import urllib.request
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent
+MAKEFILE = ROOT / "Makefile"
+
+UA = {"User-Agent": "knot-base-images-update-versions"}
+
+
+def get_json(url):
+    req = urllib.request.Request(url, headers=UA)
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        return json.load(resp)
+
+
+def latest_scriptling_release():
+    tag = get_json("https://api.github.com/repos/paularlott/scriptling/releases/latest")["tag_name"]
+    version = tag.lstrip("v")
+    for arch in ("amd64", "arm64"):
+        url = f"https://github.com/paularlott/scriptling/releases/download/{tag}/scriptling-linux-{arch}.zip"
+        req = urllib.request.Request(url, headers=UA, method="HEAD")
+        try:
+            urllib.request.urlopen(req, timeout=30)
+        except urllib.error.HTTPError as exc:
+            sys.exit(f"update-versions: {tag} has no {arch} binary ({exc}); not bumping to it")
+    return version
+
+
+def current(var):
+    m = re.search(rf"^{re.escape(var)} \?= (.+)$", MAKEFILE.read_text(), re.MULTILINE)
+    if not m:
+        sys.exit(f"update-versions: couldn't find '{var} ?=' in {MAKEFILE}")
+    return m.group(1).strip()
+
+
+def rewrite(path, pattern, repl):
+    text = path.read_text()
+    updated, n = re.subn(pattern, repl, text, flags=re.MULTILINE)
+    if n and updated != text:
+        path.write_text(updated)
+    return n
+
+
+def main():
+    old_scriptling = current("SCRIPTLING_VERSIONS")
+    new_scriptling = latest_scriptling_release()
+
+    print(f"scriptling: {old_scriptling} -> {new_scriptling}")
+
+    rewrite(MAKEFILE, r"^SCRIPTLING_VERSIONS \?= .*$", f"SCRIPTLING_VERSIONS ?= {new_scriptling}")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except urllib.error.URLError as exc:
+        sys.exit(f"update-versions: network error: {exc}")

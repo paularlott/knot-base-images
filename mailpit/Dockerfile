@@ -1,7 +1,7 @@
 # Source https://github.com/axllent/mailpit
 
 ARG DOCKER_HUB=
-ARG MAILPIT_VERSION=1.30
+ARG MAILPIT_VERSION=unset
 
 FROM ${DOCKER_HUB}axllent/mailpit:v${MAILPIT_VERSION}
 

@@ -18,7 +18,7 @@ docker run -d \
   -p 1025:1025 \
   -e KNOT_SERVER=https://knot.example.com \
   -v mailpit_data:/data \
-  paularlott/knot-mailpit:1.30
+  paularlott/knot-mailpit:1.34.0
 ```
 
 Point your application at the SMTP server (from the host or another space) via knot port forwarding:

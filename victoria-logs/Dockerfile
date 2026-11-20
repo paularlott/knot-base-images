@@ -1,9 +1,9 @@
 # Source https://github.com/VictoriaMetrics/VictoriaMetrics/
 
 ARG DOCKER_HUB=
-ARG VICTORIA_LOGS_VERSION=1.52.0
-ARG VMAUTH_VERSION=1.148.0
-ARG ALPINE_VERSION=3.20
+ARG VICTORIA_LOGS_VERSION=unset
+ARG VMAUTH_VERSION=unset
+ARG ALPINE_VERSION=unset
 
 # Stage 1: VictoriaLogs static binary (upstream is distroless).
 FROM ${DOCKER_HUB}victoriametrics/victoria-logs:v${VICTORIA_LOGS_VERSION} AS vl-upstream

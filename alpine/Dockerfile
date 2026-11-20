@@ -7,7 +7,7 @@
 # valkey-cli replaces valkey-tools.
 
 ARG TAG_BASE=paularlott
-ARG ALPINE_VERSION=3.24
+ARG ALPINE_VERSION=unset
 
 FROM ${TAG_BASE}/knot-alpine-runtime:${ALPINE_VERSION}
 

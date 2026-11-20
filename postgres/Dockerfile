@@ -1,7 +1,7 @@
 # Source https://github.com/docker-library/postgres/
 
 ARG DOCKER_HUB=
-ARG POSTGRES_VERSION=18
+ARG POSTGRES_VERSION=unset
 
 FROM ${DOCKER_HUB}library/postgres:${POSTGRES_VERSION}
 
