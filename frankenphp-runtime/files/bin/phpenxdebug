@@ -2,6 +2,10 @@
 set -e
 
 # Enable xdebug
+if ! [ -f "$(php -r 'echo ini_get("extension_dir");')/xdebug.so" ]; then
+    echo "xdebug is not available for PHP $(php -r 'echo PHP_MAJOR_VERSION . "." . PHP_MINOR_VERSION;') in this image" >&2
+    exit 1
+fi
 echo "Enabling xdebug.."
 sudo mv /usr/local/etc/php/conf.d/zz-xdebug.ini.disabled /usr/local/etc/php/conf.d/zz-xdebug.ini 2>/dev/null || true
 

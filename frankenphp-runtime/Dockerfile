@@ -84,10 +84,14 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   # sqlite, zlib and pear/pecl. On the frankenscriptling base, which has no
   # compiler, install-php-extensions brings in the toolchain and removes it
   # again. xdebug ships disabled: its zz-xdebug.ini.disabled is enabled by
-  # phpenxdebug.
+  # phpenxdebug. redis, spx and xdebug do not build on PHP 8.6 yet (their
+  # current releases stop at 8.5), so newer PHP lines go without them until
+  # they catch up.
+  && PHP_EXTRA_EXTENSIONS="redis spx xdebug" \
+  && if php -r 'exit(PHP_VERSION_ID >= 80600 ? 0 : 1);'; then PHP_EXTRA_EXTENSIONS=""; fi \
   && install-php-extensions \
     bcmath exif gd gettext mailparse mysqli opcache \
-    pdo_mysql pdo_pgsql pgsql redis sockets spx zip xdebug \
+    pdo_mysql pdo_pgsql pgsql sockets zip $PHP_EXTRA_EXTENSIONS \
   && rm -f "$PHP_INI_DIR/conf.d/docker-php-ext-xdebug.ini" \
   \
   # Locale
