@@ -1,16 +1,17 @@
 <?php
 //! clone
 
-// Vendored from https://github.com/vrana/adminer/plugins/drivers/redis.php (v6.0.1)
-// with two local changes needed to run against the compiled adminer-6.0.1.php release:
-//  1. jushAutocomplete() drops the typed signature — the 6.0.1 binary's SqlDriver
-//     declares jushAutocomplete(array, $x) untyped, and the typed override fatals on
-//     load (upstream main has both sides typed; no fixed release exists yet).
-//  2. jushModule() inlines the JUSH module — the stock file loads
+// Vendored from https://github.com/vrana/adminer/blob/v6.3.0/plugins/drivers/redis.php
+// with two local changes:
+//  1. Parameter type declarations are removed. The compiled single-file release
+//     drops scalar types from the base classes (attach(array $server, $username,
+//     $password)), so the typed overrides in the source file fatal on load;
+//     untyped parameters are compatible with either.
+//  2. jushModule() inlines the JUSH module, because the stock file loads
 //     adminer/static/jush/modules/jush-redis.js, which doesn't exist next to a
 //     single-file install.
-// Replace with the upstream file verbatim once a release pairs the typed signature
-// with its compiled binary.
+// Re-vendor it with each Adminer upgrade: the driver API changes between
+// releases (6.3.0 passes attach() the server as an array).
 
 namespace Adminer;
 
@@ -75,7 +76,7 @@ if (isset($_GET["redis"])) {
 	}
 
 	/** Escape an argument as a double quoted string in the redis-cli syntax */
-	function quote_arg($arg) {
+	function quote_arg($arg): string {
 		static $escapes, $escapes_binary;
 		if (!$escapes) {
 			// redis-cli doesn't understand octal escapes
@@ -90,7 +91,6 @@ if (isset($_GET["redis"])) {
 				$escapes_binary[chr($i)] = sprintf('\x%02x', $i);
 			}
 		}
-		$arg = (string) $arg;
 		// bytes >= 0x80 are escaped only outside UTF-8 where there's no readability to preserve
 		return '"' . strtr($arg, (is_utf8($arg) ? $escapes : $escapes_binary)) . '"';
 	}
@@ -98,7 +98,7 @@ if (isset($_GET["redis"])) {
 	/** Format arguments as a command in the redis-cli syntax
 	* @param list<string> $args
 	*/
-	function format_command($args) {
+	function format_command($args): string {
 		$return = array();
 		foreach ($args as $arg) {
 			$arg = (string) $arg;
@@ -120,7 +120,7 @@ if (isset($_GET["redis"])) {
 	}
 
 	/** Get a value escaped by escape_value(), keep it intact if it's not a single quoted string */
-	function unescape_value($val) {
+	function unescape_value($val): string {
 		if (!preg_match('~^".*"$~s', $val)) {
 			return $val;
 		}
@@ -133,20 +133,26 @@ if (isset($_GET["redis"])) {
 		private $fp;
 
 		function attach($server, $username, $password): string {
-			if ($server == "") {
-				$server = "127.0.0.1";
-			}
-			if (!strpos($server, ":")) {
-				$server .= ":6379";
-			}
-			list($host, $port) = host_port($server);
-			$this->fp = @fsockopen($host, $port, $errno, $error);
+			$scheme = $server["scheme"];
+			$host = ($scheme ? "$scheme://" : "") . ($server["host"] ?: "127.0.0.1");
+			$port = intval($server["port"] ?: 6379);
+			// a failed TLS handshake leaves $error empty, its reason is in the first of the warnings
+			$warnings = php_errors(function () use ($host, $port, &$error) {
+				$this->fp = fsockopen($host, $port, $errno, $error);
+			});
 			if (!$this->fp) {
-				return $error;
+				return ($error ?: ($warnings ? $warnings[0] : "Unable to connect"));
 			}
 			// PING verifies that a server without a password really doesn't require one
-			if (!$this->send($password != "" ? array("AUTH", $username, $password) : array("PING"))) {
-				return $this->error;
+			$reply = $this->send($password != "" ? array("AUTH", $username, $password) : array("PING"));
+			if ($reply !== ($password != "" ? "OK" : "PONG")) {
+				$return = $this->error;
+				// any service can listen on the port, only Redis repeats the unknown option in the error
+				$probe = rand_string();
+				return ($reply === false && $this->send(array("HELLO", "2", $probe)) === false && strpos($this->error, $probe) !== false
+					? $return
+					: "The server did not reply as Redis."
+				);
 			}
 			if (DB == "" && preg_match('~redis_version:(.+)~', $this->send(array("INFO", "server")), $match)) {
 				$this->server_info = $match[1];
@@ -193,7 +199,24 @@ if (isset($_GET["redis"])) {
 		* @param list<list<string|int>> $commands
 		* @return list<mixed> replies in the order of the commands
 		*/
-		function sendMulti($commands) {
+		function sendMulti($commands): array {
+			$query = array();
+			foreach ($commands as $args) {
+				if (strtoupper($args[0]) == "AUTH") {
+					$args[count($args) - 1] = "***"; // the password
+				}
+				$query[] = format_command($args);
+			}
+			return adminer()->executeQuery(implode("\n", $query), function () use ($commands) {
+				return $this->pipeline($commands);
+			});
+		}
+
+		/** Send the commands and read their replies
+		* @param list<list<string|int>> $commands
+		* @return list<mixed>
+		*/
+		private function pipeline($commands): array {
 			$cmd = '';
 			foreach ($commands as $args) {
 				$cmd .= "*" . count($args) . "\r\n";
@@ -201,6 +224,7 @@ if (isset($_GET["redis"])) {
 					$cmd .= '$' . strlen($arg) . "\r\n$arg\r\n";
 				}
 			}
+			error_clear_last(); // readError() reports only the errors of this command
 			fwrite($this->fp, $cmd);
 			$return = array();
 			$count = count($commands);
@@ -213,7 +237,7 @@ if (isset($_GET["redis"])) {
 		function read() {
 			$line = fgets($this->fp);
 			if ($line === false) {
-				$this->error = error_get_last()['message'];
+				$this->error = $this->readError();
 				return false;
 			}
 			$type = $line[0];
@@ -233,8 +257,8 @@ if (isset($_GET["redis"])) {
 					$data = '';
 					while (strlen($data) < $len) {
 						$block = fread($this->fp, $len - strlen($data));
-						if ($block === false) {
-							$this->error = error_get_last()['message'];
+						if ($block == "") { // false for an error, "" for a closed connection or a timeout
+							$this->error = $this->readError();
 							return false;
 						}
 						$data .= $block;
@@ -255,6 +279,15 @@ if (isset($_GET["redis"])) {
 					$this->error = "Unknown response type: $type";
 					return false;
 			}
+		}
+
+		/** Get the error of a failed read */
+		private function readError(): string {
+			$error = error_get_last();
+			return ($error // a closed connection or a timeout emits no PHP error
+				? php_error_text($error['message'])
+				: (stream_get_meta_data($this->fp)['timed_out'] ? "Connection timed out" : "Connection closed")
+			);
 		}
 	}
 
@@ -283,15 +316,20 @@ if (isset($_GET["redis"])) {
 		function fetch_field(): \stdClass {
 			$field = current($this->fields);
 			next($this->fields);
-			return (object) array('name' => $field, 'type' => 15, 'charsetnr' => 0);
+			return (object) array('name' => $field);
 		}
 	}
 
 	class Driver extends SqlDriver {
 		static $jush = "redis";
 
+		static $serverSchemes = array("ssl", "tls");
+
 		public $delimiter = "\n"; // commands are separated by a newline as in redis-cli
-		public $operators = array("*");
+
+		function operators($tableStatus): array {
+			return array("*");
+		}
 
 		/** Get the JUSH module inlined in the released driver by the release script */
 		static function jushModule(): string {
@@ -306,9 +344,9 @@ jush.build_links2('redis', 'https://redis.io/docs/latest/commands/$1/', /(^[ \t]
 JS;
 		}
 
-	static function jushAutocomplete(array $tables, $statements) {
-		return ""; // the commands are not SQL
-	}
+		static function jushAutocomplete($tables, $statements): string {
+			return ""; // the commands are not SQL
+		}
 
 		function select($table, $select, $where, $group, $order = array(), $limit = 1, $page = 0, $print = false) {
 			$next = $_GET["next"];
@@ -392,10 +430,6 @@ JS;
 			return '[^\s\S]'; // Redis has no comments
 		}
 
-		function allFields(): array {
-			return array(); // the parent implementation would send a SQL query
-		}
-
 		function insert($table, $set) {
 			return queries("SET " . implode(" ", $set)); // the values are quoted by quote()
 		}
@@ -422,7 +456,7 @@ JS;
 		/** Get the keys of a where condition as quoted arguments
 		* @return list<string>
 		*/
-		private function where($queryWhere) {
+		private function where($queryWhere): array {
 			preg_match_all('~key . ("(?:\\\\.|[^\\\\"])*+")~', $queryWhere, $matches);
 			return $matches[1];
 		}
@@ -435,32 +469,37 @@ JS;
 		}
 	}
 
-	function logged_user() {
+	function logged_user(): string {
 		return $_GET["username"];
 	}
 
-	function get_databases($flush) {
+	function get_databases($flush): array {
 		return array_map('strval', range(0, connection()->send(array("CONFIG", "GET", "databases"))[1] - 1));
 	}
 
-	function collations() {
+	function collations(): array {
 		return array();
 	}
 
 	function db_collation($db, $collations) {
 	}
 
-	function information_schema($db) {
+	function information_schema($db): bool {
+		return false;
 	}
 
-	function indexes($table, $connection2 = null) {
+	function indexes($table, $connection2 = null): array {
 		return array(array('type' => 'PRIMARY', 'columns' => array('key')));
 	}
 
-	function fields($table) {
+	function fields($table): array {
 		return array(
 			"key" => array("field" => "key", "privileges" => array("select" => 1, "where" => 1, "insert" => 1)),
-			"type" => array("field" => "type", "privileges" => array("select" => 1)), // the type is determined by the command creating the key
+			"type" => array(
+				"field" => "type",
+				"privileges" => array("select" => 1), // the type is determined by the command creating the key
+				"doc" => "https://redis.io/docs/latest/develop/data-types/",
+			),
 			"value" => array("field" => "value", "privileges" => array("select" => 1, "insert" => 1, "update" => 1)),
 		);
 	}
@@ -468,39 +507,43 @@ JS;
 	function convert_field($field) {
 	}
 
-	function unconvert_field($field, $return) {
+	function unconvert_field($field, $return): string {
 		return $return;
 	}
 
-	function limit($query, $where, $limit, $offset = 0, $separator = " ") {
+	function limit($query, $where, $limit, $offset = 0, $separator = " "): string {
 		return $query;
 	}
 
-	function idf_escape($idf) {
+	function limit1($table, $query, $where, $separator = "\n"): string {
+		return limit($query, $where, 1, 0, $separator);
+	}
+
+	function idf_escape($idf): string {
 		return $idf;
 	}
 
-	function table($idf) {
+	function table($idf): string {
 		return idf_escape($idf);
 	}
 
-	function foreign_keys($table) {
+	function foreign_keys($table): array {
 		return array();
 	}
 
-	function tables_list() {
+	function tables_list(): array {
 		return array('data' => 'table');
 	}
 
-	function table_status($name = "", $fast = false) {
+	function table_status($name = "", $fast = false): array {
 		return array('data' => array('Name' => 'data'));
 	}
 
-	function count_tables($databases) {
+	function count_tables($databases): array {
 		return array_fill_keys($databases, 1);
 	}
 
-	function error() {
+	function error(): string {
 		return h(connection()->error);
 	}
 
@@ -508,7 +551,7 @@ JS;
 	function explain($connection, $query) {
 	}
 
-	function is_view($table_status) {
+	function is_view($table_status): bool {
 		return false;
 	}
 
@@ -516,7 +559,7 @@ JS;
 		return null;
 	}
 
-	function fk_support($table_status) {
+	function fk_support($table_status): bool {
 		return false;
 	}
 
@@ -524,7 +567,7 @@ JS;
 		return '';
 	}
 
-	function support($feature) {
+	function support($feature): bool {
 		return preg_match('~^(cursor|single_table|sql)$~', $feature);
 	}
 }

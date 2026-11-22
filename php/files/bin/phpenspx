@@ -2,6 +2,10 @@
 set -e
 
 # Enable php-spx
+if ! [ -f "$(php -r 'echo ini_get("extension_dir");')/spx.so" ]; then
+    echo "php-spx is not available for PHP ${PHP_VERSION} in this image" >&2
+    exit 1
+fi
 echo "Enabling php-spx.."
 sudo phpenmod php-spx
 

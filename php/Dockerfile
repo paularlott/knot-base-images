@@ -38,16 +38,18 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   && chown -R www-data:www-data /run/php \
   && ln -fs /usr/sbin/php-fpm${PHP_VERSION} /usr/sbin/php-fpm \
   \
-  # Profiler
-  && git clone https://github.com/NoiseByNorthwest/php-spx.git \
-	&& cd php-spx \
-	&& git checkout release/latest \
-	&& phpize \
-	&& ./configure \
-	&& make -j 8 \
-	&& make install \
-	&& cd .. \
-  && rm -rf php-spx \
+  # Profiler: spx supports PHP up to 8.5 only, so 8.6 and newer go without it
+  && if php -r 'exit(PHP_VERSION_ID < 80600 ? 0 : 1);'; then \
+       git clone https://github.com/NoiseByNorthwest/php-spx.git \
+       && cd php-spx \
+       && git checkout release/latest \
+       && phpize \
+       && ./configure \
+       && make -j 8 \
+       && make install \
+       && cd .. \
+       && rm -rf php-spx; \
+     fi \
   \
   # Composer
   && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \

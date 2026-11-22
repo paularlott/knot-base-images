@@ -5,7 +5,9 @@ set -e
 chmod 0644 /etc/cron.d/container-crons
 crontab /etc/cron.d/container-crons
 
-# Generate php-spx config with service password as the profiler key
+# Generate php-spx config with service password as the profiler key (spx is
+# not built for PHP 8.6 and newer)
+if [ -f "$(php -r 'echo ini_get("extension_dir");')/spx.so" ]; then
 cat > /etc/php/${PHP_VERSION}/mods-available/php-spx.ini << EOF
 extension=spx.so
 
@@ -13,6 +15,7 @@ spx.http_key = ${KNOT_SERVICE_PASSWORD}
 spx.http_enabled = 1
 spx.http_ip_whitelist = *
 EOF
+fi
 
 # Start php-fpm
 logger -p local0.info "Starting php-fpm.."

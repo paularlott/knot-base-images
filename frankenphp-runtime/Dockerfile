@@ -45,6 +45,8 @@ FROM ${BASE_IMAGE} AS runtime
 
 ARG APT_CACHE
 ARG APT_RUNTIME_PACKAGES
+# 0 leaves the spx profiler out (the frankenscriptling images)
+ARG INCLUDE_SPX=1
 
 ENV DEBIAN_FRONTEND=noninteractive \
   LANG=en_US.UTF-8 \
@@ -84,14 +86,39 @@ RUN --mount=type=cache,sharing=private,target=/var/cache/apt \
   # sqlite, zlib and pear/pecl. On the frankenscriptling base, which has no
   # compiler, install-php-extensions brings in the toolchain and removes it
   # again. xdebug ships disabled: its zz-xdebug.ini.disabled is enabled by
-  # phpenxdebug. redis, spx and xdebug do not build on PHP 8.6 yet (their
-  # current releases stop at 8.5), so newer PHP lines go without them until
-  # they catch up.
-  && PHP_EXTRA_EXTENSIONS="redis spx xdebug" \
-  && if php -r 'exit(PHP_VERSION_ID >= 80600 ? 0 : 1);'; then PHP_EXTRA_EXTENSIONS=""; fi \
+  # phpenxdebug. spx is left out when INCLUDE_SPX=0 (the frankenscriptling
+  # images) and on PHP 8.6, which no spx release or branch supports yet.
+  # phpredis and xdebug support PHP 8.6 only on their development branches,
+  # so on 8.6 they are built from the pinned commits below (phpredis cloned
+  # with its liblzf submodule, which a GitHub tarball lacks). Move 8.6 back
+  # to install-php-extensions once releases support it.
+  && PECL_EXTENSIONS="redis xdebug" \
+  && SPX_EXTENSION="spx" \
+  && if [ "$INCLUDE_SPX" = "0" ]; then SPX_EXTENSION=""; fi \
+  && if php -r 'exit(PHP_VERSION_ID >= 80600 ? 0 : 1);'; then PECL_EXTENSIONS=""; SPX_EXTENSION=""; fi \
   && install-php-extensions \
     bcmath exif gd gettext mailparse mysqli opcache \
-    pdo_mysql pdo_pgsql pgsql sockets zip $PHP_EXTRA_EXTENSIONS \
+    pdo_mysql pdo_pgsql pgsql sockets zip $PECL_EXTENSIONS $SPX_EXTENSION \
+  && if [ -z "$PECL_EXTENSIONS" ]; then \
+       PHPREDIS_COMMIT=a6ce1e60b3e81ce3b25174aa5aaefd5590dc64fd; \
+       XDEBUG_COMMIT=5e19866c1766e38c527f9f94faa170370dc4209f; \
+       TOOLCHAIN=""; command -v cc >/dev/null || TOOLCHAIN="$PHPIZE_DEPS"; \
+       command -v git >/dev/null || TOOLCHAIN="$TOOLCHAIN git"; \
+       apt-get update -y \
+       && if [ -n "$TOOLCHAIN" ]; then apt-get install -y $TOOLCHAIN; fi \
+       && for ext in "phpredis/phpredis $PHPREDIS_COMMIT" "xdebug/xdebug $XDEBUG_COMMIT"; do \
+            set -- $ext; \
+            git init -q /tmp/ext \
+            && git -C /tmp/ext fetch -q --depth 1 "https://github.com/$1" "$2" \
+            && git -C /tmp/ext checkout -q FETCH_HEAD \
+            && git -C /tmp/ext submodule -q update --init --depth 1 \
+            && (cd /tmp/ext && phpize && ./configure && make -j"$(nproc)" && make install) \
+            && rm -rf /tmp/ext \
+            || exit 1; \
+          done \
+       && docker-php-ext-enable redis \
+       && if [ -n "$TOOLCHAIN" ]; then apt-get purge -y --auto-remove $TOOLCHAIN; fi; \
+     fi \
   && rm -f "$PHP_INI_DIR/conf.d/docker-php-ext-xdebug.ini" \
   \
   # Locale

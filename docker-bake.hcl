@@ -612,6 +612,7 @@ target "knot-frankenscriptling-runtime" {
     APT_RUNTIME_PACKAGES = "${APT_RUNTIME_PACKAGES}"
     GO_BUILD_VERSION     = "${GO_BUILD_VERSION}"
     BASE_IMAGE           = "${TAG_BASE}/frankenscriptling:php${php}"
+    INCLUDE_SPX          = "0"
   }
 
   tags = version_tags("knot-frankenscriptling-runtime", php)
